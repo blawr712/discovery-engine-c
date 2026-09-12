@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "allowed_domains": [
+    "ir.datacm.com"
+  ],
+  "companies": {
+    "DCM.TO": [
+      {
+        "url": "https://ir.datacm.com/data-communications-management-corp-reports-2025-financial-results/",
+        "title": "Data Communications Management Corp. Reports 2025 Financial Results",
+        "publisher": "Data Communications Management Corp.",
+        "published_at": "2026-03-12",
+        "source_type": "earnings_release",
+        "format": "html"
+      },
+      {
+        "url": "https://ir.datacm.com/data-communications-management-corp-reports-q3-2025-financial-results/",
+        "title": "Data Communications Management Corp. Reports Q3 2025 Financial Results",
+        "publisher": "Data Communications Management Corp.",
+        "published_at": "2025-11-11",
+        "source_type": "earnings_release",
+        "format": "html"
+      },
+      {
+        "url": "https://ir.datacm.com/data-communications-management-corp-reports-q2-2025-financial-results/",
+        "title": "Data Communications Management Corp. Reports Q2 2025 Financial Results",
+        "publisher": "Data Communications Management Corp.",
+        "published_at": "2025-08-06",
+        "source_type": "earnings_release",
+        "format": "html"
+      }
+    ]
+  }
+}

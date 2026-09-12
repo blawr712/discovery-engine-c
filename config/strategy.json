@@ -1,0 +1,374 @@
+{
+    "project": {
+        "name": "Discovery Engine",
+        "version": "0.4.0-dev"
+    },
+
+    "asset_classification": {
+        "excluded_quote_types": [
+            "ETF",
+            "MUTUALFUND",
+            "INDEX",
+            "FUTURE",
+            "OPTION",
+            "CRYPTOCURRENCY"
+        ],
+        "excluded_industries": [
+            "Shell Companies"
+        ],
+        "name_rules": [
+            {
+                "pattern": "\\b(acquisition|acquisitions) (corp(oration)?|co(mpany)?)\\b",
+                "asset_type": "acquisition_vehicle",
+                "reason": "Acquisition or SPAC vehicle"
+            },
+            {
+                "pattern": "\\b(blank check|special purpose acquisition|SPAC)\\b",
+                "asset_type": "acquisition_vehicle",
+                "reason": "Acquisition or SPAC vehicle"
+            },
+            {
+                "pattern": "\\b(warrant|warrants|rights|units|preferred shares?)\\b",
+                "asset_type": "non_common_equity",
+                "reason": "Non-common-equity security"
+            }
+        ]
+    },
+
+    "universe": {
+        "coverage_policy": "all_supported_listings",
+
+        "market_cap": {
+            "minimum": 10000000,
+            "sweet_spot_min": 50000000,
+            "sweet_spot_max": 750000000,
+            "maximum": 1000000000
+        },
+
+        "minimum_average_dollar_volume": 250000
+    },
+
+    "weights": {
+        "volume_acceleration": 25,
+        "relative_strength": 25,
+        "trend_strength": 15,
+        "market_cap": 15,
+        "sector_bonus": 10,
+        "liquidity": 10
+    },
+
+    "fundamental_weights": {
+        "revenue_growth": 10,
+        "earnings_growth": 8,
+        "profitability": 8,
+        "free_cash_flow": 7,
+        "balance_sheet": 7,
+        "earnings_yield": 5,
+        "sales_yield": 4,
+        "enterprise_value_ebitda": 4,
+        "liquidity": 4,
+        "leverage": 4,
+        "earnings_quality": 4
+    },
+
+    "fundamental_data_policy": {
+        "maximum_age_days": 550,
+        "undated_confidence_ratio": 0.75,
+        "sector_exclusions": {
+            "Financial Services": [
+                "free_cash_flow",
+                "enterprise_value_ebitda",
+                "liquidity"
+            ],
+            "Real Estate": [
+                "earnings_growth",
+                "earnings_quality"
+            ]
+        },
+        "factor_input_policies": {
+            "revenue_growth": {"minimum": -1.0, "maximum": 10.0, "action": "invalid"},
+            "earnings_growth": {"minimum": -1.0, "maximum": 10.0, "action": "invalid"},
+            "profitability": {"minimum": -5.0, "maximum": 1.0, "action": "invalid"},
+            "free_cash_flow": {"minimum": -10.0, "maximum": 10.0, "action": "cap"},
+            "balance_sheet": {"minimum": -10.0, "maximum": 10.0, "action": "cap"},
+            "earnings_yield": {"minimum": 0.0, "maximum": 1.0, "action": "cap"},
+            "sales_yield": {"minimum": 0.0, "maximum": 10.0, "action": "cap"},
+            "enterprise_value_ebitda": {"minimum": 0.0, "maximum": 100.0, "action": "cap"},
+            "liquidity": {"minimum": 0.0, "maximum": 50.0, "action": "cap"},
+            "leverage": {"minimum": 0.0, "maximum": 1000.0, "action": "cap"},
+            "earnings_quality": {"minimum": -20.0, "maximum": 20.0, "action": "invalid"}
+        }
+    },
+
+    "fundamental_scoring": {
+        "revenue_growth": {
+            "thresholds": [
+                {"minimum": 0.30, "points_ratio": 1.00},
+                {"minimum": 0.15, "points_ratio": 0.80},
+                {"minimum": 0.05, "points_ratio": 0.50},
+                {"minimum": 0.00, "points_ratio": 0.20},
+                {"minimum": -1000, "points_ratio": 0.00}
+            ]
+        },
+        "earnings_growth": {
+            "thresholds": [
+                {"minimum": 0.30, "points_ratio": 1.00},
+                {"minimum": 0.15, "points_ratio": 0.80},
+                {"minimum": 0.05, "points_ratio": 0.50},
+                {"minimum": 0.00, "points_ratio": 0.20},
+                {"minimum": -1000, "points_ratio": 0.00}
+            ]
+        },
+        "profitability": {
+            "thresholds": [
+                {"minimum": 0.20, "points_ratio": 1.00},
+                {"minimum": 0.10, "points_ratio": 0.75},
+                {"minimum": 0.00, "points_ratio": 0.40},
+                {"minimum": -1000, "points_ratio": 0.00}
+            ]
+        },
+        "free_cash_flow": {
+            "thresholds": [
+                {"minimum": 0.10, "points_ratio": 1.00},
+                {"minimum": 0.05, "points_ratio": 0.75},
+                {"minimum": 0.00, "points_ratio": 0.40},
+                {"minimum": -1000, "points_ratio": 0.00}
+            ]
+        },
+        "balance_sheet": {
+            "thresholds": [
+                {"minimum": 0.20, "points_ratio": 1.00},
+                {"minimum": 0.00, "points_ratio": 0.70},
+                {"minimum": -0.25, "points_ratio": 0.40},
+                {"minimum": -1000, "points_ratio": 0.00}
+            ]
+        },
+        "earnings_yield": {
+            "thresholds": [
+                {"minimum": 0.10, "points_ratio": 1.00},
+                {"minimum": 0.05, "points_ratio": 0.75},
+                {"minimum": 0.00, "points_ratio": 0.35},
+                {"minimum": -1000, "points_ratio": 0.00}
+            ]
+        },
+        "sales_yield": {
+            "thresholds": [
+                {"minimum": 1.00, "points_ratio": 1.00},
+                {"minimum": 0.50, "points_ratio": 0.75},
+                {"minimum": 0.20, "points_ratio": 0.40},
+                {"minimum": 0.00, "points_ratio": 0.10}
+            ]
+        },
+        "enterprise_value_ebitda": {
+            "direction": "lower",
+            "thresholds": [
+                {"maximum": 8.0, "points_ratio": 1.00},
+                {"maximum": 15.0, "points_ratio": 0.70},
+                {"maximum": 25.0, "points_ratio": 0.35},
+                {"maximum": 1000000, "points_ratio": 0.00}
+            ]
+        },
+        "liquidity": {
+            "thresholds": [
+                {"minimum": 2.0, "points_ratio": 1.00},
+                {"minimum": 1.25, "points_ratio": 0.70},
+                {"minimum": 1.0, "points_ratio": 0.35},
+                {"minimum": -1000, "points_ratio": 0.00}
+            ]
+        },
+        "leverage": {
+            "direction": "lower",
+            "thresholds": [
+                {"maximum": 25.0, "points_ratio": 1.00},
+                {"maximum": 75.0, "points_ratio": 0.70},
+                {"maximum": 150.0, "points_ratio": 0.35},
+                {"maximum": 1000000, "points_ratio": 0.00}
+            ]
+        },
+        "earnings_quality": {
+            "thresholds": [
+                {"minimum": 1.25, "points_ratio": 1.00},
+                {"minimum": 1.0, "points_ratio": 0.75},
+                {"minimum": 0.5, "points_ratio": 0.35},
+                {"minimum": -1000, "points_ratio": 0.00}
+            ]
+        }
+    },
+
+    "sector_bonus": {
+        "Technology": 10,
+        "Software": 10,
+        "Cybersecurity": 10,
+        "Energy": 8,
+        "Industrials": 6,
+        "Healthcare": 6,
+        "Biotechnology": 6,
+        "Financial Services": 4,
+        "Basic Materials": 4
+    },
+
+    "benchmarks": {
+        "CA": "XIU.TO",
+        "US": "SPY"
+    },
+
+    "scoring": {
+        "minimum_price_history_days": 200,
+        "relative_strength_days": 126,
+        "volume_short_window": 30,
+        "volume_long_window": 90,
+        "moving_average_short": 50,
+        "moving_average_long": 200
+    },
+
+    "moonshot": {
+        "model_version": "v0.2-market-risk",
+        "market_cap": {
+            "minimum": 2000000,
+            "nano_cap_maximum": 10000000,
+            "maximum": 50000000
+        },
+        "maximum_fundamental_age_days": 550,
+        "undated_confidence_ratio": 0.75,
+        "minimum_classification_confidence": 50,
+        "minimum_market_risk_confidence": 70,
+        "minimum_cross_section_coverage_percent": 99,
+        "priority_confidence_minimum": 80,
+        "priority_upside_minimum": 75,
+        "priority_risk_maximum": 35,
+        "watch_upside_minimum": 60,
+        "watch_risk_maximum": 55,
+        "speculative_upside_minimum": 70,
+        "upside_weights": {
+            "revenue_growth": 25,
+            "earnings_growth": 15,
+            "profitability": 15,
+            "cash_generation": 15,
+            "sales_valuation": 15,
+            "market_cap_headroom": 15
+        },
+        "risk_weights": {
+            "size_fragility": 10,
+            "cash_runway": 20,
+            "balance_sheet": 15,
+            "profitability": 10,
+            "leverage": 5,
+            "disclosure_gaps": 10,
+            "liquidity": 10,
+            "volatility": 8,
+            "maximum_drawdown": 7,
+            "dilution": 3,
+            "reverse_splits": 2
+        },
+        "pending_data_requirements": [
+            "bid-ask spread and trading-impact estimates",
+            "financing, ATM, and shelf-registration events"
+        ],
+        "calibration": {
+            "minimum_top_25_overlap_percent": 60,
+            "sensitive_rank_range": 50,
+            "maximum_sensitive_top_25_candidates": 5,
+            "maximum_country_selection_rate_ratio": 2.5,
+            "maximum_size_tier_selection_rate_ratio": 2.5,
+            "scenarios": {
+                "baseline": {
+                    "upside_multipliers": {},
+                    "risk_multipliers": {}
+                },
+                "growth_emphasis": {
+                    "upside_multipliers": {
+                        "revenue_growth": 1.4,
+                        "earnings_growth": 1.3,
+                        "profitability": 0.9,
+                        "cash_generation": 0.8,
+                        "sales_valuation": 0.8,
+                        "market_cap_headroom": 0.8
+                    },
+                    "risk_multipliers": {}
+                },
+                "survival_first": {
+                    "upside_multipliers": {
+                        "revenue_growth": 0.9,
+                        "earnings_growth": 0.9,
+                        "profitability": 1.2,
+                        "cash_generation": 1.3,
+                        "market_cap_headroom": 0.8
+                    },
+                    "risk_multipliers": {
+                        "cash_runway": 1.4,
+                        "balance_sheet": 1.3,
+                        "profitability": 1.2,
+                        "leverage": 1.2,
+                        "dilution": 1.2,
+                        "reverse_splits": 1.2,
+                        "volatility": 0.8,
+                        "maximum_drawdown": 0.8
+                    }
+                },
+                "trading_viability": {
+                    "upside_multipliers": {},
+                    "risk_multipliers": {
+                        "size_fragility": 0.75,
+                        "cash_runway": 0.75,
+                        "balance_sheet": 0.75,
+                        "profitability": 0.75,
+                        "leverage": 0.75,
+                        "disclosure_gaps": 0.75,
+                        "liquidity": 2.0,
+                        "volatility": 1.5,
+                        "maximum_drawdown": 1.5,
+                        "dilution": 1.2,
+                        "reverse_splits": 1.5
+                    }
+                }
+            }
+        }
+    },
+
+    "reports": {
+        "top_stocks": 100,
+        "export_format": "csv"
+    },
+
+    "calibration": {
+        "top_n": 100,
+        "low_confidence_threshold": 50,
+        "selected_research_scenario": "technical_80_fundamental_20",
+        "rank_sensitivity_threshold": 5,
+        "overlap_cutoffs": [20, 50, 100],
+        "coverage_neutral_blend": {
+            "candidate_pool_size": 100,
+            "rerank_band_size": 25,
+            "minimum_peer_group_size": 20,
+            "minimum_country_factor_coverage": 75,
+            "neutral_percentile": 50,
+            "acceptance_gates": {
+                "maximum_country_eligibility_gap": 15,
+                "maximum_rank_movement": 75,
+                "minimum_top_retention": {
+                    "20": 60,
+                    "50": 70,
+                    "100": 100
+                }
+            }
+        },
+        "factor_readiness": {
+            "ready_minimum_coverage": 75,
+            "limited_minimum_coverage": 40
+        },
+        "blend_scenarios": {
+            "technical_100": {
+                "technical_weight": 1.0,
+                "fundamental_weight": 0.0
+            },
+            "technical_80_fundamental_20": {
+                "technical_weight": 0.8,
+                "fundamental_weight": 0.2
+            },
+            "technical_70_fundamental_30": {
+                "technical_weight": 0.7,
+                "fundamental_weight": 0.3
+            }
+        }
+    }
+}

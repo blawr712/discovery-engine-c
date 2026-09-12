@@ -1,0 +1,89 @@
+{
+    "application": {
+        "data_source": "yfinance",
+        "log_level": "INFO",
+        "weekly_refresh": true,
+        "universe_directory": "data/raw/universe"
+    },
+
+    "directories": {
+        "output_directory": "data/exports",
+        "cache_directory": "data/cache",
+        "run_directory": "data/runs",
+        "history_database": "data/history/discovery_history.sqlite3"
+    },
+
+    "runtime": {
+        "save_raw_data": true,
+        "allow_large_cap_watchlist": true,
+        "max_concurrent_downloads": 5,
+        "metadata_concurrent_downloads": 2,
+        "price_concurrent_downloads": 5
+    },
+
+    "cache": {
+        "enabled": true,
+        "metadata_version": "v0.3-fundamentals-2",
+        "metadata_ttl_hours": 168,
+        "price_history_ttl_hours": 24,
+        "share_history_ttl_hours": 168
+    },
+
+    "retry": {
+        "enabled": true,
+        "max_attempts": 3,
+        "base_delay_seconds": 0.5,
+        "max_delay_seconds": 8,
+        "jitter_seconds": 0.25
+    },
+
+    "rate_limit": {
+        "enabled": true,
+        "metadata_interval_seconds": 1.0,
+        "price_interval_seconds": 0.2,
+        "cooldown_seconds": 300,
+        "max_cooldown_events": 3
+    },
+
+    "run_state": {
+        "resume_enabled": true,
+        "retry_errors_on_resume": true
+    },
+
+    "research": {
+        "ai_synthesis_enabled": false,
+        "default_top_candidates": 10,
+        "prompt_version": "v0.3-research-3",
+        "cache_directory": "data/cache/research",
+        "evidence": {
+            "cache_directory": "data/cache/evidence",
+            "cache_ttl_hours": 168,
+            "maximum_documents_per_company": 5,
+            "maximum_age_days": 730,
+            "maximum_excerpt_characters": 12000,
+            "allowed_domains": ["sec.gov"],
+            "sec_forms": ["10-K", "10-Q", "8-K", "20-F", "40-F", "6-K"]
+        },
+        "synthesis": {
+            "provider": "openai",
+            "model": "gpt-5.6-sol",
+            "maximum_output_tokens": 8000,
+            "api_base_url": "https://api.openai.com/v1"
+        },
+        "review": {
+            "minimum_evidence_coverage_percent": 80,
+            "minimum_synthesis_completion_percent": 100,
+            "minimum_citation_coverage_percent": 100,
+            "minimum_section_coverage_percent": 75,
+            "minimum_sourced_claims_per_synthesis": 1,
+            "maximum_synthesis_errors": 0,
+            "review_sampling": {
+                "enabled": true,
+                "medium_risk_sample_percent": 10,
+                "low_risk_sample_percent": 10,
+                "minimum_one_claim_per_section": true,
+                "seed": "v0.3-review-1"
+            }
+        }
+    }
+}
