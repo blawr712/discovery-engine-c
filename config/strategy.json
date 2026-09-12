@@ -221,6 +221,31 @@
         "moving_average_long": 200
     },
 
+    "scoring_v2": {
+        "model_version": "v2.0-shadow",
+        "minimum_price_history_days": 200,
+        "sector_neutral": true,
+        "minimum_sector_group": 20,
+        "lookbacks": {
+            "long_window": 240,
+            "medium_window": 126,
+            "skip_window": 21,
+            "reversal_window": 21,
+            "volatility_window": 63,
+            "volume_short_window": 21,
+            "volume_long_window": 240,
+            "high_window": 240
+        },
+        "signals": {
+            "momentum_long": {"weight": 30, "direction": "higher"},
+            "high_proximity": {"weight": 20, "direction": "higher"},
+            "momentum_medium": {"weight": 15, "direction": "higher"},
+            "volatility": {"weight": 15, "direction": "lower"},
+            "volume_trend": {"weight": 10, "direction": "higher"},
+            "short_term_reversal": {"weight": 10, "direction": "lower"}
+        }
+    },
+
     "moonshot": {
         "model_version": "v0.2-market-risk",
         "market_cap": {

@@ -131,6 +131,7 @@ MAX_MARKET_CAP = MARKET_CAP_CONFIG["maximum"]
 SECTOR_BONUSES = STRATEGY["sector_bonus"]
 WEIGHTS = STRATEGY["weights"]
 SCORING_CONFIG = STRATEGY["scoring"]
+SCORING_V2_CONFIG = STRATEGY.get("scoring_v2", {})
 ASSET_CLASSIFICATION_CONFIG = STRATEGY.get("asset_classification", {})
 FUNDAMENTAL_WEIGHTS = STRATEGY.get("fundamental_weights", {})
 FUNDAMENTAL_SCORING_CONFIG = STRATEGY.get("fundamental_scoring", {})

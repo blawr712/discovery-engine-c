@@ -34,7 +34,14 @@ checkpoints so compatible interrupted runs can resume safely.
 Completed runs containing provider errors remain resumable; successful and
 analytically rejected rows are reused while only error rows run again.
 
-Scoring Engine: Calculate Discovery Score only.
+Scoring Engine: Calculate Discovery Score only. A shadow Score v2 runs beside
+it in two pure stages: per-company point-in-time raw signals computed with the
+price history, then one cross-sectional percentile pass over the completed run
+that ranks each signal across candidates (within sector when the group is
+large enough) and blends them into a 0-100 score with explanations. Score v2
+never alters official scores or ranks, is written back to checkpoints so saved
+runs stay authoritative, and reuses the same two functions inside the Backtest
+Engine so historical and live behavior cannot diverge.
 
 Research Engine: Generate explainable research summaries.
 

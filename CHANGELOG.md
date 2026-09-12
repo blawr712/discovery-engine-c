@@ -12,6 +12,17 @@
 - Added deterministic backtest JSON, per-period CSV, compressed observation,
   and Markdown artifacts with explicit survivorship and static-factor caveats
 - Recorded backtest provenance in the run manifest without changing scores
+- Added shadow Score v2: point-in-time long/medium momentum, trailing-high
+  proximity, volatility, volume trend, and one-month reversal raw signals
+- Added a cross-sectional percentile pass that ranks each signal across the
+  run, within sector when the group is large enough, and blends the
+  percentiles into a 0-100 score with confidence, rank, and explanations
+- Kept Score v2 entirely separate from official Discovery Scores and ranks
+- Added Score v2 to backtest composites so v1 and v2 are compared on
+  identical periods, horizons, and universes
+- Fixed the end-of-run summary crashing on undefined provider statistics
+  after every completed run
+- Converted `requirements.txt` from UTF-16 to UTF-8 so pip can read it
 - Added an idempotent offline SQLite index for completed manifests and results
 - Added exclusive `--index-run` and `--history-summary` commands
 - Kept existing run files authoritative while establishing a queryable history layer

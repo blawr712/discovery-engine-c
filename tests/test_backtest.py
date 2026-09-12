@@ -194,6 +194,20 @@ class BacktestAnalysisTests(unittest.TestCase):
         self.assertGreaterEqual(turnover, 0)
         self.assertLessEqual(turnover, 100)
 
+    def test_shadow_score_v2_is_scored_per_period_and_evaluated(self):
+        frame = self.analysis["_observations"]
+        self.assertIn("score_v2", frame.columns)
+        self.assertIn("v2_momentum_long", frame.columns)
+        self.assertTrue(frame["score_v2"].notna().all())
+        # Percentile blends stay within 0-100 inside every period.
+        self.assertLessEqual(frame["score_v2"].max(), 100.0)
+        self.assertGreaterEqual(frame["score_v2"].min(), 0.0)
+        ic = self.analysis["aggregate"]["information_coefficient"]
+        self.assertGreater(ic["score_v2"]["1M"]["mean"], 0.2)
+        self.assertIn("v2_momentum_long", ic)
+        self.assertIn("score_v2", self.analysis["aggregate"]["quantiles"])
+        self.assertIn("score_v2", self.analysis["aggregate"]["top_n"])
+
     def test_static_factors_are_excluded_from_technical_score(self):
         frame = self.analysis["_observations"]
         difference = frame["discovery_score_static"] - frame["technical_score"]

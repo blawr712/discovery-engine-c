@@ -30,6 +30,18 @@ python main.py --index-run RUN_ID
 python main.py --history-summary
 ```
 
+Every run also produces a shadow **Score v2** beside the official Discovery
+Score. Each successful company receives point-in-time raw signals from its own
+price history (long and medium momentum with the latest month skipped,
+proximity to the trailing high, annualized volatility, volume trend, and
+one-month reversal). After collection, one cross-sectional pass ranks each
+signal as a percentile across the run's candidates, within sector when at
+least the configured group size is present, and blends the percentiles by the
+weights in `config/strategy.json` under `scoring_v2`. Rows carry `score_v2`,
+`score_v2_rank`, `score_v2_confidence`, and a per-signal `score_v2_breakdown`.
+Score v2 changes no official score or rank; it exists to be validated by the
+backtest before any weighting decision.
+
 Measure whether the configured technical screen has historically related to
 forward returns by replaying it point-in-time for a completed run's universe:
 
@@ -40,8 +52,9 @@ python main.py --backtest-run RUN_ID --backtest-limit 200
 
 The backtest collects ten-year adjusted price histories through the normal
 cached, paced provider stack (cached for a week under `config/backtest.json`),
-rebuilds the volume, relative-strength, trend, and liquidity factors at every
-historical month-end using only data available on that date, and measures
+rebuilds the volume, relative-strength, trend, and liquidity factors plus the
+Score v2 signals at every historical month-end using only data available on
+that date, scores each month's cross-section with the same v2 pass, and measures
 Spearman rank correlation, score-quantile spreads, top-N excess returns, hit
 rates, turnover, and compounded top-N portfolios against SPY or XIU.TO at 1M,
 3M, 6M, and 1Y horizons. It writes `backtest_*.json`, `backtest_periods_*.csv`,

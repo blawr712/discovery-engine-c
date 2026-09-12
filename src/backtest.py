@@ -31,11 +31,17 @@ from src.scoring import (
     score_trend_strength,
     score_volume_acceleration,
 )
+from src.scoring_v2 import (
+    RAW_PREFIX,
+    compute_raw_signals,
+    score_frame,
+    validated_config as validated_v2_config,
+)
 
 
 ProgressCallback = Callable[[str, int, int, str], None]
 
-COMPOSITE_COLUMNS = ("technical_score", "discovery_score_static")
+COMPOSITE_COLUMNS = ("technical_score", "discovery_score_static", "score_v2")
 FACTOR_POINT_COLUMNS = (
     "volume_score",
     "relative_strength_score",
@@ -43,7 +49,12 @@ FACTOR_POINT_COLUMNS = (
     "liquidity_score",
 )
 FACTOR_RAW_COLUMNS = ("volume_ratio", "relative_strength_6m")
-IC_COLUMNS = COMPOSITE_COLUMNS + FACTOR_POINT_COLUMNS + FACTOR_RAW_COLUMNS
+V2_RAW_COLUMNS = tuple(
+    f"{RAW_PREFIX}{name}" for name in validated_v2_config()["signals"]
+)
+IC_COLUMNS = (
+    COMPOSITE_COLUMNS + FACTOR_POINT_COLUMNS + FACTOR_RAW_COLUMNS + V2_RAW_COLUMNS
+)
 
 LIMITATIONS = (
     "Survivorship bias: the universe is taken from a recent completed run, so "
@@ -244,6 +255,7 @@ def build_backtest(
                 "discovery_score_static": float(
                     technical_score + static_market_cap_score + static_sector_score
                 ),
+                **compute_raw_signals(history_slice),
             }
             start_close = aligned_close.iloc[position]
             for label, days in horizons.items():
@@ -272,6 +284,7 @@ def build_backtest(
             usable_tickers.add(ticker)
 
     frame = pd.DataFrame(observations)
+    frame = _apply_score_v2(frame)
     period_metrics = _period_metrics(frame, config)
     aggregate = _aggregate_metrics(period_metrics, frame, config)
 
@@ -480,7 +493,7 @@ def _horizon_metrics(
         result["information_coefficient"][column] = _finite(value)
 
     for column in COMPOSITE_COLUMNS:
-        ranked = _ranked(valid, column)
+        ranked = _ranked(valid.dropna(subset=[column]), column)
         quantile_count = config["quantiles"]
         if len(ranked) >= quantile_count:
             # Quantiles follow the tie-broken ranking, so the best-ranked row
@@ -666,6 +679,22 @@ def _compounded(period_metrics: list[dict], config: dict) -> dict:
                 "difference_percent": round((portfolio - benchmark) * 100.0, 2),
             }
     return summary
+
+
+def _apply_score_v2(frame: pd.DataFrame) -> pd.DataFrame:
+    """Score each period's cross-section with the shadow v2 model."""
+    frame = frame.copy()
+    frame["score_v2"] = np.nan
+    frame["score_v2_confidence"] = np.nan
+    if frame.empty:
+        return frame
+    for _, group in frame.groupby("period", sort=True):
+        scored = score_frame(group)
+        frame.loc[group.index, "score_v2"] = scored["score_v2"]
+        frame.loc[group.index, "score_v2_confidence"] = scored[
+            "score_v2_confidence"
+        ]
+    return frame
 
 
 def _rebalance_periods(

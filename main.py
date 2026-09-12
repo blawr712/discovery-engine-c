@@ -21,6 +21,7 @@ from src.backtest import (
     export_backtest,
 )
 from src.calibration import build_calibration, export_calibration
+from src.scoring_v2 import apply_cross_sectional_scores
 from src.engine import DiscoveryEngine
 from src.run_state import (
     RunState,
@@ -261,6 +262,13 @@ def main(arguments=None):
     )
     results = engine.run(universe, prior_results=prior_results)
 
+    # Shadow Score v2 needs the full cross-section, so it is applied after
+    # collection and written back to checkpoints; official scores are unchanged.
+    results = apply_cross_sectional_scores(results)
+    for index, result in enumerate(results):
+        if result.get("status") == "OK":
+            run_state.record_result(index, result)
+
     output_path = export_report(results, run_id=run_state.run_id)
     candidate_output_path = export_candidate_report(
         results,
@@ -300,6 +308,8 @@ def main(arguments=None):
         print(f"Cache misses: {source.stats.misses}")
         print(f"Cache expired: {source.stats.expired}")
         print(f"Cache read errors: {source.stats.read_errors}")
+    retry_source = source.source
+    provider = retry_source.source
     print(f"Provider retries: {retry_source.stats.retries}")
     print(f"Retries exhausted: {retry_source.stats.exhausted}")
     if provider.enabled:

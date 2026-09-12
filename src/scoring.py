@@ -7,6 +7,7 @@ from src.factors import (
     serialize_factor_breakdown,
 )
 from src.fundamental_scoring import calculate_fundamental_scores
+from src.scoring_v2 import compute_raw_signals
 
 from src.config import (
     SWEET_SPOT_MIN,
@@ -80,10 +81,14 @@ def calculate_scores(
     )
 
     fundamental_scores = calculate_fundamental_scores(stock_data)
+    # Shadow Score v2 raw signals are point-in-time per company; the
+    # cross-sectional percentile pass runs once the whole run is complete.
+    v2_raw_signals = compute_raw_signals(price_history)
 
     return {
         **stock_data,
         **fundamental_scores,
+        **v2_raw_signals,
         "volume_score": volume_score,
         "volume_ratio": round(volume_ratio, 2) if volume_ratio is not None else None,
         "relative_strength_score": relative_strength_score,
