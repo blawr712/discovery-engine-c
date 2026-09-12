@@ -30,6 +30,27 @@ python main.py --index-run RUN_ID
 python main.py --history-summary
 ```
 
+Measure whether the configured technical screen has historically related to
+forward returns by replaying it point-in-time for a completed run's universe:
+
+```powershell
+python main.py --backtest-run RUN_ID
+python main.py --backtest-run RUN_ID --backtest-limit 200
+```
+
+The backtest collects ten-year adjusted price histories through the normal
+cached, paced provider stack (cached for a week under `config/backtest.json`),
+rebuilds the volume, relative-strength, trend, and liquidity factors at every
+historical month-end using only data available on that date, and measures
+Spearman rank correlation, score-quantile spreads, top-N excess returns, hit
+rates, turnover, and compounded top-N portfolios against SPY or XIU.TO at 1M,
+3M, 6M, and 1Y horizons. It writes `backtest_*.json`, `backtest_periods_*.csv`,
+`backtest_observations_*.csv.gz`, and `backtest_summary_*.md` under
+`data/exports/` and records provenance in the run manifest. Official scores and
+ranks never change. The artifacts state their limitations explicitly: the
+universe is survivorship-biased toward companies still listed, market-cap and
+sector points are static, and no result is a return forecast.
+
 Compare two previously indexed runs without making provider calls:
 
 ```powershell

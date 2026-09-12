@@ -215,3 +215,19 @@ class CliTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class BacktestCliTests(unittest.TestCase):
+    def test_parses_backtest_run_with_limit(self):
+        args = parse_args(["--backtest-run", "RUN1", "--backtest-limit", "25"])
+
+        self.assertEqual(args.backtest_run, "RUN1")
+        self.assertEqual(args.backtest_limit, 25)
+
+    def test_backtest_limit_requires_backtest_run(self):
+        with self.assertRaises(SystemExit):
+            parse_args(["--backtest-limit", "25"])
+
+    def test_backtest_run_is_exclusive_with_universe_selection(self):
+        with self.assertRaises(SystemExit):
+            parse_args(["--backtest-run", "RUN1", "--limit", "5"])

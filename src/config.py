@@ -7,6 +7,7 @@ DATA_DIR = BASE_DIR / "data"
 
 STRATEGY_PATH = CONFIG_DIR / "strategy.json"
 SETTINGS_PATH = CONFIG_DIR / "settings.json"
+BACKTEST_PATH = CONFIG_DIR / "backtest.json"
 
 
 def load_json(path: Path) -> dict:
@@ -19,6 +20,9 @@ def load_json(path: Path) -> dict:
 
 STRATEGY = load_json(STRATEGY_PATH)
 SETTINGS = load_json(SETTINGS_PATH)
+# Backtest settings live outside strategy/settings so offline validation
+# options never change the run fingerprint used for resume compatibility.
+BACKTEST_CONFIG = load_json(BACKTEST_PATH) if BACKTEST_PATH.exists() else {}
 
 DIRECTORIES = SETTINGS.get("directories", {})
 OUTPUT_DIR = BASE_DIR / DIRECTORIES.get("output_directory", "data/exports")

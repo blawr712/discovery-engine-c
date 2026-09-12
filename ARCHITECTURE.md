@@ -38,6 +38,15 @@ Scoring Engine: Calculate Discovery Score only.
 
 Research Engine: Generate explainable research summaries.
 
+Backtest Engine: Replay the Scoring Engine's technical factor functions at
+historical month-ends using only price data available on each date, then
+measure rank correlation, quantile spreads, and top-N outcomes against forward
+benchmark-relative returns. It reuses the scoring functions rather than
+re-implementing them, reads its universe from a completed saved run, collects
+long price histories through the same cached, paced, retried provider stack,
+and never changes official scores or ranks. Its configuration lives in
+`config/backtest.json`, outside the run fingerprint.
+
 Reporting Engine: Export reports and serve the local dashboard. Moonshot
 terminal queries read deterministic analysis, calibration, and immutable
 baseline artifacts through a separate bounded store; they never initialize the
@@ -48,3 +57,4 @@ market-data or AI layers.
 Runtime configuration belongs in:
 - config/settings.json
 - config/strategy.json
+- config/backtest.json (offline validation only; excluded from run fingerprints)

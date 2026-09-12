@@ -14,6 +14,12 @@ from src.report import (
     export_report,
 )
 from src.analytics import export_run_analytics
+from src.backtest import (
+    build_backtest,
+    build_backtest_universe,
+    collect_price_histories,
+    export_backtest,
+)
 from src.calibration import build_calibration, export_calibration
 from src.engine import DiscoveryEngine
 from src.run_state import (
@@ -22,6 +28,7 @@ from src.run_state import (
     load_saved_run,
     load_saved_manifest,
     record_recalibration,
+    record_backtest,
     record_moonshot_analysis,
     record_moonshot_calibration,
     record_research_packets,
@@ -69,6 +76,7 @@ from src.moonshot_calibration import (
 )
 from src.cli import parse_args, select_universe
 from src.config import (
+    BACKTEST_CONFIG,
     BENCHMARKS,
     CACHE_DIR,
     CACHE_ENABLED,
@@ -115,7 +123,9 @@ def print_progress(
     print(f"[{phase}] {completed}/{total}: {ticker}")
 
 
-def build_market_data_source() -> CachedMarketDataSource:
+def build_market_data_source(
+    price_history_ttl_hours: float | None = None,
+) -> CachedMarketDataSource:
     """Build the shared paced, retried, persistent market-data provider."""
     provider = RateLimitedMarketDataSource(
         YFinanceSource(),
@@ -137,7 +147,11 @@ def build_market_data_source() -> CachedMarketDataSource:
         cache_directory=CACHE_DIR,
         metadata_ttl_hours=CACHE_METADATA_TTL_HOURS,
         metadata_version=CACHE_METADATA_VERSION,
-        price_history_ttl_hours=CACHE_PRICE_HISTORY_TTL_HOURS,
+        price_history_ttl_hours=(
+            CACHE_PRICE_HISTORY_TTL_HOURS
+            if price_history_ttl_hours is None
+            else price_history_ttl_hours
+        ),
         share_history_ttl_hours=CACHE_SHARE_HISTORY_TTL_HOURS,
         enabled=CACHE_ENABLED,
     )
@@ -145,6 +159,9 @@ def build_market_data_source() -> CachedMarketDataSource:
 
 def main(arguments=None):
     args = parse_args(arguments)
+    if args.backtest_run:
+        backtest_saved_run(args.backtest_run, limit=args.backtest_limit)
+        return
     if args.index_run:
         index_history_run(args.index_run)
         return
@@ -576,6 +593,90 @@ def analyze_moonshot_run(
     print(f"Candidate CSV saved to: {csv_path}")
     print(f"Analysis JSON saved to: {json_path}")
     print(f"Market evidence saved to: {market_evidence_path}")
+    print(f"Manifest updated: {manifest_path}")
+
+
+def backtest_saved_run(run_id: str, limit: int | None = None) -> None:
+    """Replay technical scoring point-in-time for a completed run's universe."""
+    period = str(BACKTEST_CONFIG.get("price_history_period", "10y"))
+    ttl_hours = float(BACKTEST_CONFIG.get("price_history_ttl_hours", 168))
+    try:
+        manifest, results = load_saved_run(RUN_DIR, run_id)
+        universe = build_backtest_universe(results)
+        if limit is not None:
+            universe = universe[:limit]
+        source = build_market_data_source(price_history_ttl_hours=ttl_hours)
+        print(f"Backtest universe: {len(universe)} tickers from run {run_id}")
+        print(f"Price history period: {period}")
+        histories, benchmark_histories, errors = collect_price_histories(
+            universe,
+            BENCHMARKS,
+            source,
+            period=period,
+            max_workers=PRICE_CONCURRENT_DOWNLOADS,
+            progress_callback=print_progress,
+        )
+        analysis = build_backtest(
+            universe,
+            histories,
+            benchmark_histories,
+            BENCHMARKS,
+            run_id,
+            collection_errors=errors,
+        )
+        artifacts = export_backtest(analysis, OUTPUT_DIR)
+        coverage = analysis["coverage"]
+        manifest_path = record_backtest(
+            RUN_DIR,
+            run_id,
+            {
+                "model_version": analysis["model_version"],
+                "source_fingerprint": manifest.get("fingerprint"),
+                "price_history_period": period,
+                "limit": limit,
+                "universe_tickers": coverage["universe_tickers"],
+                "usable_tickers": coverage["usable_tickers"],
+                "collection_errors": coverage["collection_errors"],
+                "periods": coverage["periods"],
+                "first_period": coverage["first_period"],
+                "last_period": coverage["last_period"],
+                "observations": coverage["observations"],
+                "official_scores_and_ranks_unchanged": True,
+                **artifacts,
+            },
+        )
+    except (FileNotFoundError, OSError, TypeError, ValueError) as error:
+        raise SystemExit(f"Unable to build backtest: {error}") from error
+
+    print(f"\nBacktest complete for run: {run_id}")
+    print(f"Model: {analysis['model_version']}")
+    print(
+        "Tickers usable / collected / requested: "
+        f"{coverage['usable_tickers']} / {coverage['collected_tickers']} / "
+        f"{coverage['universe_tickers']}"
+    )
+    print(f"Collection errors: {coverage['collection_errors']}")
+    print(
+        f"Periods: {coverage['periods']} "
+        f"({coverage['first_period']} to {coverage['last_period']})"
+    )
+    print(f"Observations: {coverage['observations']}")
+    if source.enabled:
+        print(f"Cache hits: {source.stats.hits}")
+        print(f"Cache misses: {source.stats.misses}")
+        print(f"Cache expired: {source.stats.expired}")
+    ic = analysis["aggregate"]["information_coefficient"]
+    for column in ("technical_score", "discovery_score_static"):
+        for horizon, stats in ic.get(column, {}).items():
+            if stats:
+                print(
+                    f"IC {column} {horizon}: mean {stats['mean']:.4f} "
+                    f"(t {stats['t_stat'] if stats['t_stat'] is not None else 'n/a'}, "
+                    f"{stats['periods']} periods)"
+                )
+    print("Official Discovery scores and ranks: unchanged")
+    for label, path in artifacts.items():
+        print(f"{label.replace('_', ' ').capitalize()}: {path}")
     print(f"Manifest updated: {manifest_path}")
 
 

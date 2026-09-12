@@ -61,6 +61,11 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
         help="finalize an audited research run from its completed review CSV",
     )
     selection.add_argument(
+        "--backtest-run",
+        metavar="RUN_ID",
+        help="replay technical scoring point-in-time for a completed run's universe",
+    )
+    selection.add_argument(
         "--index-run",
         metavar="RUN_ID",
         help="index a completed saved run into the local history database",
@@ -116,6 +121,12 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
         help="collect market-risk evidence for only the first COUNT Moonshot names",
     )
     parser.add_argument(
+        "--backtest-limit",
+        type=_positive_integer,
+        metavar="COUNT",
+        help="backtest only the first COUNT eligible tickers (alphabetical)",
+    )
+    parser.add_argument(
         "--balanced-research",
         type=_positive_integer,
         metavar="PER_COUNTRY",
@@ -150,6 +161,8 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
         parser.error("--collect-market-risk requires --moonshot-run")
     if args.moonshot_limit is not None and not args.collect_market_risk:
         parser.error("--moonshot-limit requires --collect-market-risk")
+    if args.backtest_limit is not None and args.backtest_run is None:
+        parser.error("--backtest-limit requires --backtest-run")
     if args.balanced_research is not None and args.research_run is None:
         parser.error("--balanced-research requires --research-run")
     if args.top is not None and args.balanced_research is not None:

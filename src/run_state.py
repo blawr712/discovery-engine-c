@@ -392,6 +392,24 @@ def record_moonshot_calibration(
     return str(manifest_path)
 
 
+def record_backtest(
+    root_directory: Path,
+    run_id: str,
+    artifacts: dict,
+    clock: Callable[[], datetime] | None = None,
+) -> str:
+    """Record point-in-time backtest provenance without changing results."""
+    manifest = load_saved_manifest(root_directory, run_id)
+    clock = clock or (lambda: datetime.now(timezone.utc))
+    manifest["backtest_artifacts"] = {
+        "completed_at": _utc_iso(clock()),
+        **artifacts,
+    }
+    manifest_path = Path(root_directory) / run_id / "manifest.json"
+    _atomic_write_json(manifest_path, manifest)
+    return str(manifest_path)
+
+
 def record_research_audit(
     root_directory: Path,
     run_id: str,

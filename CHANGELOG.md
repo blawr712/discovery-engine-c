@@ -2,6 +2,16 @@
 
 ## v0.4 Platform (in progress)
 
+- Added an offline-first `--backtest-run` command that replays the configured
+  technical scoring functions point-in-time at historical month-ends
+- Added Spearman information coefficients, score-quantile spreads, top-N
+  excess returns, hit rates, turnover, and compounded top-N comparisons
+  against country benchmarks at 1M, 3M, 6M, and 1Y horizons
+- Added `config/backtest.json` so validation settings never alter the run
+  fingerprint used for resume compatibility
+- Added deterministic backtest JSON, per-period CSV, compressed observation,
+  and Markdown artifacts with explicit survivorship and static-factor caveats
+- Recorded backtest provenance in the run manifest without changing scores
 - Added an idempotent offline SQLite index for completed manifests and results
 - Added exclusive `--index-run` and `--history-summary` commands
 - Kept existing run files authoritative while establishing a queryable history layer
