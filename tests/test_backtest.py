@@ -186,6 +186,13 @@ class BacktestAnalysisTests(unittest.TestCase):
         spread = self.analysis["aggregate"]["quantiles"]["technical_score"]["1M"]
         self.assertEqual(len(spread["mean_excess"]), 4)
         self.assertGreater(spread["spread"], 0)
+        self.assertEqual(len(spread["median_excess"]), 4)
+        self.assertEqual(len(spread["win_rate_percent"]), 4)
+        self.assertEqual(len(spread["trimmed_mean_excess"]), 4)
+        self.assertGreater(spread["median_spread"], 0)
+        self.assertTrue(all(0 <= v <= 100 for v in spread["win_rate_percent"]))
+        top_stats = self.analysis["aggregate"]["top_n"]["technical_score"]["5"]["1M"]
+        self.assertIsNotNone(top_stats["median_excess"])
         top = self.analysis["aggregate"]["top_n"]["technical_score"]["5"]["1M"]
         self.assertGreater(top["hit_rate_percent"], 50)
         compounded = self.analysis["aggregate"]["compounded"]["technical_score"]["5"]

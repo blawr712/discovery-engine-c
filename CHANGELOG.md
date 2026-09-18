@@ -28,6 +28,9 @@
   dilution, and market-cap ratios as of any calendar date
 - Added `--with-fundamentals` to `--backtest-run` so U.S. fundamental signals
   are evaluated at each historical month-end using only prior filings
+- Added median, win-rate, and 2%-trimmed-mean statistics per score quantile
+  and median excess for top-N selections, because mean excess returns in
+  this universe are dominated by a few extreme rebounds
 - Fixed the end-of-run summary crashing on undefined provider statistics
   after every completed run
 - Converted `requirements.txt` from UTF-16 to UTF-8 so pip can read it

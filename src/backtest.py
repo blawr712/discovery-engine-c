@@ -480,31 +480,46 @@ def build_backtest_markdown(analysis: dict) -> str:
             )
     lines += [
         "",
-        "## Mean forward excess return by score quantile (percentage points)",
+        "## Forward excess return by score quantile (percentage points)",
+        "",
+        "Q1 is the lowest-scored fifth of each month's cross-section and Q5 the "
+        "highest. Medians and trimmed means (2% tails clipped) describe the "
+        "typical outcome; means are dominated by a few extreme rebounds in this "
+        "universe and are shown for completeness.",
         "",
     ]
+    quantile_labels = " | ".join(
+        f"Q{index + 1}" for index in range(config["quantiles"])
+    )
     for column in COMPOSITE_COLUMNS:
         lines.append(f"### {column}")
         lines.append("")
-        header = "| Horizon | " + " | ".join(
-            f"Q{index + 1}" for index in range(config["quantiles"])
-        ) + " | Spread |"
-        lines.append(header)
-        lines.append("|" + "---|" * (config["quantiles"] + 2))
+        lines.append(f"| Horizon | Statistic | {quantile_labels} | Q{config['quantiles']} - Q1 |")
+        lines.append("|" + "---|" * (config["quantiles"] + 3))
         for horizon in config["forward_horizons_days"]:
             stats = aggregate["quantiles"].get(column, {}).get(horizon)
             if not stats:
                 continue
-            cells = " | ".join(_fmt(value) for value in stats["mean_excess"])
-            lines.append(
-                f"| {horizon} | {cells} | {_fmt(stats['spread'])} |"
-            )
+            for label, field, spread_key in (
+                ("median", "median_excess", "median_spread"),
+                ("trimmed mean", "trimmed_mean_excess", None),
+                ("win rate %", "win_rate_percent", None),
+                ("mean", "mean_excess", "spread"),
+            ):
+                values = stats.get(field) or []
+                cells = " | ".join(_fmt(value) for value in values)
+                spread = (
+                    stats.get(spread_key) if spread_key else _spread(values)
+                )
+                lines.append(
+                    f"| {horizon} | {label} | {cells} | {_fmt(spread)} |"
+                )
         lines.append("")
     lines += [
         "## Top-N selections",
         "",
-        "| Signal | N | Horizon | Periods | Mean excess | Hit rate | Turnover |",
-        "|---|---|---|---|---|---|---|",
+        "| Signal | N | Horizon | Periods | Mean excess | Median excess | Hit rate | Turnover |",
+        "|---|---|---|---|---|---|---|---|",
     ]
     for column in COMPOSITE_COLUMNS:
         for top_n in config["top_n"]:
@@ -519,6 +534,7 @@ def build_backtest_markdown(analysis: dict) -> str:
                 lines.append(
                     f"| {column} | {top_n} | {horizon} | {stats['periods']} | "
                     f"{_fmt(stats['mean_excess'])} | "
+                    f"{_fmt(stats.get('median_excess'))} | "
                     f"{_fmt(stats['hit_rate_percent'])}% | "
                     f"{_fmt(turnover)}% |"
                 )
@@ -607,18 +623,28 @@ def _horizon_metrics(
                 dtype=float,
             )
             labels = pd.qcut(order, quantile_count, labels=False)
-            means = ranked.groupby(labels, observed=True)[excess_column].mean()
+            grouped = ranked.groupby(labels, observed=True)[excess_column]
+            means = grouped.mean()
+            medians = grouped.median()
+            win_rates = grouped.apply(lambda values: float((values > 0).mean() * 100.0))
+            trimmed = grouped.apply(_trimmed_mean)
             mean_excess = [
                 _finite(means.get(index)) for index in range(quantile_count)
             ]
-            spread = (
-                mean_excess[-1] - mean_excess[0]
-                if mean_excess[-1] is not None and mean_excess[0] is not None
-                else None
-            )
+            median_excess = [
+                _finite(medians.get(index)) for index in range(quantile_count)
+            ]
             result["quantiles"][column] = {
                 "mean_excess": mean_excess,
-                "spread": spread,
+                "median_excess": median_excess,
+                "win_rate_percent": [
+                    _finite(win_rates.get(index)) for index in range(quantile_count)
+                ],
+                "trimmed_mean_excess": [
+                    _finite(trimmed.get(index)) for index in range(quantile_count)
+                ],
+                "spread": _spread(mean_excess),
+                "median_spread": _spread(median_excess),
             }
         top_entries = {}
         for top_n in config["top_n"]:
@@ -627,6 +653,7 @@ def _horizon_metrics(
             top = ranked.head(top_n)
             top_entries[str(top_n)] = {
                 "mean_excess": _finite(top[excess_column].mean()),
+                "median_excess": _finite(top[excess_column].median()),
                 "mean_return": _finite(top[f"return_{horizon}"].mean()),
                 "mean_benchmark_return": _finite(
                     top[f"benchmark_return_{horizon}"].mean()
@@ -638,6 +665,28 @@ def _horizon_metrics(
             }
         result["top_n"][column] = top_entries
     return result
+
+
+def _trimmed_mean(values: pd.Series, tail: float = 0.02) -> float:
+    """Mean after clipping both tails, so a few extreme rebounds cannot dominate."""
+    if values.empty:
+        return float("nan")
+    lower, upper = values.quantile(tail), values.quantile(1.0 - tail)
+    return float(values.clip(lower, upper).mean())
+
+
+def _spread(values: list[float | None]) -> float | None:
+    if not values or values[-1] is None or values[0] is None:
+        return None
+    return values[-1] - values[0]
+
+
+def _column_means(rows: list[dict], field: str) -> list[float | None]:
+    columns = list(zip(*(row.get(field) or [] for row in rows)))
+    return [
+        _mean([value for value in values if value is not None])
+        for values in columns
+    ]
 
 
 def _spearman(left: pd.Series, right: pd.Series) -> float:
@@ -678,17 +727,19 @@ def _aggregate_metrics(
             ]
             rows = [row for row in rows if row]
             if rows:
-                columns = list(zip(*(row["mean_excess"] for row in rows)))
                 quantile_summary[column][horizon] = {
                     "periods": len(rows),
-                    "mean_excess": [
-                        _mean([value for value in values if value is not None])
-                        for values in columns
-                    ],
-                    "spread": _mean([
-                        row["spread"] for row in rows
-                        if row["spread"] is not None
-                    ]),
+                    **{
+                        field: _column_means(rows, field)
+                        for field in (
+                            "mean_excess",
+                            "median_excess",
+                            "win_rate_percent",
+                            "trimmed_mean_excess",
+                        )
+                    },
+                    "spread": _mean([row["spread"] for row in rows]),
+                    "median_spread": _mean([row["median_spread"] for row in rows]),
                 }
         for top_n in config["top_n"]:
             key = str(top_n)
@@ -707,6 +758,10 @@ def _aggregate_metrics(
                     "mean_excess": _mean([
                         row["mean_excess"] for row in rows
                         if row["mean_excess"] is not None
+                    ]),
+                    "median_excess": _mean([
+                        row["median_excess"] for row in rows
+                        if row.get("median_excess") is not None
                     ]),
                     "hit_rate_percent": _mean([
                         row["hit_rate_percent"] for row in rows
@@ -877,6 +932,7 @@ def _flatten_periods(period_metrics: list[dict]) -> list[dict]:
                 row[f"ic_{column}"] = value
             for column, quantiles in stats["quantiles"].items():
                 row[f"spread_{column}"] = quantiles["spread"]
+                row[f"median_spread_{column}"] = quantiles.get("median_spread")
             for column, tops in stats["top_n"].items():
                 for top_n, top in tops.items():
                     row[f"top{top_n}_excess_{column}"] = top["mean_excess"]
