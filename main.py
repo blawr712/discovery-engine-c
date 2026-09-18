@@ -3,7 +3,13 @@ import json
 import sqlite3
 from pathlib import Path
 
-from src.universe import UniverseBuilder
+from dotenv import load_dotenv
+
+# Load local secrets such as SEC_USER_AGENT from an untracked .env file
+# without overriding variables already present in the environment.
+load_dotenv(Path(__file__).resolve().parent / ".env", override=False)
+
+from src.universe import UniverseBuilder  # noqa: E402
 from src.data_sources.yfinance_source import YFinanceSource
 from src.data_sources.cached_source import CachedMarketDataSource
 from src.data_sources.retrying_source import RetryingMarketDataSource
@@ -685,6 +691,7 @@ def backtest_saved_run(
             collection_errors=errors,
             fundamental_histories=fundamental_histories,
             fundamental_stats=fundamental_stats,
+            limit=limit,
         )
         artifacts = export_backtest(analysis, OUTPUT_DIR)
         coverage = analysis["coverage"]

@@ -31,6 +31,10 @@
 - Added median, win-rate, and 2%-trimmed-mean statistics per score quantile
   and median excess for top-N selections, because mean excess returns in
   this universe are dominated by a few extreme rebounds
+- Named limited backtest artifacts with a `_limitN` suffix so samples never
+  overwrite full-universe results for the same source run
+- Loaded an untracked `.env` file at startup so `SEC_USER_AGENT` can stay
+  out of shell history and configuration files; added `.env.example`
 - Fixed the end-of-run summary crashing on undefined provider statistics
   after every completed run
 - Converted `requirements.txt` from UTF-16 to UTF-8 so pip can read it

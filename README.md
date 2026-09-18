@@ -64,10 +64,11 @@ ranks never change. The artifacts state their limitations explicitly: the
 universe is survivorship-biased toward companies still listed, market-cap and
 sector points are static, and no result is a return forecast.
 
-Add point-in-time fundamentals for U.S. filers to the same backtest:
+Add point-in-time fundamentals for U.S. filers to the same backtest. The SEC
+requires a contact `User-Agent`; put it in an untracked `.env` file (see
+`.env.example`) or set the environment variable directly:
 
 ```powershell
-$env:SEC_USER_AGENT = "Discovery Engine you@example.com"
 python main.py --backtest-run RUN_ID --with-fundamentals
 ```
 

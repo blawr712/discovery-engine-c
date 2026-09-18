@@ -228,6 +228,7 @@ def build_backtest(
     collection_errors: dict[str, str] | None = None,
     fundamental_histories: dict[str, FundamentalHistory] | None = None,
     fundamental_stats: dict | None = None,
+    limit: int | None = None,
 ) -> dict:
     """Replay technical scoring at historical month-ends and measure outcomes."""
     config = _validated_config(config)
@@ -388,6 +389,7 @@ def build_backtest(
     return {
         "model_version": config["model_version"],
         "source_run_id": run_id,
+        "limit": limit,
         "config": config,
         "limitations": list(LIMITATIONS) + (
             list(FUNDAMENTAL_LIMITATIONS) if with_fundamentals else []
@@ -426,13 +428,17 @@ def export_backtest(
     payload = {
         key: value for key, value in analysis.items() if key != "_observations"
     }
+    # Limited runs get their own artifact names so a quick sample never
+    # overwrites the full-universe result for the same source run.
+    limit = analysis.get("limit")
+    stem = f"{run_id}_limit{int(limit)}" if limit else run_id
 
-    json_path = output_directory / f"backtest_{run_id}.json"
-    periods_path = output_directory / f"backtest_periods_{run_id}.csv"
+    json_path = output_directory / f"backtest_{stem}.json"
+    periods_path = output_directory / f"backtest_periods_{stem}.csv"
     observations_path = (
-        output_directory / f"backtest_observations_{run_id}.csv.gz"
+        output_directory / f"backtest_observations_{stem}.csv.gz"
     )
-    summary_path = output_directory / f"backtest_summary_{run_id}.md"
+    summary_path = output_directory / f"backtest_summary_{stem}.md"
 
     _atomic_json(json_path, payload)
     _atomic_csv(periods_path, _flatten_periods(analysis["periods"]))

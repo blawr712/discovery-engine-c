@@ -366,6 +366,21 @@ class FundamentalIntegrationTests(unittest.TestCase):
 
 
 class ExportTests(unittest.TestCase):
+    def test_limited_runs_use_distinct_artifact_names(self):
+        universe, histories, benchmarks = _synthetic_universe(ticker_count=25)
+        analysis = build_backtest(
+            universe, histories, benchmarks, {"US": "SPY"}, "RUN1",
+            config=CONFIG, limit=25,
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            paths = export_backtest(analysis, Path(directory))
+            self.assertTrue(paths["backtest_json_path"].endswith("backtest_RUN1_limit25.json"))
+            self.assertTrue(
+                paths["backtest_summary_markdown_path"].endswith("backtest_summary_RUN1_limit25.md")
+            )
+            payload = json.loads(Path(paths["backtest_json_path"]).read_text("utf-8"))
+            self.assertEqual(payload["limit"], 25)
+
     def test_exports_deterministic_artifacts(self):
         universe, histories, benchmarks = _synthetic_universe(ticker_count=25)
         analysis = build_backtest(
