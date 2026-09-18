@@ -253,6 +253,15 @@
         "sector_neutral": true,
         "minimum_sector_group": 20,
         "minimum_confidence": 50,
+        "sector_exclusions": {
+            "Financial Services": [
+                "pit_sales_yield",
+                "pit_net_cash_to_market_cap",
+                "pit_fcf_yield",
+                "pit_fcf_margin_ttm",
+                "pit_operating_margin_ttm"
+            ]
+        },
         "exclusions": [
             {
                 "signal": "pit_operating_margin_ttm",

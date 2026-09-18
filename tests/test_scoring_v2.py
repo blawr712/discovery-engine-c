@@ -261,6 +261,62 @@ COMPOSITE_CONFIG = {
 }
 
 
+class SectorApplicabilityTests(unittest.TestCase):
+    CONFIG = {
+        **COMPOSITE_CONFIG,
+        "sector_exclusions": {"Financial Services": ["pit_sales_yield"]},
+        "exclusions": [
+            {"signal": "pit_sales_yield", "exclude_below_percentile": 30,
+             "reason": "Expensive on sales"},
+        ],
+    }
+
+    def _rows(self):
+        return [
+            {"ticker": "BANK", "status": "OK", "sector": "Financial Services",
+             "pit_sales_yield": 0.01, "pit_share_change_1y": 0.0,
+             f"{RAW_PREFIX}volatility": 0.2},
+            {"ticker": "OPCO", "status": "OK", "sector": "Technology",
+             "pit_sales_yield": 2.0, "pit_share_change_1y": 0.05,
+             f"{RAW_PREFIX}volatility": 0.4},
+            {"ticker": "CHEAP", "status": "OK", "sector": "Technology",
+             "pit_sales_yield": 0.05, "pit_share_change_1y": 0.01,
+             f"{RAW_PREFIX}volatility": 0.3},
+        ]
+
+    def test_inapplicable_signals_do_not_score_rank_or_exclude(self):
+        frame = pd.DataFrame(self._rows())
+        scored = score_frame(frame, self.CONFIG)
+        bank = scored.iloc[0]
+        self.assertTrue(pd.isna(bank["pct_pit_sales_yield"]))
+        self.assertEqual(bank["group_pit_sales_yield"], "not_applicable")
+        # Confidence counts the inapplicable weight as unavailable: 40 of 100.
+        self.assertEqual(bank["confidence"], 40.0)
+        self.assertTrue(pd.isna(bank["score"]))  # below the 50 gate
+        self.assertFalse(bank["excluded"])  # the sales-yield filter never judged it
+        # Operating companies are still filtered and ranked among themselves.
+        self.assertTrue(scored.iloc[2]["excluded"])
+        self.assertEqual(scored.iloc[1]["pct_pit_sales_yield"], 100.0)
+
+    def test_breakdown_marks_inapplicable_signals(self):
+        updated = apply_cross_sectional_scores(self._rows(), self.CONFIG)
+        bank = json.loads(updated[0]["score_v3_breakdown"])["pit_sales_yield"]
+        self.assertFalse(bank["applicable"])
+        self.assertEqual(bank["data_quality"], "not_applicable")
+        self.assertIn("not applicable to Financial Services", bank["explanation"])
+        self.assertEqual(updated[0]["score_v3_confidence"], 40.0)
+        self.assertIsNone(updated[0]["score_v3"])
+        opco = json.loads(updated[1]["score_v3_breakdown"])["pit_sales_yield"]
+        self.assertTrue(opco["applicable"])
+
+    def test_rejects_unknown_sector_exclusion_signals(self):
+        with self.assertRaises(ValueError):
+            validated_config({**COMPOSITE_CONFIG,
+                              "sector_exclusions": {"Financial Services": ["nope"]}})
+        with self.assertRaises(ValueError):
+            validated_config({**COMPOSITE_CONFIG, "sector_exclusions": ["bad"]})
+
+
 class CompositeModelTests(unittest.TestCase):
     def _rows(self):
         return [

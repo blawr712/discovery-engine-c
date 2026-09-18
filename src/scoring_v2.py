@@ -56,6 +56,7 @@ DEFAULT_CONFIG = {
     "minimum_confidence": 0,
     "lookbacks": DEFAULT_LOOKBACKS,
     "exclusions": [],
+    "sector_exclusions": {},
     "signals": {
         "momentum_long": {"weight": 30, "direction": "higher"},
         "high_proximity": {"weight": 20, "direction": "higher"},
@@ -210,6 +211,9 @@ def score_frame(frame: pd.DataFrame, config: dict | None = None) -> pd.DataFrame
     reasons = pd.Series([[] for _ in range(len(frame))], index=frame.index, dtype=object)
     for rule in config["exclusions"]:
         values = _numeric_column(frame, raw_column(rule["signal"]))
+        # A filter never judges a company on a signal that does not apply
+        # to its sector.
+        values = values.mask(_not_applicable(sectors, rule["signal"], config))
         valid = values.notna()
         if not valid.any():
             continue
@@ -231,6 +235,8 @@ def score_frame(frame: pd.DataFrame, config: dict | None = None) -> pd.DataFrame
 
     for name, spec in signals.items():
         values = _numeric_column(frame, raw_column(name))
+        not_applicable = _not_applicable(sectors, name, config)
+        values = values.mask(not_applicable)
         percentiles, groups = _percentiles(
             values,
             sectors,
@@ -239,7 +245,7 @@ def score_frame(frame: pd.DataFrame, config: dict | None = None) -> pd.DataFrame
             minimum_group=config["minimum_sector_group"],
         )
         output[f"pct_{name}"] = percentiles
-        output[f"group_{name}"] = groups
+        output[f"group_{name}"] = groups.mask(not_applicable, "not_applicable")
         usable = percentiles.notna()
         weighted_sum[usable] += percentiles[usable] * spec["weight"]
         available_weight[usable] += spec["weight"]
@@ -300,7 +306,7 @@ def apply_cross_sectional_scores(
         score = scored.at[index, "score"]
         rank = ranks.at[index]
         row[prefix] = _finite(score)
-        row[f"{prefix}_confidence"] = score_confidence(factors)
+        row[f"{prefix}_confidence"] = _finite(scored.at[index, "confidence"])
         row[f"{prefix}_rank"] = int(rank) if not pd.isna(rank) else None
         row[f"{prefix}_excluded"] = bool(scored.at[index, "excluded"])
         row[f"{prefix}_exclusion_reasons"] = scored.at[index, "exclusion_reasons"]
@@ -332,6 +338,7 @@ def validated_config(config: dict | None = None) -> dict:
         "lookbacks": {**DEFAULT_LOOKBACKS, **source.get("lookbacks", {})},
         "signals": source.get("signals", DEFAULT_CONFIG["signals"]),
         "exclusions": source.get("exclusions", []),
+        "sector_exclusions": source.get("sector_exclusions", {}),
     }
     for name, value in merged["lookbacks"].items():
         if isinstance(value, bool) or not isinstance(value, int) or value < 1:
@@ -402,12 +409,33 @@ def validated_config(config: dict | None = None) -> dict:
             "reason": str(rule.get("reason") or f"Excluded on {signal}"),
         })
     merged["exclusions"] = validated_exclusions
+    sector_exclusions = merged["sector_exclusions"]
+    if not isinstance(sector_exclusions, dict):
+        raise ValueError("Score sector_exclusions must map sector names to signal lists.")
+    known = set(PRICE_SIGNALS) | set(FUNDAMENTAL_SIGNAL_NAMES) | set(INSIDER_SIGNAL_NAMES)
+    validated_sectors = {}
+    for sector, names in sector_exclusions.items():
+        if not isinstance(names, list) or any(str(name) not in known for name in names):
+            raise ValueError(f"Sector exclusion for {sector!r} lists an unknown signal.")
+        validated_sectors[str(sector)] = [str(name) for name in names]
+    merged["sector_exclusions"] = validated_sectors
     merged["sector_neutral"] = bool(merged["sector_neutral"])
     merged["model_version"] = str(merged["model_version"])
     merged["output_prefix"] = str(merged["output_prefix"])
     merged["_explicit"] = explicit
     merged["_validated"] = True
     return merged
+
+
+def _not_applicable(sectors: pd.Series, signal: str, config: dict) -> pd.Series:
+    """Boolean mask of rows whose sector excludes ``signal``."""
+    excluded_sectors = [
+        sector for sector, names in config["sector_exclusions"].items()
+        if signal in names
+    ]
+    if not excluded_sectors:
+        return pd.Series(False, index=sectors.index)
+    return sectors.isin(excluded_sectors).fillna(False).astype(bool)
 
 
 def _numeric_column(frame: pd.DataFrame, column: str) -> pd.Series:
@@ -463,9 +491,15 @@ def _factor_results(row: dict, scored: pd.Series, config: dict) -> list[FactorRe
         percentile = scored.get(f"pct_{name}")
         group = scored.get(f"group_{name}")
         available = percentile is not None and not pd.isna(percentile)
+        applicable = group != "not_applicable"
         weight = spec["weight"]
         points = (float(percentile) / 100.0 * weight) if available else 0.0
-        if available:
+        if not applicable:
+            explanation = (
+                f"{SIGNAL_LABELS.get(name, name)} not applicable to "
+                f"{row.get('sector') or 'this sector'}"
+            )
+        elif available:
             explanation = (
                 f"{_describe(name, raw, lookbacks)}; ranks at the "
                 f"{float(percentile):.0f}th percentile within {group}"
@@ -480,7 +514,11 @@ def _factor_results(row: dict, scored: pd.Series, config: dict) -> list[FactorRe
             max_points=weight,
             available=available,
             explanation=explanation,
-            data_quality="fresh" if available else "missing",
+            data_quality=(
+                "not_applicable" if not applicable
+                else "fresh" if available else "missing"
+            ),
+            applicable=applicable,
         ))
     return factors
 

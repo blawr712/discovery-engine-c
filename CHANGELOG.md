@@ -31,6 +31,12 @@
 - Added median, win-rate, and 2%-trimmed-mean statistics per score quantile
   and median excess for top-N selections, because mean excess returns in
   this universe are dominated by a few extreme rebounds
+- Added sector applicability to shadow models: signals listed under a
+  model's `sector_exclusions` neither score, rank, nor filter companies in
+  that sector and count as unavailable for the confidence gate; Score v3
+  now treats sales yield, net cash, free-cash-flow yield and margin, and
+  operating margin as not applicable to Financial Services, so banks fall
+  back to Score v2 instead of being ranked on inapplicable measures
 - Added `--rescore-run` to reapply the current shadow models to a completed
   run from cached data only: fills missing SEC fundamentals and refreshes
   Form 4 signals as of the run's completion date, rewrites checkpoints and

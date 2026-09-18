@@ -50,7 +50,11 @@ dilution, top-quintile revenue growth), then ranks the remainder on sales
 yield, net cash to market cap, free-cash-flow yield and margin, operating
 margin, low dilution, trailing-high proximity, momentum, and low volatility.
 Candidates below the configured minimum confidence, which in practice means
-names without SEC fundamentals, receive no v3 score. Rows carry `score_v3`,
+names without SEC fundamentals, receive no v3 score. Signals listed under
+`sector_exclusions` are not applicable to that sector: they neither score,
+rank, nor filter those companies and count as unavailable, so Financial
+Services names, whose sales yield, net cash, and margins mean something
+different, fall back to Score v2 rather than being ranked on them. Rows carry `score_v3`,
 `score_v3_rank`, `score_v3_confidence`, `score_v3_excluded`,
 `score_v3_exclusion_reasons`, and a per-signal `score_v3_breakdown`.
 
