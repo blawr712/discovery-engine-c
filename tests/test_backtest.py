@@ -268,6 +268,96 @@ class BacktestAnalysisTests(unittest.TestCase):
                     )
 
 
+class FundamentalIntegrationTests(unittest.TestCase):
+    def test_point_in_time_fundamentals_join_observations_and_ic(self):
+        from datetime import date as _date
+
+        class FakeHistory:
+            has_data = True
+
+            def __init__(self, growth):
+                self.growth = growth
+                self.calls = []
+
+            def signals_as_of(self, as_of, price=None):
+                self.calls.append((as_of, price))
+                return {
+                    "pit_revenue_ttm": 1000.0,
+                    "pit_revenue_growth_ttm": self.growth,
+                    "pit_fcf_yield": None,
+                    "pit_report_age_days": 30.0,
+                }
+
+        universe, histories, benchmarks = _synthetic_universe(ticker_count=25)
+        fundamentals = {
+            row["ticker"]: FakeHistory(growth=index / 25)
+            for index, row in enumerate(universe)
+        }
+        analysis = build_backtest(
+            universe, histories, benchmarks, {"US": "SPY"}, "RUN1",
+            config=CONFIG, fundamental_histories=fundamentals,
+            fundamental_stats={"requested": 25, "with_data": 25},
+        )
+        frame = analysis["_observations"]
+        self.assertIn("pit_revenue_growth_ttm", frame.columns)
+        self.assertTrue(frame["pit_revenue_ttm"].notna().all())
+        first_call = fundamentals["T00"].calls[0]
+        self.assertIsInstance(first_call[0], _date)
+        self.assertGreater(first_call[1], 0)
+        ic = analysis["aggregate"]["information_coefficient"]
+        self.assertIn("pit_revenue_growth_ttm", ic)
+        self.assertIsNotNone(ic["pit_revenue_growth_ttm"]["1M"])
+        self.assertIn("pit_fcf_yield", ic)  # present but all-null -> no periods
+        self.assertIsNone(ic["pit_fcf_yield"]["1M"])
+        self.assertNotIn("pit_report_age_days", ic)
+        coverage = analysis["fundamental_coverage"]
+        self.assertEqual(coverage["tickers_with_history"], 25)
+        self.assertEqual(coverage["observations_with_revenue_ttm"], len(frame))
+        self.assertTrue(any("U.S. GAAP" in item for item in analysis["limitations"]))
+        markdown = build_backtest_markdown(
+            {k: v for k, v in analysis.items() if k != "_observations"}
+        )
+        self.assertIn("pit_revenue_growth_ttm", markdown)
+
+    def test_without_fundamentals_no_fundamental_columns_or_caveats(self):
+        universe, histories, benchmarks = _synthetic_universe(ticker_count=25)
+        analysis = build_backtest(
+            universe, histories, benchmarks, {"US": "SPY"}, "RUN1", config=CONFIG,
+        )
+        self.assertIsNone(analysis["fundamental_coverage"])
+        self.assertNotIn("pit_revenue_growth_ttm", analysis["_observations"].columns)
+        self.assertFalse(any("U.S. GAAP" in item for item in analysis["limitations"]))
+
+    def test_collects_us_histories_with_isolation(self):
+        from src.backtest import collect_fundamental_histories
+
+        class FakeSource:
+            def get_company_facts(self, ticker):
+                if ticker == "BAD":
+                    raise RuntimeError("boom")
+                facts = {"revenue": [
+                    {"start": "2025-01-01", "end": "2025-03-31",
+                     "filed": "2025-05-01", "val": 1.0},
+                ]} if ticker == "GOOD" else {}
+                return {"ticker": ticker, "facts": facts}
+
+        universe = [
+            {"ticker": "GOOD", "country": "US"},
+            {"ticker": "EMPTY", "country": "US"},
+            {"ticker": "BAD", "country": "US"},
+            {"ticker": "CA1", "country": "CA"},
+        ]
+        histories, errors, stats = collect_fundamental_histories(
+            universe, FakeSource(), max_workers=2,
+        )
+        self.assertEqual(list(histories), ["GOOD"])
+        self.assertIn("RuntimeError", errors["BAD"])
+        self.assertEqual(stats, {
+            "requested": 3, "skipped_non_us": 1, "with_data": 1,
+            "without_data": 1, "errors": 1,
+        })
+
+
 class ExportTests(unittest.TestCase):
     def test_exports_deterministic_artifacts(self):
         universe, histories, benchmarks = _synthetic_universe(ticker_count=25)

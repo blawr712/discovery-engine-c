@@ -17,9 +17,11 @@ from src.analytics import export_run_analytics
 from src.backtest import (
     build_backtest,
     build_backtest_universe,
+    collect_fundamental_histories,
     collect_price_histories,
     export_backtest,
 )
+from src.data_sources.sec_xbrl_source import SecXbrlSource
 from src.calibration import build_calibration, export_calibration
 from src.scoring_v2 import apply_cross_sectional_scores
 from src.engine import DiscoveryEngine
@@ -78,6 +80,7 @@ from src.moonshot_calibration import (
 from src.cli import parse_args, select_universe
 from src.config import (
     BACKTEST_CONFIG,
+    BASE_DIR,
     BENCHMARKS,
     CACHE_DIR,
     CACHE_ENABLED,
@@ -161,7 +164,11 @@ def build_market_data_source(
 def main(arguments=None):
     args = parse_args(arguments)
     if args.backtest_run:
-        backtest_saved_run(args.backtest_run, limit=args.backtest_limit)
+        backtest_saved_run(
+            args.backtest_run,
+            limit=args.backtest_limit,
+            with_fundamentals=args.with_fundamentals,
+        )
         return
     if args.index_run:
         index_history_run(args.index_run)
@@ -606,10 +613,34 @@ def analyze_moonshot_run(
     print(f"Manifest updated: {manifest_path}")
 
 
-def backtest_saved_run(run_id: str, limit: int | None = None) -> None:
+def build_sec_xbrl_source() -> SecXbrlSource:
+    """Build the paced, compact-cached SEC company-facts source."""
+    user_agent = os.environ.get("SEC_USER_AGENT", "").strip()
+    if not user_agent:
+        raise SystemExit(
+            "--with-fundamentals requires SEC_USER_AGENT, for example "
+            "'Discovery Engine research@example.com'."
+        )
+    settings = BACKTEST_CONFIG.get("sec_fundamentals", {})
+    return SecXbrlSource(
+        user_agent=user_agent,
+        cache_directory=BASE_DIR / settings.get("cache_directory", "data/cache/sec_facts"),
+        ttl_hours=float(settings.get("cache_ttl_hours", 168)),
+        request_interval_seconds=float(settings.get("request_interval_seconds", 0.11)),
+    )
+
+
+def backtest_saved_run(
+    run_id: str,
+    limit: int | None = None,
+    with_fundamentals: bool = False,
+) -> None:
     """Replay technical scoring point-in-time for a completed run's universe."""
     period = str(BACKTEST_CONFIG.get("price_history_period", "10y"))
     ttl_hours = float(BACKTEST_CONFIG.get("price_history_ttl_hours", 168))
+    fundamental_settings = BACKTEST_CONFIG.get("sec_fundamentals", {})
+    sec_source = build_sec_xbrl_source() if with_fundamentals else None
+    fundamental_stats = None
     try:
         manifest, results = load_saved_run(RUN_DIR, run_id)
         universe = build_backtest_universe(results)
@@ -626,6 +657,25 @@ def backtest_saved_run(run_id: str, limit: int | None = None) -> None:
             max_workers=PRICE_CONCURRENT_DOWNLOADS,
             progress_callback=print_progress,
         )
+        fundamental_histories = None
+        if sec_source is not None:
+            fundamental_histories, fundamental_errors, fundamental_stats = (
+                collect_fundamental_histories(
+                    universe,
+                    sec_source,
+                    max_workers=int(fundamental_settings.get("collection_workers", 2)),
+                    progress_callback=print_progress,
+                    config={
+                        "maximum_report_age_days": int(
+                            fundamental_settings.get("maximum_report_age_days", 400)
+                        ),
+                    },
+                )
+            )
+            errors.update({
+                f"{ticker} (SEC)": message
+                for ticker, message in fundamental_errors.items()
+            })
         analysis = build_backtest(
             universe,
             histories,
@@ -633,6 +683,8 @@ def backtest_saved_run(run_id: str, limit: int | None = None) -> None:
             BENCHMARKS,
             run_id,
             collection_errors=errors,
+            fundamental_histories=fundamental_histories,
+            fundamental_stats=fundamental_stats,
         )
         artifacts = export_backtest(analysis, OUTPUT_DIR)
         coverage = analysis["coverage"]
@@ -651,6 +703,8 @@ def backtest_saved_run(run_id: str, limit: int | None = None) -> None:
                 "first_period": coverage["first_period"],
                 "last_period": coverage["last_period"],
                 "observations": coverage["observations"],
+                "with_fundamentals": with_fundamentals,
+                "fundamental_coverage": analysis["fundamental_coverage"],
                 "official_scores_and_ranks_unchanged": True,
                 **artifacts,
             },
@@ -675,8 +729,18 @@ def backtest_saved_run(run_id: str, limit: int | None = None) -> None:
         print(f"Cache hits: {source.stats.hits}")
         print(f"Cache misses: {source.stats.misses}")
         print(f"Cache expired: {source.stats.expired}")
+    if sec_source is not None and fundamental_stats is not None:
+        print(
+            "SEC fundamentals: "
+            f"{fundamental_stats['with_data']} with data, "
+            f"{fundamental_stats['without_data']} without, "
+            f"{fundamental_stats['errors']} errors, "
+            f"{fundamental_stats['skipped_non_us']} non-U.S. skipped; "
+            f"{sec_source.stats.requests} SEC requests, "
+            f"{sec_source.stats.hits} cache hits"
+        )
     ic = analysis["aggregate"]["information_coefficient"]
-    for column in ("technical_score", "discovery_score_static"):
+    for column in ("technical_score", "discovery_score_static", "score_v2"):
         for horizon, stats in ic.get(column, {}).items():
             if stats:
                 print(

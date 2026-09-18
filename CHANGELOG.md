@@ -20,6 +20,14 @@
 - Kept Score v2 entirely separate from official Discovery Scores and ranks
 - Added Score v2 to backtest composites so v1 and v2 are compared on
   identical periods, horizons, and universes
+- Added a paced, compact-cached SEC XBRL company-facts source that keeps only
+  the concepts Discovery Engine derives signals from, with filing dates
+- Added point-in-time fundamental derivation: direct and differenced
+  quarterly flows, restatement-aware lookups, TTM growth, revenue
+  acceleration, margin levels and trends, cash conversion, net cash,
+  dilution, and market-cap ratios as of any calendar date
+- Added `--with-fundamentals` to `--backtest-run` so U.S. fundamental signals
+  are evaluated at each historical month-end using only prior filings
 - Fixed the end-of-run summary crashing on undefined provider statistics
   after every completed run
 - Converted `requirements.txt` from UTF-16 to UTF-8 so pip can read it

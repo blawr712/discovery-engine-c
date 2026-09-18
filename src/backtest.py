@@ -23,6 +23,7 @@ import pandas as pd
 
 from src.config import BACKTEST_CONFIG, SCORING_CONFIG
 from src.data_sources.base import MarketDataSource
+from src.fundamentals_pit import FundamentalHistory
 from src.scoring import (
     score_liquidity,
     score_market_cap,
@@ -54,6 +55,28 @@ V2_RAW_COLUMNS = tuple(
 )
 IC_COLUMNS = (
     COMPOSITE_COLUMNS + FACTOR_POINT_COLUMNS + FACTOR_RAW_COLUMNS + V2_RAW_COLUMNS
+)
+# Ratio-style point-in-time fundamentals that are meaningful cross-sectionally.
+FUNDAMENTAL_IC_COLUMNS = (
+    "pit_revenue_growth_ttm",
+    "pit_revenue_acceleration",
+    "pit_gross_margin_ttm",
+    "pit_gross_margin_change",
+    "pit_operating_margin_ttm",
+    "pit_ocf_margin_ttm",
+    "pit_fcf_margin_ttm",
+    "pit_cash_conversion",
+    "pit_share_change_1y",
+    "pit_net_cash_to_market_cap",
+    "pit_fcf_yield",
+    "pit_earnings_yield",
+    "pit_sales_yield",
+)
+FUNDAMENTAL_LIMITATIONS = (
+    "Point-in-time fundamentals cover U.S. GAAP filers only; Canadian and IFRS "
+    "filers carry no fundamental signals in this backtest.",
+    "Historical market capitalization multiplies as-reported shares by the "
+    "split-adjusted close, so valuation ratios before a split are approximate.",
 )
 
 LIMITATIONS = (
@@ -145,6 +168,55 @@ def collect_price_histories(
     return histories, benchmark_histories, errors
 
 
+def collect_fundamental_histories(
+    universe: list[dict],
+    source,
+    *,
+    max_workers: int = 2,
+    progress_callback: ProgressCallback | None = None,
+    config: dict | None = None,
+) -> tuple[dict[str, FundamentalHistory], dict[str, str], dict]:
+    """Collect point-in-time fundamental histories for U.S. filers."""
+    if max_workers < 1:
+        raise ValueError("Fundamental collection workers must be at least 1.")
+    histories: dict[str, FundamentalHistory] = {}
+    errors: dict[str, str] = {}
+    us_rows = [row for row in universe if row["country"] == "US"]
+    stats = {
+        "requested": len(us_rows),
+        "skipped_non_us": len(universe) - len(us_rows),
+        "with_data": 0,
+        "without_data": 0,
+        "errors": 0,
+    }
+
+    def load(ticker: str) -> FundamentalHistory:
+        return FundamentalHistory(source.get_company_facts(ticker), config)
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = {
+            executor.submit(load, row["ticker"]): row["ticker"] for row in us_rows
+        }
+        for completed, future in enumerate(as_completed(futures), start=1):
+            ticker = futures[future]
+            try:
+                history = future.result()
+            except Exception as error:  # noqa: BLE001 - isolate provider failures
+                errors[ticker] = f"{type(error).__name__}: {error}"
+                stats["errors"] += 1
+            else:
+                if history.has_data:
+                    histories[ticker] = history
+                    stats["with_data"] += 1
+                else:
+                    stats["without_data"] += 1
+            if progress_callback is not None:
+                progress_callback(
+                    "backtest-fundamentals", completed, len(futures), ticker,
+                )
+    return histories, errors, stats
+
+
 def build_backtest(
     universe: list[dict],
     histories: dict[str, pd.DataFrame],
@@ -154,11 +226,18 @@ def build_backtest(
     *,
     config: dict | None = None,
     collection_errors: dict[str, str] | None = None,
+    fundamental_histories: dict[str, FundamentalHistory] | None = None,
+    fundamental_stats: dict | None = None,
 ) -> dict:
     """Replay technical scoring at historical month-ends and measure outcomes."""
     config = _validated_config(config)
     collection_errors = dict(collection_errors or {})
     horizons = config["forward_horizons_days"]
+    fundamental_histories = fundamental_histories or {}
+    with_fundamentals = bool(fundamental_histories)
+    config["ic_columns"] = list(IC_COLUMNS) + (
+        list(FUNDAMENTAL_IC_COLUMNS) if with_fundamentals else []
+    )
 
     calendars: dict[str, pd.DatetimeIndex] = {}
     benchmark_frames: dict[str, pd.DataFrame] = {}
@@ -207,6 +286,7 @@ def build_backtest(
             else 0.0
         )
         static_sector_score = score_sector_bonus(row["sector"])
+        fundamental_history = fundamental_histories.get(ticker)
 
         for period_label, period_dates in periods:
             date = period_dates.get(benchmark_ticker)
@@ -258,6 +338,11 @@ def build_backtest(
                 **compute_raw_signals(history_slice),
             }
             start_close = aligned_close.iloc[position]
+            if fundamental_history is not None:
+                observation.update(fundamental_history.signals_as_of(
+                    date.date(),
+                    price=float(start_close) if _positive(start_close) else None,
+                ))
             for label, days in horizons.items():
                 end_position = position + days
                 stock_return = None
@@ -288,11 +373,26 @@ def build_backtest(
     period_metrics = _period_metrics(frame, config)
     aggregate = _aggregate_metrics(period_metrics, frame, config)
 
+    fundamental_coverage = None
+    if with_fundamentals:
+        fundamental_coverage = {
+            **(fundamental_stats or {}),
+            "tickers_with_history": len(fundamental_histories),
+            "observations_with_revenue_ttm": (
+                int(frame["pit_revenue_ttm"].notna().sum())
+                if "pit_revenue_ttm" in frame
+                else 0
+            ),
+        }
+
     return {
         "model_version": config["model_version"],
         "source_run_id": run_id,
         "config": config,
-        "limitations": list(LIMITATIONS),
+        "limitations": list(LIMITATIONS) + (
+            list(FUNDAMENTAL_LIMITATIONS) if with_fundamentals else []
+        ),
+        "fundamental_coverage": fundamental_coverage,
         "coverage": {
             "universe_tickers": len(universe),
             "collected_tickers": len(histories),
@@ -368,7 +468,7 @@ def build_backtest_markdown(analysis: dict) -> str:
         "| Signal | Horizon | Periods | Mean IC | t-stat | Positive share |",
         "|---|---|---|---|---|---|",
     ]
-    for column in IC_COLUMNS:
+    for column in config.get("ic_columns", IC_COLUMNS):
         for horizon in config["forward_horizons_days"]:
             stats = aggregate["information_coefficient"].get(column, {}).get(horizon)
             if not stats:
@@ -481,7 +581,10 @@ def _horizon_metrics(
         "quantiles": {},
         "top_n": {},
     }
-    for column in IC_COLUMNS:
+    for column in config.get("ic_columns", IC_COLUMNS):
+        if column not in valid:
+            result["information_coefficient"][column] = None
+            continue
         pair = valid[[column, excess_column]].dropna()
         if len(pair) < config["minimum_cross_section"]:
             result["information_coefficient"][column] = None
@@ -551,7 +654,7 @@ def _aggregate_metrics(
 ) -> dict:
     horizons = list(config["forward_horizons_days"])
     ic_summary: dict[str, dict] = {}
-    for column in IC_COLUMNS:
+    for column in config.get("ic_columns", IC_COLUMNS):
         ic_summary[column] = {}
         for horizon in horizons:
             values = [

@@ -45,6 +45,15 @@ Engine so historical and live behavior cannot diverge.
 
 Research Engine: Generate explainable research summaries.
 
+Fundamentals (point-in-time): `src/data_sources/sec_xbrl_source.py` fetches
+SEC company facts for U.S. filers, keeps only configured concepts with their
+filing dates, and caches the compact extract under `data/cache/sec_facts`.
+`src/fundamentals_pit.py` turns an extract into quarterly flows (reported
+directly or derived by differencing cumulative and annual figures) and
+answers "what was knowable on this date" queries, so restated values only
+appear from their restating filing onward. The Backtest Engine consumes these
+histories; live-run integration is a later increment.
+
 Backtest Engine: Replay the Scoring Engine's technical factor functions at
 historical month-ends using only price data available on each date, then
 measure rank correlation, quantile spreads, and top-N outcomes against forward

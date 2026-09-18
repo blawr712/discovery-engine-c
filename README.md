@@ -64,6 +64,23 @@ ranks never change. The artifacts state their limitations explicitly: the
 universe is survivorship-biased toward companies still listed, market-cap and
 sector points are static, and no result is a return forecast.
 
+Add point-in-time fundamentals for U.S. filers to the same backtest:
+
+```powershell
+$env:SEC_USER_AGENT = "Discovery Engine you@example.com"
+python main.py --backtest-run RUN_ID --with-fundamentals
+```
+
+This pulls SEC XBRL company facts once per filer (paced below the SEC limit
+and cached for a week as a compact extract of only the needed concepts), then
+derives revenue growth and acceleration, gross and operating margin levels and
+trends, cash-flow margins and conversion, net cash, one-year share dilution,
+and market-cap ratios at every month-end from filings made on or before that
+date. Restatements become visible only from their restating filing. The
+resulting `pit_*` signals join the rank-correlation tables so fundamentals can
+be judged on the same periods as the technical signals. Canadian and IFRS
+filers carry no fundamental signals yet.
+
 Compare two previously indexed runs without making provider calls:
 
 ```powershell

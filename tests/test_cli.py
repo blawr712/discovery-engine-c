@@ -231,3 +231,9 @@ class BacktestCliTests(unittest.TestCase):
     def test_backtest_run_is_exclusive_with_universe_selection(self):
         with self.assertRaises(SystemExit):
             parse_args(["--backtest-run", "RUN1", "--limit", "5"])
+
+    def test_with_fundamentals_requires_backtest_run(self):
+        args = parse_args(["--backtest-run", "RUN1", "--with-fundamentals"])
+        self.assertTrue(args.with_fundamentals)
+        with self.assertRaises(SystemExit):
+            parse_args(["--with-fundamentals"])

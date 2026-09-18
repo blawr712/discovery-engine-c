@@ -2,7 +2,10 @@
     "model_version": "v0.1-technical-point-in-time",
     "price_history_period": "10y",
     "price_history_ttl_hours": 168,
-    "source_statuses": ["OK", "FAILED"],
+    "source_statuses": [
+        "OK",
+        "FAILED"
+    ],
     "maximum_stale_trading_days": 5,
     "forward_horizons_days": {
         "1M": 21,
@@ -11,7 +14,20 @@
         "1Y": 252
     },
     "compounding_horizon": "1M",
-    "top_n": [10, 25, 50, 100],
+    "top_n": [
+        10,
+        25,
+        50,
+        100
+    ],
     "quantiles": 5,
-    "minimum_cross_section": 50
+    "minimum_cross_section": 50,
+    "sec_fundamentals": {
+        "enabled": false,
+        "cache_directory": "data/cache/sec_facts",
+        "cache_ttl_hours": 168,
+        "request_interval_seconds": 0.11,
+        "collection_workers": 2,
+        "maximum_report_age_days": 400
+    }
 }
