@@ -150,6 +150,10 @@ class SecXbrlSource:
         row = self._ticker_map.get(str(ticker).strip().upper())
         return str(row["cik_str"]).zfill(10) if row else None
 
+    def get_cached_company_facts(self, ticker: str) -> dict | None:
+        """Return a cached compact extract without any network request."""
+        return self._read_cached(self._cache_path(str(ticker).strip().upper()))
+
     def get_company_facts(self, ticker: str) -> dict:
         """Return the compact fact extract for a ticker from cache or the SEC."""
         ticker = str(ticker).strip().upper()

@@ -46,6 +46,13 @@ alters official scores or ranks, both are written back to checkpoints so saved
 runs stay authoritative, and the Backtest Engine reuses the same functions so
 historical and live behavior cannot diverge.
 
+Rescoring (`src/rescore.py`, `--rescore-run`): reapply the current shadow
+models to a completed run using only local caches. Missing SEC fundamentals
+and Form 4 signals are filled as of the run's completion date, checkpoints
+and reports are rewritten, and official scores, statuses, and ranks are
+asserted unchanged. Weight changes therefore never require a new provider
+run.
+
 Research Engine: Generate explainable research summaries. Packet selection
 follows the research queue (`src/research_ranking.py`), which orders
 successful companies by Score v3, then Score v2, then the official Discovery

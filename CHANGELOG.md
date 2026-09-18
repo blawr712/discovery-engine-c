@@ -31,6 +31,10 @@
 - Added median, win-rate, and 2%-trimmed-mean statistics per score quantile
   and median excess for top-N selections, because mean excess returns in
   this universe are dominated by a few extreme rebounds
+- Added `--rescore-run` to reapply the current shadow models to a completed
+  run from cached data only: fills missing SEC fundamentals and refreshes
+  Form 4 signals as of the run's completion date, rewrites checkpoints and
+  reports, and re-exports the research queue with no provider calls
 - Added a compact, cached source for the SEC's quarterly insider-transaction
   data sets (Forms 3/4/5), keeping open-market purchases and sales with
   filing dates, values, and reporting-owner relationships

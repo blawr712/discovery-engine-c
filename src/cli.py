@@ -66,6 +66,11 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
         help="replay technical scoring point-in-time for a completed run's universe",
     )
     selection.add_argument(
+        "--rescore-run",
+        metavar="RUN_ID",
+        help="reapply shadow models to a completed run from cached data, no provider calls",
+    )
+    selection.add_argument(
         "--index-run",
         metavar="RUN_ID",
         help="index a completed saved run into the local history database",

@@ -243,3 +243,8 @@ class BacktestCliTests(unittest.TestCase):
         self.assertTrue(args.with_insiders)
         with self.assertRaises(SystemExit):
             parse_args(["--with-insiders"])
+
+    def test_rescore_run_is_exclusive(self):
+        self.assertEqual(parse_args(["--rescore-run", "RUN1"]).rescore_run, "RUN1")
+        with self.assertRaises(SystemExit):
+            parse_args(["--rescore-run", "RUN1", "--backtest-run", "RUN1"])

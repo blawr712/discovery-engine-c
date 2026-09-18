@@ -1,6 +1,7 @@
 import os
 import json
 import sqlite3
+from datetime import datetime
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -34,6 +35,7 @@ from src.data_sources.sec_insider_source import (
     quarter_labels,
 )
 from src.data_sources.sec_xbrl_source import SecXbrlSource
+from src.fundamentals_pit import FundamentalHistory
 from src.insider_signals import build_insider_index, quarter_end
 from src.calibration import build_calibration, export_calibration
 from src.scoring_v2 import apply_all_models
@@ -45,6 +47,7 @@ from src.run_state import (
     load_saved_manifest,
     record_recalibration,
     record_backtest,
+    record_rescore,
     record_moonshot_analysis,
     record_moonshot_calibration,
     record_research_packets,
@@ -69,6 +72,7 @@ from src.evidence import (
 from src.openai_research import OpenAIResearchProvider
 from src.research_audit import export_research_audit, finalize_research_review
 from src.research_ranking import build_research_queue, export_research_queue
+from src.rescore import rescore_results
 from src.history import history_summary, index_saved_run
 from src.history_comparison import compare_indexed_runs, export_run_comparison
 from src.history_reporting import (
@@ -190,6 +194,9 @@ def main(arguments=None):
             with_fundamentals=args.with_fundamentals,
             with_insiders=args.with_insiders,
         )
+        return
+    if args.rescore_run:
+        rescore_saved_run(args.rescore_run)
         return
     if args.index_run:
         index_history_run(args.index_run)
@@ -414,6 +421,75 @@ def main(arguments=None):
         f"{intelligence['research_artifacts']['research_queue_csv_path']}"
     )
     print(f"Manifest saved to: {run_state.manifest_path}")
+
+
+def rescore_saved_run(run_id: str) -> None:
+    """Reapply shadow models to a completed run using only cached data."""
+    try:
+        manifest, results = load_saved_run(RUN_DIR, run_id)
+        as_of = datetime.fromisoformat(str(manifest["completed_at"]))
+        sec_source = build_sec_xbrl_source(required=False)
+        fundamentals_lookup = None
+        insider_lookup = None
+        insider_index_stats = None
+        if sec_source is not None:
+            def fundamentals_lookup(ticker: str):
+                extract = sec_source.get_cached_company_facts(ticker)
+                return FundamentalHistory(extract) if extract else None
+
+            insider_source = build_sec_insider_source(required=False)
+            if insider_source is not None:
+                lookback = int(INSIDERS_CONFIG.get("lookback_quarters", 6))
+                labels = quarter_labels(
+                    "2000q1", f"{as_of.year}q{(as_of.month - 1) // 3 + 1}",
+                )
+                insider_index, insider_index_stats = load_insider_index(
+                    insider_source, labels[max(0, len(labels) - lookback)],
+                )
+                insider_lookup = _insider_lookup(insider_index, sec_source.cik_for)
+        rescored, stats = rescore_results(
+            results, as_of,
+            fundamentals_lookup=fundamentals_lookup,
+            insider_lookup=insider_lookup,
+        )
+        run_state = RunState.open(RUN_DIR, run_id)
+        for index, row in enumerate(rescored):
+            if row.get("status") == "OK":
+                run_state.record_result(index, row)
+        report_path = export_report(rescored, run_id=run_id)
+        candidate_path = export_candidate_report(rescored, run_id=run_id)
+        queue_paths = export_research_queue(rescored, run_id, OUTPUT_DIR)
+        manifest_path = record_rescore(
+            RUN_DIR,
+            run_id,
+            {
+                **stats,
+                "insider_data_through": (
+                    insider_index_stats["data_through"] if insider_index_stats else None
+                ),
+                "official_scores_and_ranks_unchanged": True,
+                "report_path": report_path,
+                "candidate_report_path": candidate_path,
+                **queue_paths,
+            },
+        )
+    except (FileNotFoundError, OSError, TypeError, ValueError, RuntimeError, KeyError) as error:
+        raise SystemExit(f"Unable to rescore run: {error}") from error
+    print(f"Rescored run: {run_id} as of {stats['as_of']}")
+    print("Models: " + ", ".join(f"{k} {v}" for k, v in stats["models"].items()))
+    print(
+        f"Successful rows: {stats['successful_rows']}; fundamentals filled "
+        f"{stats['fundamentals_filled']}, unavailable {stats['fundamentals_unavailable']}; "
+        f"insiders filled {stats['insiders_filled']}, unavailable "
+        f"{stats['insiders_unavailable']}; non-U.S. {stats['not_applicable']}"
+    )
+    if sec_source is None:
+        print("SEC data skipped: set SEC_USER_AGENT in .env to use cached SEC extracts")
+    print("Official Discovery scores and ranks: unchanged")
+    print(f"Report refreshed: {report_path}")
+    print(f"Candidate report refreshed: {candidate_path}")
+    print(f"Research queue refreshed: {queue_paths['research_queue_csv_path']}")
+    print(f"Manifest updated: {manifest_path}")
 
 
 def index_history_run(run_id: str) -> None:

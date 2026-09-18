@@ -156,8 +156,17 @@ class FundamentalHistory:
             return None
         return tuple(item.end for item in window), float(sum(item.value for item in window))
 
-    def signals_as_of(self, as_of: date | datetime, price: float | None = None) -> dict:
-        """Derive every point-in-time signal for a calendar date."""
+    def signals_as_of(
+        self,
+        as_of: date | datetime,
+        price: float | None = None,
+        market_cap: float | None = None,
+    ) -> dict:
+        """Derive every point-in-time signal for a calendar date.
+
+        Valuation ratios use ``shares_outstanding * price`` when a price is
+        given; otherwise an explicit ``market_cap`` is used when supplied.
+        """
         as_of = as_of.date() if isinstance(as_of, datetime) else as_of
         signals: dict[str, float | None] = {name: None for name in SIGNAL_NAMES}
         maximum_age = int(self.config["maximum_report_age_days"])
@@ -229,8 +238,13 @@ class FundamentalHistory:
                 shares.end - year_ago.end
             ).days <= maximum_age + 30:
                 signals["pit_share_change_1y"] = shares.value / year_ago.value - 1.0
-            if price is not None and math.isfinite(price) and price > 0:
-                market_cap = shares.value * price
+            derived_cap = (
+                shares.value * price
+                if price is not None and math.isfinite(price) and price > 0
+                else market_cap
+            )
+            if derived_cap is not None and math.isfinite(derived_cap) and derived_cap > 0:
+                market_cap = derived_cap
                 if market_cap > 0:
                     signals["pit_market_cap"] = market_cap
                     for name, source in (

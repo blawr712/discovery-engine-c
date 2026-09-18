@@ -59,6 +59,23 @@ class RunState:
         return str(self.manifest["run_id"])
 
     @classmethod
+    def open(
+        cls,
+        root_directory: Path,
+        run_id: str,
+        clock: Callable[[], datetime] | None = None,
+    ) -> "RunState":
+        """Open a completed run so its checkpoints can be refreshed in place."""
+        manifest = load_saved_manifest(root_directory, run_id)
+        run_directory = Path(root_directory) / str(run_id).strip()
+        return cls(
+            run_directory,
+            manifest,
+            clock or (lambda: datetime.now(timezone.utc)),
+            resumed=True,
+        )
+
+    @classmethod
     def start_or_resume(
         cls,
         root_directory: Path,
@@ -405,6 +422,32 @@ def record_backtest(
         "completed_at": _utc_iso(clock()),
         **artifacts,
     }
+    manifest_path = Path(root_directory) / run_id / "manifest.json"
+    _atomic_write_json(manifest_path, manifest)
+    return str(manifest_path)
+
+
+def record_rescore(
+    root_directory: Path,
+    run_id: str,
+    artifacts: dict,
+    clock: Callable[[], datetime] | None = None,
+) -> str:
+    """Record offline rescoring provenance; official results are unchanged."""
+    manifest = load_saved_manifest(root_directory, run_id)
+    clock = clock or (lambda: datetime.now(timezone.utc))
+    manifest["rescore_artifacts"] = {
+        "completed_at": _utc_iso(clock()),
+        **artifacts,
+    }
+    for key in ("report_path", "candidate_report_path"):
+        if artifacts.get(key):
+            manifest[key] = artifacts[key]
+    research = dict(manifest.get("research_artifacts") or {})
+    for key in ("research_queue_csv_path", "research_queue_json_path"):
+        if artifacts.get(key):
+            research[key] = artifacts[key]
+    manifest["research_artifacts"] = research or None
     manifest_path = Path(root_directory) / run_id / "manifest.json"
     _atomic_write_json(manifest_path, manifest)
     return str(manifest_path)

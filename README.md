@@ -54,6 +54,22 @@ names without SEC fundamentals, receive no v3 score. Rows carry `score_v3`,
 `score_v3_rank`, `score_v3_confidence`, `score_v3_excluded`,
 `score_v3_exclusion_reasons`, and a per-signal `score_v3_breakdown`.
 
+Reapply the current shadow-model configuration to a completed run without
+any provider calls:
+
+```powershell
+python main.py --rescore-run RUN_ID
+```
+
+Rescoring reads the run's checkpoints, fills missing SEC fundamentals and
+refreshes Form 4 insider signals from the local caches as of the run's
+completion date (U.S. filers, when `SEC_USER_AGENT` is set), reapplies Score
+v2 and Score v3, writes the refreshed rows back to the checkpoints, and
+regenerates the score report, candidate report, and research queue. Official
+Discovery Scores, statuses, and ranks are asserted unchanged, and the manifest
+records the rescore. This is how weight changes reach existing runs without a
+new two-hour collection.
+
 Every run now also writes a **research queue**, `research_queue_RUN_ID.csv`
 (top N) and `.json` (complete), that orders research attention by the best
 validated basis available for each company: Score v3 first, Score v2 for
