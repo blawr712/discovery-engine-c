@@ -246,6 +246,44 @@
         }
     },
 
+    "scoring_v3": {
+        "model_version": "v3.0-shadow-composite",
+        "output_prefix": "score_v3",
+        "minimum_price_history_days": 200,
+        "sector_neutral": true,
+        "minimum_sector_group": 20,
+        "minimum_confidence": 50,
+        "exclusions": [
+            {
+                "signal": "pit_operating_margin_ttm",
+                "exclude_below_percentile": 20,
+                "reason": "Bottom-quintile operating margin"
+            },
+            {
+                "signal": "pit_share_change_1y",
+                "exclude_above_percentile": 80,
+                "reason": "Top-quintile share dilution"
+            },
+            {
+                "signal": "pit_revenue_growth_ttm",
+                "exclude_above_percentile": 80,
+                "reason": "Top-quintile revenue growth"
+            }
+        ],
+        "signals": {
+            "pit_sales_yield": {"weight": 25, "direction": "higher"},
+            "pit_net_cash_to_market_cap": {"weight": 15, "direction": "higher"},
+            "pit_fcf_yield": {"weight": 10, "direction": "higher"},
+            "pit_fcf_margin_ttm": {"weight": 10, "direction": "higher"},
+            "pit_operating_margin_ttm": {"weight": 5, "direction": "higher"},
+            "pit_share_change_1y": {"weight": 10, "direction": "lower"},
+            "high_proximity": {"weight": 10, "direction": "higher"},
+            "momentum_long": {"weight": 5, "direction": "higher"},
+            "momentum_medium": {"weight": 5, "direction": "higher"},
+            "volatility": {"weight": 5, "direction": "lower"}
+        }
+    },
+
     "moonshot": {
         "model_version": "v0.2-market-risk",
         "market_cap": {

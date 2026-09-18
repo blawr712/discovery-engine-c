@@ -29,7 +29,7 @@ from src.backtest import (
 )
 from src.data_sources.sec_xbrl_source import SecXbrlSource
 from src.calibration import build_calibration, export_calibration
-from src.scoring_v2 import apply_cross_sectional_scores
+from src.scoring_v2 import apply_all_models
 from src.engine import DiscoveryEngine
 from src.run_state import (
     RunState,
@@ -84,10 +84,13 @@ from src.moonshot_calibration import (
     export_moonshot_calibration,
 )
 from src.cli import parse_args, select_universe
+from collections import Counter
+
 from src.config import (
     BACKTEST_CONFIG,
     BASE_DIR,
     BENCHMARKS,
+    FUNDAMENTALS_CONFIG,
     CACHE_DIR,
     CACHE_ENABLED,
     CACHE_METADATA_TTL_HOURS,
@@ -264,6 +267,15 @@ def main(arguments=None):
     print(f"Run ID: {run_state.run_id}")
     print(f"Resumed results: {len(prior_results)}")
 
+    fundamentals_source = None
+    if FUNDAMENTALS_CONFIG.get("live_collection_enabled", True):
+        fundamentals_source = build_sec_xbrl_source(required=False)
+    print(
+        "SEC fundamentals: "
+        + ("enabled (U.S. filers)" if fundamentals_source else
+           "disabled (set SEC_USER_AGENT in .env to enable)")
+    )
+
     engine = DiscoveryEngine(
         source,
         benchmarks=BENCHMARKS,
@@ -272,12 +284,13 @@ def main(arguments=None):
         price_workers=PRICE_CONCURRENT_DOWNLOADS,
         progress_callback=print_progress,
         result_callback=run_state.record_result,
+        fundamentals_source=fundamentals_source,
     )
     results = engine.run(universe, prior_results=prior_results)
 
-    # Shadow Score v2 needs the full cross-section, so it is applied after
+    # Shadow models need the full cross-section, so they are applied after
     # collection and written back to checkpoints; official scores are unchanged.
-    results = apply_cross_sectional_scores(results)
+    results = apply_all_models(results)
     for index, result in enumerate(results):
         if result.get("status") == "OK":
             run_state.record_result(index, result)
@@ -325,6 +338,17 @@ def main(arguments=None):
     provider = retry_source.source
     print(f"Provider retries: {retry_source.stats.retries}")
     print(f"Retries exhausted: {retry_source.stats.exhausted}")
+    if fundamentals_source is not None:
+        statuses = Counter(
+            str(row.get("fundamentals_status", "not_requested")).split(":")[0]
+            for row in results if row.get("status") == "OK"
+        )
+        print(
+            "SEC fundamentals: "
+            + ", ".join(f"{name} {count}" for name, count in sorted(statuses.items()))
+            + f"; {fundamentals_source.stats.requests} requests, "
+            f"{fundamentals_source.stats.hits} cache hits"
+        )
     if provider.enabled:
         print(f"Pacing waits: {provider.stats.pacing_waits}")
         print(f"Rate-limit cooldowns: {provider.stats.cooldown_events}")
@@ -619,15 +643,17 @@ def analyze_moonshot_run(
     print(f"Manifest updated: {manifest_path}")
 
 
-def build_sec_xbrl_source() -> SecXbrlSource:
+def build_sec_xbrl_source(required: bool = True) -> SecXbrlSource | None:
     """Build the paced, compact-cached SEC company-facts source."""
     user_agent = os.environ.get("SEC_USER_AGENT", "").strip()
     if not user_agent:
+        if not required:
+            return None
         raise SystemExit(
             "--with-fundamentals requires SEC_USER_AGENT, for example "
             "'Discovery Engine research@example.com'."
         )
-    settings = BACKTEST_CONFIG.get("sec_fundamentals", {})
+    settings = FUNDAMENTALS_CONFIG
     return SecXbrlSource(
         user_agent=user_agent,
         cache_directory=BASE_DIR / settings.get("cache_directory", "data/cache/sec_facts"),
@@ -747,7 +773,7 @@ def backtest_saved_run(
             f"{sec_source.stats.hits} cache hits"
         )
     ic = analysis["aggregate"]["information_coefficient"]
-    for column in ("technical_score", "discovery_score_static", "score_v2"):
+    for column in ("technical_score", "discovery_score_static", "score_v2", "score_v3"):
         for horizon, stats in ic.get(column, {}).items():
             if stats:
                 print(

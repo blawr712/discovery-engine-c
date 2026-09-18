@@ -31,6 +31,21 @@
 - Added median, win-rate, and 2%-trimmed-mean statistics per score quantile
   and median excess for top-N selections, because mean excess returns in
   this universe are dominated by a few extreme rebounds
+- Generalized the cross-sectional scorer into a signal registry that accepts
+  both price signals and point-in-time `pit_*` fundamentals, with
+  percentile-based exclusion filters and a minimum-confidence gate
+- Added shadow Score v3, an evidence-weighted value and quality composite
+  (sales yield, net cash, free-cash-flow yield and margin, operating margin,
+  low dilution, plus a price tilt) that excludes bottom-quintile margins,
+  top-quintile dilution, and top-quintile revenue growth
+- Collected SEC company facts for U.S. filers during live runs when
+  `SEC_USER_AGENT` is set, with per-company failure isolation and a
+  `fundamentals_status` field; `pit_*` signals and `latest_close` now appear
+  on successful rows
+- Added excluded-versus-retained filter diagnostics to the backtest
+- Preferred the highest-priority taxonomy tag per reported period and kept
+  trailing-twelve-month windows within one tag, so component revenue lines
+  can no longer replace consolidated totals
 - Named limited backtest artifacts with a `_limitN` suffix so samples never
   overwrite full-universe results for the same source run
 - Loaded an untracked `.env` file at startup so `SEC_USER_AGENT` can stay

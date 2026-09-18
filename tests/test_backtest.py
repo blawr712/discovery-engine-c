@@ -214,6 +214,12 @@ class BacktestAnalysisTests(unittest.TestCase):
         self.assertIn("v2_momentum_long", ic)
         self.assertIn("score_v2", self.analysis["aggregate"]["quantiles"])
         self.assertIn("score_v2", self.analysis["aggregate"]["top_n"])
+        # Score v3 needs fundamentals; without them it stays below its
+        # confidence gate and is null everywhere but still reported.
+        self.assertIn("score_v3", frame.columns)
+        self.assertTrue(frame["score_v3"].isna().all())
+        self.assertIn("score_v3", ic)
+        self.assertIsNone(ic["score_v3"]["1M"])
 
     def test_static_factors_are_excluded_from_technical_score(self):
         frame = self.analysis["_observations"]
@@ -319,12 +325,20 @@ class FundamentalIntegrationTests(unittest.TestCase):
         self.assertNotIn("pit_report_age_days", ic)
         coverage = analysis["fundamental_coverage"]
         self.assertEqual(coverage["tickers_with_history"], 25)
+        # Growth is an exclusion signal for score_v3: the top quintile is
+        # excluded and the diagnostics compare excluded with retained rows.
+        diagnostics = analysis["filter_diagnostics"]["score_v3"]
+        self.assertGreater(diagnostics["excluded_observations"], 0)
+        self.assertLess(diagnostics["excluded_observations"], diagnostics["judged_observations"])
+        self.assertIsNotNone(diagnostics["horizons"]["1M"]["excluded"])
+        self.assertIsNotNone(diagnostics["horizons"]["1M"]["retained"])
         self.assertEqual(coverage["observations_with_revenue_ttm"], len(frame))
         self.assertTrue(any("U.S. GAAP" in item for item in analysis["limitations"]))
         markdown = build_backtest_markdown(
             {k: v for k, v in analysis.items() if k != "_observations"}
         )
         self.assertIn("pit_revenue_growth_ttm", markdown)
+        self.assertIn("Exclusion filters", markdown)
 
     def test_without_fundamentals_no_fundamental_columns_or_caveats(self):
         universe, histories, benchmarks = _synthetic_universe(ticker_count=25)

@@ -42,6 +42,23 @@ weights in `config/strategy.json` under `scoring_v2`. Rows carry `score_v2`,
 Score v2 changes no official score or rank; it exists to be validated by the
 backtest before any weighting decision.
 
+A second shadow model, **Score v3**, blends point-in-time SEC fundamentals
+with a price tilt using the same cross-sectional machinery and the weights in
+`strategy.json` under `scoring_v3`. It first applies percentile-based
+exclusion filters (bottom-quintile operating margin, top-quintile share
+dilution, top-quintile revenue growth), then ranks the remainder on sales
+yield, net cash to market cap, free-cash-flow yield and margin, operating
+margin, low dilution, trailing-high proximity, momentum, and low volatility.
+Candidates below the configured minimum confidence, which in practice means
+names without SEC fundamentals, receive no v3 score. Rows carry `score_v3`,
+`score_v3_rank`, `score_v3_confidence`, `score_v3_excluded`,
+`score_v3_exclusion_reasons`, and a per-signal `score_v3_breakdown`.
+
+When `SEC_USER_AGENT` is set (see `.env.example`), live runs collect SEC
+company facts for U.S. filers with per-company failure isolation and record a
+`fundamentals_status` on each row; set `fundamentals.live_collection_enabled`
+to `false` in `config/settings.json` to turn this off.
+
 Measure whether the configured technical screen has historically related to
 forward returns by replaying it point-in-time for a completed run's universe:
 

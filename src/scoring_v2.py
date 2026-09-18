@@ -1,12 +1,14 @@
-"""Shadow Score v2: continuous, cross-sectional technical ranking.
+"""Cross-sectional composite scoring shared by Score v2 and Score v3.
 
-Score v2 runs beside the official Discovery Score without changing it. Each
-company first receives point-in-time raw signals computed only from its own
-price history. A separate cross-sectional pass then converts every signal
-into a percentile rank across the run's successful candidates, optionally
-within sector, and blends the percentiles into a 0-100 score with a
-per-signal explanation. Both stages are pure functions so the backtest can
-apply exactly the same logic at historical month-ends.
+Both shadow models run beside the official Discovery Score without changing
+it. Each company first receives point-in-time raw signals: price signals are
+computed here from its own price history, and fundamental ``pit_*`` signals
+come from ``src.fundamentals_pit``. A cross-sectional pass then converts every
+configured signal into a percentile rank across the run's successful
+candidates (within sector when the group is large enough), applies optional
+percentile-based exclusion filters, and blends the percentiles into a 0-100
+score with a per-signal explanation. Both stages are pure functions so the
+backtest applies exactly the same logic at historical month-ends.
 """
 
 from __future__ import annotations
@@ -17,27 +19,42 @@ import math
 import numpy as np
 import pandas as pd
 
-from src.config import SCORING_V2_CONFIG
+from src.config import SCORING_V2_CONFIG, SCORING_V3_CONFIG
 from src.factors import FactorResult, score_confidence
+from src.fundamentals_pit import SIGNAL_NAMES as FUNDAMENTAL_SIGNAL_NAMES
 
 
 RAW_PREFIX = "v2_"
 
+DEFAULT_LOOKBACKS = {
+    "long_window": 240,
+    "medium_window": 126,
+    "skip_window": 21,
+    "reversal_window": 21,
+    "volatility_window": 63,
+    "volume_short_window": 21,
+    "volume_long_window": 240,
+    "high_window": 240,
+}
+
+PRICE_SIGNALS = (
+    "momentum_long",
+    "momentum_medium",
+    "short_term_reversal",
+    "high_proximity",
+    "volatility",
+    "volume_trend",
+)
+
 DEFAULT_CONFIG = {
     "model_version": "v2.0-shadow",
+    "output_prefix": "score_v2",
     "minimum_price_history_days": 200,
     "sector_neutral": True,
     "minimum_sector_group": 20,
-    "lookbacks": {
-        "long_window": 240,
-        "medium_window": 126,
-        "skip_window": 21,
-        "reversal_window": 21,
-        "volatility_window": 63,
-        "volume_short_window": 21,
-        "volume_long_window": 240,
-        "high_window": 240,
-    },
+    "minimum_confidence": 0,
+    "lookbacks": DEFAULT_LOOKBACKS,
+    "exclusions": [],
     "signals": {
         "momentum_long": {"weight": 30, "direction": "higher"},
         "high_proximity": {"weight": 20, "direction": "higher"},
@@ -55,18 +72,54 @@ SIGNAL_LABELS = {
     "volatility": "Annualized volatility",
     "volume_trend": "Volume trend",
     "short_term_reversal": "One-month return",
+    "pit_revenue_growth_ttm": "TTM revenue growth",
+    "pit_revenue_acceleration": "Revenue acceleration",
+    "pit_gross_margin_ttm": "TTM gross margin",
+    "pit_gross_margin_change": "Gross margin change",
+    "pit_operating_margin_ttm": "TTM operating margin",
+    "pit_ocf_margin_ttm": "TTM operating cash flow margin",
+    "pit_fcf_margin_ttm": "TTM free cash flow margin",
+    "pit_cash_conversion": "Cash conversion",
+    "pit_share_change_1y": "One-year share count change",
+    "pit_net_cash_to_market_cap": "Net cash to market cap",
+    "pit_fcf_yield": "Free cash flow yield",
+    "pit_earnings_yield": "Earnings yield",
+    "pit_sales_yield": "Sales yield",
 }
+
+
+def raw_column(name: str) -> str:
+    """Return the result-row column holding a signal's raw value."""
+    return name if name.startswith("pit_") else f"{RAW_PREFIX}{name}"
+
+
+def model_configs() -> list[dict]:
+    """Return every configured shadow model, v2 first, validated."""
+    configs = [validated_config(SCORING_V2_CONFIG)]
+    if SCORING_V3_CONFIG:
+        configs.append(validated_config(SCORING_V3_CONFIG))
+    return configs
 
 
 def compute_raw_signals(
     price_history: pd.DataFrame,
     config: dict | None = None,
 ) -> dict:
-    """Return point-in-time raw v2 signals from one company's price history."""
+    """Return point-in-time raw price signals from one company's history.
+
+    With no config every price signal is computed using the v2 lookbacks so
+    any model can consume the result; with a config only its price signals
+    are emitted.
+    """
     config = validated_config(config)
+    names = (
+        [name for name in config["signals"] if name in PRICE_SIGNALS]
+        if config is not None and config.get("_explicit")
+        else list(PRICE_SIGNALS)
+    )
     lookbacks = config["lookbacks"]
     minimum_days = config["minimum_price_history_days"]
-    signals = {f"{RAW_PREFIX}{name}": None for name in config["signals"]}
+    signals = {raw_column(name): None for name in names}
 
     if (
         price_history is None
@@ -112,20 +165,20 @@ def compute_raw_signals(
             lookbacks["volume_long_window"],
         ),
     }
-    for name in config["signals"]:
+    for name in names:
         value = calculators[name]()
-        signals[f"{RAW_PREFIX}{name}"] = (
+        signals[raw_column(name)] = (
             round(value, 6) if value is not None else None
         )
     return signals
 
 
 def score_frame(frame: pd.DataFrame, config: dict | None = None) -> pd.DataFrame:
-    """Score one cross-section of rows holding raw v2 signals and sectors.
+    """Score one cross-section of rows holding raw signals and sectors.
 
-    Returns a frame aligned to ``frame.index`` with ``score_v2``,
-    ``score_v2_confidence``, one ``pct_<signal>`` column per signal, and one
-    ``group_<signal>`` column naming the ranking group used.
+    Returns a frame aligned to ``frame.index`` with ``score``, ``confidence``,
+    ``excluded``, ``exclusion_reasons``, one ``pct_<signal>`` column per
+    signal, and one ``group_<signal>`` column naming the ranking group used.
     """
     config = validated_config(config)
     signals = config["signals"]
@@ -136,17 +189,31 @@ def score_frame(frame: pd.DataFrame, config: dict | None = None) -> pd.DataFrame
         else pd.Series("", index=frame.index, dtype="string")
     )
 
+    excluded = pd.Series(False, index=frame.index)
+    reasons = pd.Series([[] for _ in range(len(frame))], index=frame.index, dtype=object)
+    for rule in config["exclusions"]:
+        values = _numeric_column(frame, raw_column(rule["signal"]))
+        valid = values.notna()
+        if not valid.any():
+            continue
+        percentiles = _rank_percent(values[valid])
+        hit = pd.Series(False, index=frame.index)
+        below = rule.get("exclude_below_percentile")
+        above = rule.get("exclude_above_percentile")
+        if below is not None:
+            hit[valid] |= percentiles < float(below)
+        if above is not None:
+            hit[valid] |= percentiles > float(above)
+        excluded |= hit
+        for index in frame.index[hit]:
+            reasons.at[index].append(rule["reason"])
+
     weighted_sum = pd.Series(0.0, index=frame.index)
     available_weight = pd.Series(0.0, index=frame.index)
     total_weight = float(sum(spec["weight"] for spec in signals.values()))
 
     for name, spec in signals.items():
-        column = f"{RAW_PREFIX}{name}"
-        values = (
-            pd.to_numeric(frame[column], errors="coerce")
-            if column in frame
-            else pd.Series(np.nan, index=frame.index, dtype=float)
-        )
+        values = _numeric_column(frame, raw_column(name))
         percentiles, groups = _percentiles(
             values,
             sectors,
@@ -160,16 +227,20 @@ def score_frame(frame: pd.DataFrame, config: dict | None = None) -> pd.DataFrame
         weighted_sum[usable] += percentiles[usable] * spec["weight"]
         available_weight[usable] += spec["weight"]
 
-    scored = available_weight > 0
-    output["score_v2"] = np.where(
-        scored, weighted_sum / available_weight.where(scored, np.nan), np.nan,
-    )
-    output["score_v2"] = output["score_v2"].round(2)
-    output["score_v2_confidence"] = (
+    confidence = (
         (available_weight / total_weight * 100.0).round(2)
         if total_weight > 0
-        else 0.0
+        else pd.Series(0.0, index=frame.index)
     )
+    scored = (available_weight > 0) & ~excluded & (
+        confidence >= float(config["minimum_confidence"])
+    )
+    score = pd.Series(np.nan, index=frame.index, dtype=float)
+    score[scored] = (weighted_sum[scored] / available_weight[scored]).round(2)
+    output["score"] = score
+    output["confidence"] = confidence
+    output["excluded"] = excluded
+    output["exclusion_reasons"] = reasons.map("; ".join)
     return output
 
 
@@ -177,11 +248,12 @@ def apply_cross_sectional_scores(
     results: list[dict],
     config: dict | None = None,
 ) -> list[dict]:
-    """Attach shadow Score v2 fields to successful rows of one run.
+    """Attach one shadow model's fields to successful rows of one run.
 
     Rows are copied; official Discovery Score fields are never modified.
     """
     config = validated_config(config)
+    prefix = config["output_prefix"]
     updated = [dict(row) for row in results]
     indices = [
         index for index, row in enumerate(updated) if row.get("status") == "OK"
@@ -189,84 +261,135 @@ def apply_cross_sectional_scores(
     if not indices:
         return updated
 
+    columns = {"sector"} | {raw_column(name) for name in config["signals"]}
+    columns |= {raw_column(rule["signal"]) for rule in config["exclusions"]}
     frame = pd.DataFrame(
         [
-            {
-                "sector": updated[index].get("sector"),
-                **{
-                    f"{RAW_PREFIX}{name}": updated[index].get(
-                        f"{RAW_PREFIX}{name}"
-                    )
-                    for name in config["signals"]
-                },
-            }
+            {column: updated[index].get(column) for column in columns}
             for index in indices
         ],
         index=indices,
     )
     scored = score_frame(frame, config)
     ranks = (
-        scored["score_v2"]
+        scored["score"]
         .rank(ascending=False, method="min")
-        .where(scored["score_v2"].notna())
+        .where(scored["score"].notna())
     )
 
     for index in indices:
         row = updated[index]
         factors = _factor_results(row, scored.loc[index], config)
-        score = scored.at[index, "score_v2"]
+        score = scored.at[index, "score"]
         rank = ranks.at[index]
-        row["score_v2"] = _finite(score)
-        row["score_v2_confidence"] = score_confidence(factors)
-        row["score_v2_rank"] = int(rank) if not pd.isna(rank) else None
-        row["score_v2_breakdown"] = json.dumps(
+        row[prefix] = _finite(score)
+        row[f"{prefix}_confidence"] = score_confidence(factors)
+        row[f"{prefix}_rank"] = int(rank) if not pd.isna(rank) else None
+        row[f"{prefix}_excluded"] = bool(scored.at[index, "excluded"])
+        row[f"{prefix}_exclusion_reasons"] = scored.at[index, "exclusion_reasons"]
+        row[f"{prefix}_breakdown"] = json.dumps(
             {factor.name: factor.to_dict() for factor in factors},
             sort_keys=True,
             separators=(",", ":"),
         )
-        row["score_v2_model_version"] = config["model_version"]
+        row[f"{prefix}_model_version"] = config["model_version"]
     return updated
 
 
+def apply_all_models(results: list[dict]) -> list[dict]:
+    """Apply every configured shadow model in order."""
+    for config in model_configs():
+        results = apply_cross_sectional_scores(results, config)
+    return results
+
+
 def validated_config(config: dict | None = None) -> dict:
-    """Merge configured Score v2 settings over defaults and validate them."""
+    """Merge a model's settings over defaults and validate them."""
+    if config is not None and config.get("_validated"):
+        return config
+    explicit = config is not None
     source = config if config is not None else SCORING_V2_CONFIG
     merged = {
         **DEFAULT_CONFIG,
         **source,
-        "lookbacks": {**DEFAULT_CONFIG["lookbacks"], **source.get("lookbacks", {})},
+        "lookbacks": {**DEFAULT_LOOKBACKS, **source.get("lookbacks", {})},
         "signals": source.get("signals", DEFAULT_CONFIG["signals"]),
+        "exclusions": source.get("exclusions", []),
     }
     for name, value in merged["lookbacks"].items():
         if isinstance(value, bool) or not isinstance(value, int) or value < 1:
-            raise ValueError(f"Score v2 lookback {name!r} must be a positive integer.")
+            raise ValueError(f"Score lookback {name!r} must be a positive integer.")
     minimum = merged["minimum_price_history_days"]
     if isinstance(minimum, bool) or not isinstance(minimum, int) or minimum < 2:
-        raise ValueError("Score v2 minimum_price_history_days must be at least 2.")
+        raise ValueError("Score minimum_price_history_days must be at least 2.")
     group = merged["minimum_sector_group"]
     if isinstance(group, bool) or not isinstance(group, int) or group < 2:
-        raise ValueError("Score v2 minimum_sector_group must be at least 2.")
+        raise ValueError("Score minimum_sector_group must be at least 2.")
+    minimum_confidence = merged["minimum_confidence"]
+    if (
+        isinstance(minimum_confidence, bool)
+        or not isinstance(minimum_confidence, (int, float))
+        or not 0 <= minimum_confidence <= 100
+    ):
+        raise ValueError("Score minimum_confidence must be between 0 and 100.")
     signals = merged["signals"]
     if not isinstance(signals, dict) or not signals:
-        raise ValueError("Score v2 signals must be a non-empty mapping.")
-    unknown = set(signals) - set(DEFAULT_CONFIG["signals"])
+        raise ValueError("Score signals must be a non-empty mapping.")
+    unknown = set(signals) - set(PRICE_SIGNALS) - set(FUNDAMENTAL_SIGNAL_NAMES)
     if unknown:
-        raise ValueError(f"Unknown Score v2 signals: {sorted(unknown)}")
+        raise ValueError(f"Unknown score signals: {sorted(unknown)}")
     validated_signals = {}
     for name, spec in signals.items():
         if not isinstance(spec, dict):
-            raise ValueError(f"Score v2 signal {name!r} must be a mapping.")
+            raise ValueError(f"Score signal {name!r} must be a mapping.")
         weight = spec.get("weight")
         if isinstance(weight, bool) or not isinstance(weight, (int, float)) or weight <= 0:
-            raise ValueError(f"Score v2 signal {name!r} needs a positive weight.")
+            raise ValueError(f"Score signal {name!r} needs a positive weight.")
         direction = str(spec.get("direction", "higher"))
         if direction not in {"higher", "lower"}:
-            raise ValueError(f"Score v2 signal {name!r} direction must be higher or lower.")
+            raise ValueError(f"Score signal {name!r} direction must be higher or lower.")
         validated_signals[name] = {"weight": float(weight), "direction": direction}
     merged["signals"] = validated_signals
+    exclusions = merged["exclusions"]
+    if not isinstance(exclusions, list):
+        raise ValueError("Score exclusions must be a list.")
+    validated_exclusions = []
+    for rule in exclusions:
+        if not isinstance(rule, dict) or "signal" not in rule:
+            raise ValueError("Each score exclusion needs a signal.")
+        signal = str(rule["signal"])
+        if signal not in PRICE_SIGNALS and signal not in FUNDAMENTAL_SIGNAL_NAMES:
+            raise ValueError(f"Unknown exclusion signal {signal!r}.")
+        below = rule.get("exclude_below_percentile")
+        above = rule.get("exclude_above_percentile")
+        if below is None and above is None:
+            raise ValueError(f"Exclusion for {signal!r} needs a percentile bound.")
+        for bound in (below, above):
+            if bound is not None and (
+                isinstance(bound, bool)
+                or not isinstance(bound, (int, float))
+                or not 0 <= bound <= 100
+            ):
+                raise ValueError(f"Exclusion bound for {signal!r} must be 0-100.")
+        validated_exclusions.append({
+            "signal": signal,
+            "exclude_below_percentile": below,
+            "exclude_above_percentile": above,
+            "reason": str(rule.get("reason") or f"Excluded on {signal}"),
+        })
+    merged["exclusions"] = validated_exclusions
     merged["sector_neutral"] = bool(merged["sector_neutral"])
     merged["model_version"] = str(merged["model_version"])
+    merged["output_prefix"] = str(merged["output_prefix"])
+    merged["_explicit"] = explicit
+    merged["_validated"] = True
     return merged
+
+
+def _numeric_column(frame: pd.DataFrame, column: str) -> pd.Series:
+    if column in frame:
+        return pd.to_numeric(frame[column], errors="coerce")
+    return pd.Series(np.nan, index=frame.index, dtype=float)
 
 
 def _percentiles(
@@ -312,7 +435,7 @@ def _factor_results(row: dict, scored: pd.Series, config: dict) -> list[FactorRe
     factors = []
     lookbacks = config["lookbacks"]
     for name, spec in config["signals"].items():
-        raw = row.get(f"{RAW_PREFIX}{name}")
+        raw = row.get(raw_column(name))
         percentile = scored.get(f"pct_{name}")
         group = scored.get(f"group_{name}")
         available = percentile is not None and not pd.isna(percentile)
@@ -325,7 +448,7 @@ def _factor_results(row: dict, scored: pd.Series, config: dict) -> list[FactorRe
                 + (" (lower is better)" if spec["direction"] == "lower" else "")
             )
         else:
-            explanation = f"{SIGNAL_LABELS[name]} unavailable"
+            explanation = f"{SIGNAL_LABELS.get(name, name)} unavailable"
         factors.append(FactorResult(
             name=name,
             raw_value=raw,
@@ -340,7 +463,7 @@ def _factor_results(row: dict, scored: pd.Series, config: dict) -> list[FactorRe
 
 def _describe(name: str, raw: object, lookbacks: dict) -> str:
     value = _finite(raw)
-    label = SIGNAL_LABELS[name]
+    label = SIGNAL_LABELS.get(name, name)
     if value is None:
         return f"{label} unavailable"
     if name == "momentum_long":
@@ -368,6 +491,10 @@ def _describe(name: str, raw: object, lookbacks: dict) -> str:
             f"{lookbacks['volume_short_window']}-session volume is {value:.2f}x "
             f"the {lookbacks['volume_long_window']}-session average"
         )
+    if name == "pit_cash_conversion":
+        return f"{label} is {value:.2f}x"
+    if name.startswith("pit_"):
+        return f"{label} is {value:.1%} from filings available on the scoring date"
     return f"{label} is {value:.4f}"
 
 

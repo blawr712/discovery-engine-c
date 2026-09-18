@@ -23,10 +23,6 @@
     "quantiles": 5,
     "minimum_cross_section": 50,
     "sec_fundamentals": {
-        "enabled": false,
-        "cache_directory": "data/cache/sec_facts",
-        "cache_ttl_hours": 168,
-        "request_interval_seconds": 0.11,
         "collection_workers": 2,
         "maximum_report_age_days": 400
     }

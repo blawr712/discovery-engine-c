@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 import numpy as np
 import pandas as pd
 
@@ -7,6 +9,10 @@ from src.factors import (
     serialize_factor_breakdown,
 )
 from src.fundamental_scoring import calculate_fundamental_scores
+from src.fundamentals_pit import (
+    FundamentalHistory,
+    SIGNAL_NAMES as FUNDAMENTAL_SIGNAL_NAMES,
+)
 from src.scoring_v2 import compute_raw_signals
 
 from src.config import (
@@ -24,6 +30,8 @@ def calculate_scores(
     stock_data: dict,
     price_history: pd.DataFrame,
     benchmark_history: pd.DataFrame,
+    fundamental_history: FundamentalHistory | None = None,
+    as_of: datetime | None = None,
 ) -> dict:
     market_cap = stock_data.get("market_cap")
     sector = stock_data.get("sector")
@@ -84,11 +92,24 @@ def calculate_scores(
     # Shadow Score v2 raw signals are point-in-time per company; the
     # cross-sectional percentile pass runs once the whole run is complete.
     v2_raw_signals = compute_raw_signals(price_history)
+    latest_close = _latest_close(price_history)
+    # Point-in-time fundamentals use only filings available on the scoring
+    # date and the latest close for market-cap ratios; missing histories
+    # leave every pit_* field empty so cross-sectional passes can skip them.
+    if fundamental_history is not None:
+        pit_signals = fundamental_history.signals_as_of(
+            (as_of or datetime.now(timezone.utc)).date(),
+            price=latest_close,
+        )
+    else:
+        pit_signals = {name: None for name in FUNDAMENTAL_SIGNAL_NAMES}
 
     return {
         **stock_data,
         **fundamental_scores,
         **v2_raw_signals,
+        **pit_signals,
+        "latest_close": latest_close,
         "volume_score": volume_score,
         "volume_ratio": round(volume_ratio, 2) if volume_ratio is not None else None,
         "relative_strength_score": relative_strength_score,
@@ -356,6 +377,17 @@ def build_reason_flags(
         flags.append(f"Sector: {sector}")
 
     return flags
+
+
+def _latest_close(df: pd.DataFrame) -> float | None:
+    if df.empty or "Close" not in df:
+        return None
+    value = df["Close"].iloc[-1]
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    return number if np.isfinite(number) and number > 0 else None
 
 
 def _period_return(df: pd.DataFrame, days: int) -> float | None:

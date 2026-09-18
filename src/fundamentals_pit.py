@@ -15,6 +15,14 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 import math
 
+from src.data_sources.sec_xbrl_source import CONCEPTS
+
+# Lower is better: the position of a taxonomy tag in its concept's alias list.
+TAG_PRIORITY = {
+    concept: {tag: index for index, tag in enumerate(spec["tags"])}
+    for concept, spec in CONCEPTS.items()
+}
+
 
 DEFAULT_CONFIG = {
     "quarter_days": [75, 105],
@@ -74,6 +82,7 @@ class PeriodValue:
     filed: date
     value: float
     start: date | None = None
+    priority: int = 0
 
 
 class FundamentalHistory:
@@ -89,20 +98,20 @@ class FundamentalHistory:
         self._instant_ends: dict[str, list[date]] = {}
 
         for concept in DURATION_CONCEPTS:
-            values = _duration_values(facts.get(concept, []))
+            values = _duration_values(facts.get(concept, []), concept)
             quarters = _quarterly_values(values, self.config)
-            self._quarters[concept] = quarters
-            self._quarter_ends[concept] = sorted(quarters)
+            self._quarters[concept] = _prefer_best_tag(quarters)
+            self._quarter_ends[concept] = sorted(self._quarters[concept])
         for concept in INSTANT_CONCEPTS:
             instants: dict[date, list[PeriodValue]] = {}
             for row in facts.get(concept, []):
-                value = _instant_value(row)
+                value = _instant_value(row, concept)
                 if value is not None:
                     instants.setdefault(value.end, []).append(value)
             for entries in instants.values():
                 entries.sort(key=lambda item: item.filed)
-            self._instants[concept] = instants
-            self._instant_ends[concept] = sorted(instants)
+            self._instants[concept] = _prefer_best_tag(instants)
+            self._instant_ends[concept] = sorted(self._instants[concept])
 
     @property
     def has_data(self) -> bool:
@@ -143,7 +152,7 @@ class FundamentalHistory:
         if start_index < 0:
             return None
         window = quarters[start_index:end_index]
-        if not _consecutive(window, self.config):
+        if not _consecutive(window, self.config) or not _same_tag(window):
             return None
         return tuple(item.end for item in window), float(sum(item.value for item in window))
 
@@ -247,7 +256,11 @@ class FundamentalHistory:
 
     def _acceleration(self, as_of: date) -> float | None:
         quarters = self.quarters_as_of("revenue", as_of)
-        if len(quarters) < 6 or not _consecutive(quarters[-6:], self.config):
+        if (
+            len(quarters) < 6
+            or not _consecutive(quarters[-6:], self.config)
+            or not _same_tag(quarters[-6:])
+        ):
             return None
         latest, previous = quarters[-1], quarters[-2]
         latest_base, previous_base = quarters[-5], quarters[-6]
@@ -256,7 +269,7 @@ class FundamentalHistory:
         return (latest.value / latest_base.value) - (previous.value / previous_base.value)
 
 
-def _duration_values(rows: list[dict]) -> list[PeriodValue]:
+def _duration_values(rows: list[dict], concept: str) -> list[PeriodValue]:
     values = []
     for row in rows:
         start = _parse_date(row.get("start"))
@@ -267,17 +280,42 @@ def _duration_values(rows: list[dict]) -> list[PeriodValue]:
             continue
         if end <= start:
             continue
-        values.append(PeriodValue(end=end, filed=filed, value=value, start=start))
+        values.append(PeriodValue(
+            end=end, filed=filed, value=value, start=start,
+            priority=_tag_priority(concept, row.get("tag")),
+        ))
     return values
 
 
-def _instant_value(row: dict) -> PeriodValue | None:
+def _instant_value(row: dict, concept: str) -> PeriodValue | None:
     end = _parse_date(row.get("end"))
     filed = _parse_date(row.get("filed"))
     value = _number(row.get("val"))
     if end is None or filed is None or value is None:
         return None
-    return PeriodValue(end=end, filed=filed, value=value)
+    return PeriodValue(
+        end=end, filed=filed, value=value,
+        priority=_tag_priority(concept, row.get("tag")),
+    )
+
+
+def _tag_priority(concept: str, tag: object) -> int:
+    return TAG_PRIORITY.get(concept, {}).get(str(tag), 0)
+
+
+def _prefer_best_tag(
+    periods: dict[date, list[PeriodValue]],
+) -> dict[date, list[PeriodValue]]:
+    """Keep only the best-priority tag's values for each period.
+
+    Filers often report a total and a component under different tags for
+    the same period; mixing them would silently swap totals for components.
+    """
+    preferred: dict[date, list[PeriodValue]] = {}
+    for end, entries in periods.items():
+        best = min(entry.priority for entry in entries)
+        preferred[end] = [entry for entry in entries if entry.priority == best]
+    return preferred
 
 
 def _quarterly_values(
@@ -293,6 +331,7 @@ def _quarterly_values(
         entries = quarters.setdefault(item.end, [])
         if any(
             existing.filed == item.filed and existing.value == item.value
+            and existing.priority == item.priority
             for existing in entries
         ):
             return
@@ -316,6 +355,8 @@ def _quarterly_values(
             if longer.end in direct_ends:
                 continue
             for shorter in items:
+                if shorter.priority != longer.priority:
+                    continue
                 gap = (longer.end - shorter.end).days
                 if abs(gap - 91) <= tolerance:
                     add(PeriodValue(
@@ -323,6 +364,7 @@ def _quarterly_values(
                         filed=max(longer.filed, shorter.filed),
                         value=longer.value - shorter.value,
                         start=shorter.end,
+                        priority=max(longer.priority, shorter.priority),
                     ))
 
     # Annual minus three reported quarters covers filers that report no
@@ -344,7 +386,11 @@ def _quarterly_values(
             if not item.start < end < item.end - timedelta(days=quarter_min - tolerance):
                 continue
             known = _latest_known(entries, item.filed) or entries[0]
-            if known.start is not None and known.start >= item.start - timedelta(days=tolerance):
+            if (
+                known.start is not None
+                and known.start >= item.start - timedelta(days=tolerance)
+                and known.priority == item.priority
+            ):
                 components.append(known)
         components.sort(key=lambda entry: entry.end)
         if len(components) != 3:
@@ -357,6 +403,7 @@ def _quarterly_values(
             filed=max([item.filed] + [entry.filed for entry in components]),
             value=item.value - sum(entry.value for entry in components),
             start=components[-1].end,
+            priority=max([item.priority] + [entry.priority for entry in components]),
         ))
 
     for entries in quarters.values():
@@ -370,6 +417,11 @@ def _latest_known(entries: list[PeriodValue], as_of: date) -> PeriodValue | None
         if entry.filed <= as_of:
             chosen = entry
     return chosen
+
+
+def _same_tag(window: list[PeriodValue]) -> bool:
+    """True when every value in the window came from the same taxonomy tag."""
+    return len({item.priority for item in window}) <= 1
 
 
 def _consecutive(window: list[PeriodValue], config: dict) -> bool:

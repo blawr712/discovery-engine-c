@@ -130,6 +130,30 @@ class QuarterDerivationTests(unittest.TestCase):
         )
 
 
+class TagPrecedenceTests(unittest.TestCase):
+    def test_total_tag_beats_component_tag_for_the_same_period(self):
+        extract = {"ticker": "T", "facts": {"revenue": [
+            {**_fact("2025-01-01", "2025-03-31", "2025-05-01", 6_000_000),
+             "tag": "us-gaap:Revenues"},
+            {**_fact("2025-01-01", "2025-03-31", "2025-05-01", 200_000),
+             "tag": "us-gaap:RevenueFromContractWithCustomerIncludingAssessedTax"},
+            # A period reported only under the lower-priority tag still counts.
+            {**_fact("2025-04-01", "2025-06-30", "2025-08-01", 250_000),
+             "tag": "us-gaap:RevenueFromContractWithCustomerIncludingAssessedTax"},
+            # Cumulative and component cumulative must not be differenced together.
+            {**_fact("2025-01-01", "2025-09-30", "2025-11-01", 18_000_000),
+             "tag": "us-gaap:Revenues"},
+            {**_fact("2025-01-01", "2025-06-30", "2025-08-01", 400_000),
+             "tag": "us-gaap:RevenueFromContractWithCustomerIncludingAssessedTax"},
+        ]}}
+        quarters = FundamentalHistory(extract).quarters_as_of("revenue", date(2026, 1, 1))
+        values = {q.end.isoformat(): q.value for q in quarters}
+        self.assertEqual(values["2025-03-31"], 6_000_000.0)
+        self.assertEqual(values["2025-06-30"], 250_000.0)
+        # 9M total minus H1 component is not a valid quarter.
+        self.assertNotIn("2025-09-30", values)
+
+
 class SignalTests(unittest.TestCase):
     def setUp(self):
         self.history = FundamentalHistory(_extract())

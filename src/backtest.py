@@ -33,16 +33,20 @@ from src.scoring import (
     score_volume_acceleration,
 )
 from src.scoring_v2 import (
-    RAW_PREFIX,
+    PRICE_SIGNALS,
     compute_raw_signals,
+    model_configs,
+    raw_column,
     score_frame,
-    validated_config as validated_v2_config,
 )
 
 
 ProgressCallback = Callable[[str, int, int, str], None]
 
-COMPOSITE_COLUMNS = ("technical_score", "discovery_score_static", "score_v2")
+SHADOW_MODELS = model_configs()
+COMPOSITE_COLUMNS = ("technical_score", "discovery_score_static") + tuple(
+    model["output_prefix"] for model in SHADOW_MODELS
+)
 FACTOR_POINT_COLUMNS = (
     "volume_score",
     "relative_strength_score",
@@ -50,9 +54,7 @@ FACTOR_POINT_COLUMNS = (
     "liquidity_score",
 )
 FACTOR_RAW_COLUMNS = ("volume_ratio", "relative_strength_6m")
-V2_RAW_COLUMNS = tuple(
-    f"{RAW_PREFIX}{name}" for name in validated_v2_config()["signals"]
-)
+V2_RAW_COLUMNS = tuple(raw_column(name) for name in PRICE_SIGNALS)
 IC_COLUMNS = (
     COMPOSITE_COLUMNS + FACTOR_POINT_COLUMNS + FACTOR_RAW_COLUMNS + V2_RAW_COLUMNS
 )
@@ -370,8 +372,9 @@ def build_backtest(
             usable_tickers.add(ticker)
 
     frame = pd.DataFrame(observations)
-    frame = _apply_score_v2(frame)
+    frame = _apply_shadow_models(frame)
     period_metrics = _period_metrics(frame, config)
+    filter_diagnostics = _filter_diagnostics(frame, config)
     aggregate = _aggregate_metrics(period_metrics, frame, config)
 
     fundamental_coverage = None
@@ -395,6 +398,7 @@ def build_backtest(
             list(FUNDAMENTAL_LIMITATIONS) if with_fundamentals else []
         ),
         "fundamental_coverage": fundamental_coverage,
+        "filter_diagnostics": filter_diagnostics,
         "coverage": {
             "universe_tickers": len(universe),
             "collected_tickers": len(histories),
@@ -565,6 +569,33 @@ def build_backtest_markdown(analysis: dict) -> str:
                     f"{_fmt(stats['benchmark_return_percent'])}% | "
                     f"{_fmt(stats['difference_percent'])}% |"
                 )
+    diagnostics = analysis.get("filter_diagnostics") or {}
+    if diagnostics:
+        lines += [
+            "",
+            "## Exclusion filters: excluded versus retained observations",
+            "",
+            "Pooled over every month where at least one filter signal was "
+            "available. A useful filter leaves the excluded group with the worse "
+            "median and win rate.",
+            "",
+            "| Model | Horizon | Group | Observations | Median excess | Trimmed mean | Win rate |",
+            "|---|---|---|---|---|---|---|",
+        ]
+        for prefix, entry in diagnostics.items():
+            for horizon, groups in entry["horizons"].items():
+                for label in ("excluded", "retained"):
+                    stats = groups.get(label)
+                    if not stats:
+                        continue
+                    lines.append(
+                        f"| {prefix} | {horizon} | {label} | {stats['observations']} | "
+                        f"{_fmt(stats['median_excess'])} | "
+                        f"{_fmt(stats['trimmed_mean_excess'])} | "
+                        f"{_fmt(stats['win_rate_percent'])}% |"
+                    )
+            lines.append("")
+            lines.append(f"Rules for {prefix}: " + "; ".join(entry["rules"]) + ".")
     lines += ["", "## Limitations", ""]
     lines += [f"- {item}" for item in analysis["limitations"]]
     lines.append("")
@@ -845,20 +876,68 @@ def _compounded(period_metrics: list[dict], config: dict) -> dict:
     return summary
 
 
-def _apply_score_v2(frame: pd.DataFrame) -> pd.DataFrame:
-    """Score each period's cross-section with the shadow v2 model."""
+def _apply_shadow_models(frame: pd.DataFrame) -> pd.DataFrame:
+    """Score each period's cross-section with every configured shadow model."""
     frame = frame.copy()
-    frame["score_v2"] = np.nan
-    frame["score_v2_confidence"] = np.nan
+    for model in SHADOW_MODELS:
+        prefix = model["output_prefix"]
+        frame[prefix] = np.nan
+        frame[f"{prefix}_confidence"] = np.nan
+        frame[f"{prefix}_excluded"] = False
     if frame.empty:
         return frame
     for _, group in frame.groupby("period", sort=True):
-        scored = score_frame(group)
-        frame.loc[group.index, "score_v2"] = scored["score_v2"]
-        frame.loc[group.index, "score_v2_confidence"] = scored[
-            "score_v2_confidence"
-        ]
+        for model in SHADOW_MODELS:
+            prefix = model["output_prefix"]
+            scored = score_frame(group, model)
+            frame.loc[group.index, prefix] = scored["score"]
+            frame.loc[group.index, f"{prefix}_confidence"] = scored["confidence"]
+            frame.loc[group.index, f"{prefix}_excluded"] = scored["excluded"]
     return frame
+
+
+def _filter_diagnostics(frame: pd.DataFrame, config: dict) -> dict:
+    """Compare pooled outcomes of excluded versus retained observations."""
+    diagnostics: dict[str, dict] = {}
+    if frame.empty:
+        return diagnostics
+    for model in SHADOW_MODELS:
+        if not model["exclusions"]:
+            continue
+        prefix = model["output_prefix"]
+        flag = frame[f"{prefix}_excluded"].astype(bool)
+        # Only rows the filters could judge: at least one exclusion signal present.
+        judged = pd.Series(False, index=frame.index)
+        for rule in model["exclusions"]:
+            column = raw_column(rule["signal"])
+            if column in frame:
+                judged |= frame[column].notna()
+        per_horizon = {}
+        for horizon in config["forward_horizons_days"]:
+            excess = frame[f"excess_{horizon}"]
+            per_horizon[horizon] = {
+                "excluded": _outcome_summary(excess[judged & flag]),
+                "retained": _outcome_summary(excess[judged & ~flag]),
+            }
+        diagnostics[prefix] = {
+            "rules": [rule["reason"] for rule in model["exclusions"]],
+            "judged_observations": int(judged.sum()),
+            "excluded_observations": int((judged & flag).sum()),
+            "horizons": per_horizon,
+        }
+    return diagnostics
+
+
+def _outcome_summary(values: pd.Series) -> dict | None:
+    values = values.dropna()
+    if values.empty:
+        return None
+    return {
+        "observations": int(len(values)),
+        "median_excess": _finite(values.median()),
+        "trimmed_mean_excess": _finite(_trimmed_mean(values)),
+        "win_rate_percent": _finite((values > 0).mean() * 100.0),
+    }
 
 
 def _rebalance_periods(

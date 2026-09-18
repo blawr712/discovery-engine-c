@@ -194,3 +194,52 @@ class DiscoveryEngineTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class FundamentalsIntegrationTests(unittest.TestCase):
+    def test_collects_us_fundamentals_with_isolation(self):
+        class FakeFundamentals:
+            def __init__(self):
+                self.calls = []
+
+            def get_company_facts(self, ticker):
+                self.calls.append(ticker)
+                if ticker == "SECFAIL":
+                    raise RuntimeError("sec down")
+                if ticker == "EMPTY":
+                    return {"ticker": ticker, "facts": {}}
+                return {"ticker": ticker, "facts": {"revenue": [
+                    {"start": "2025-01-01", "end": "2025-03-31",
+                     "filed": "2025-05-01", "val": 100.0},
+                ]}}
+
+        fundamentals = FakeFundamentals()
+        engine = DiscoveryEngine(
+            ConcurrentFakeSource(),
+            benchmarks={"US": "SPY", "CA": "XIU.TO"},
+            max_workers=2,
+            fundamentals_source=fundamentals,
+        )
+        results = engine.run([
+            {"ticker": "GOOD", "country": "US"},
+            {"ticker": "SECFAIL", "country": "US"},
+            {"ticker": "EMPTY", "country": "US"},
+            {"ticker": "NORTH.TO", "country": "CA"},
+        ])
+        by = {row["ticker"]: row for row in results}
+
+        self.assertEqual(sorted(fundamentals.calls), ["EMPTY", "GOOD", "SECFAIL"])
+        self.assertEqual(by["GOOD"]["fundamentals_status"], "collected")
+        self.assertTrue(by["SECFAIL"]["fundamentals_status"].startswith("unavailable: RuntimeError"))
+        self.assertEqual(by["EMPTY"]["fundamentals_status"], "no_data")
+        self.assertEqual(by["NORTH.TO"]["fundamentals_status"], "not_applicable")
+        # Every row still scored; failures never block the company.
+        self.assertTrue(all(by[t]["status"] == "OK" for t in by))
+        self.assertIn("pit_revenue_ttm", by["GOOD"])
+        self.assertIn("latest_close", by["GOOD"])
+
+    def test_without_fundamentals_source_marks_not_requested(self):
+        engine = DiscoveryEngine(ConcurrentFakeSource(), benchmarks={"US": "SPY"})
+        results = engine.run([{"ticker": "AAA", "country": "US"}])
+        self.assertEqual(results[0]["fundamentals_status"], "not_requested")
+        self.assertIsNone(results[0]["pit_revenue_ttm"])

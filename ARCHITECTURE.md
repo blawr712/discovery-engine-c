@@ -34,14 +34,17 @@ checkpoints so compatible interrupted runs can resume safely.
 Completed runs containing provider errors remain resumable; successful and
 analytically rejected rows are reused while only error rows run again.
 
-Scoring Engine: Calculate Discovery Score only. A shadow Score v2 runs beside
-it in two pure stages: per-company point-in-time raw signals computed with the
-price history, then one cross-sectional percentile pass over the completed run
-that ranks each signal across candidates (within sector when the group is
-large enough) and blends them into a 0-100 score with explanations. Score v2
-never alters official scores or ranks, is written back to checkpoints so saved
-runs stay authoritative, and reuses the same two functions inside the Backtest
-Engine so historical and live behavior cannot diverge.
+Scoring Engine: Calculate Discovery Score only. Shadow models run beside it
+through one signal registry (`src/scoring_v2.py`) in two pure stages:
+per-company point-in-time raw signals (price signals from the price history,
+`pit_*` fundamentals from SEC facts), then one cross-sectional pass over the
+completed run that applies percentile-based exclusion filters, ranks each
+signal across candidates (within sector when the group is large enough), and
+blends them into a 0-100 score with explanations and a confidence gate. Score
+v2 is the price-only model; Score v3 is the fundamentals-led composite. Neither
+alters official scores or ranks, both are written back to checkpoints so saved
+runs stay authoritative, and the Backtest Engine reuses the same functions so
+historical and live behavior cannot diverge.
 
 Research Engine: Generate explainable research summaries.
 
@@ -52,7 +55,8 @@ filing dates, and caches the compact extract under `data/cache/sec_facts`.
 directly or derived by differencing cumulative and annual figures) and
 answers "what was knowable on this date" queries, so restated values only
 appear from their restating filing onward. The Backtest Engine consumes these
-histories; live-run integration is a later increment.
+histories, and the orchestration engine collects them per company during live
+runs (U.S. filers, failure-isolated) when `SEC_USER_AGENT` is configured.
 
 Backtest Engine: Replay the Scoring Engine's technical factor functions at
 historical month-ends using only price data available on each date, then
