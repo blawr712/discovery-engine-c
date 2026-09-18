@@ -237,3 +237,9 @@ class BacktestCliTests(unittest.TestCase):
         self.assertTrue(args.with_fundamentals)
         with self.assertRaises(SystemExit):
             parse_args(["--with-fundamentals"])
+
+    def test_with_insiders_requires_backtest_run(self):
+        args = parse_args(["--backtest-run", "RUN1", "--with-insiders"])
+        self.assertTrue(args.with_insiders)
+        with self.assertRaises(SystemExit):
+            parse_args(["--with-insiders"])

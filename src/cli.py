@@ -132,6 +132,11 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
         help="add point-in-time SEC XBRL fundamentals to --backtest-run (U.S. filers)",
     )
     parser.add_argument(
+        "--with-insiders",
+        action="store_true",
+        help="add point-in-time Form 4 insider signals to --backtest-run (U.S. filers)",
+    )
+    parser.add_argument(
         "--balanced-research",
         type=_positive_integer,
         metavar="PER_COUNTRY",
@@ -170,6 +175,8 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
         parser.error("--backtest-limit requires --backtest-run")
     if args.with_fundamentals and args.backtest_run is None:
         parser.error("--with-fundamentals requires --backtest-run")
+    if args.with_insiders and args.backtest_run is None:
+        parser.error("--with-insiders requires --backtest-run")
     if args.balanced_research is not None and args.research_run is None:
         parser.error("--balanced-research requires --research-run")
     if args.top is not None and args.balanced_research is not None:

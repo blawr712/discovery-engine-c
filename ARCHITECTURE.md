@@ -62,6 +62,13 @@ appear from their restating filing onward. The Backtest Engine consumes these
 histories, and the orchestration engine collects them per company during live
 runs (U.S. filers, failure-isolated) when `SEC_USER_AGENT` is configured.
 
+Insiders (point-in-time): `src/data_sources/sec_insider_source.py` downloads
+the SEC's quarterly insider-transaction data sets once each, keeps only
+open-market purchases and sales with filing dates and owner relationships,
+and caches the compact extract; `src/insider_signals.py` answers windowed
+"what was filed by this date" queries per issuer. The Backtest Engine and the
+live orchestration engine both consume these histories for U.S. filers.
+
 Backtest Engine: Replay the Scoring Engine's technical factor functions at
 historical month-ends using only price data available on each date, then
 measure rank correlation, quantile spreads, and top-N outcomes against forward

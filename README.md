@@ -110,6 +110,23 @@ resulting `pit_*` signals join the rank-correlation tables so fundamentals can
 be judged on the same periods as the technical signals. Canadian and IFRS
 filers carry no fundamental signals yet.
 
+Add point-in-time Form 4 insider signals as well:
+
+```powershell
+python main.py --backtest-run RUN_ID --with-fundamentals --with-insiders
+```
+
+Insider signals come from the SEC's quarterly insider-transaction data sets,
+downloaded once per quarter and cached as compact extracts of open-market
+purchases and sales. At each month-end the backtest counts purchases, sales,
+distinct buyers, officer and director purchases, net purchase value and its
+ratio to market cap, cluster buying, and days since the last purchase, using
+only filings public on that date. The same signals (`ins_*`) attach to U.S.
+rows in live runs when `SEC_USER_AGENT` is set, labeled with an
+`ins_data_through` date because the SEC publishes these data sets quarterly
+with a lag. `ins_*` signals can be weighted or used as exclusions in
+`scoring_v2` and `scoring_v3`.
+
 Compare two previously indexed runs without making provider calls:
 
 ```powershell

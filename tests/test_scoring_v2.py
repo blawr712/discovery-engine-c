@@ -283,7 +283,27 @@ class CompositeModelTests(unittest.TestCase):
 
     def test_raw_column_mapping(self):
         self.assertEqual(raw_column("pit_sales_yield"), "pit_sales_yield")
+        self.assertEqual(raw_column("ins_cluster_buy_short"), "ins_cluster_buy_short")
         self.assertEqual(raw_column("volatility"), f"{RAW_PREFIX}volatility")
+
+    def test_insider_signals_are_accepted_by_the_registry(self):
+        config = validated_config({**COMPOSITE_CONFIG, "signals": {
+            "ins_net_value_to_market_cap_short": {"weight": 50, "direction": "higher"},
+            "ins_cluster_buy_short": {"weight": 50, "direction": "higher"},
+        }, "exclusions": [{"signal": "ins_days_since_last_purchase",
+                           "exclude_above_percentile": 90, "reason": "Stale"}]})
+        self.assertIn("ins_cluster_buy_short", config["signals"])
+        rows = [
+            {"ticker": "A", "status": "OK", "sector": "Tech",
+             "ins_net_value_to_market_cap_short": 0.02, "ins_cluster_buy_short": 1.0,
+             "ins_days_since_last_purchase": 10.0},
+            {"ticker": "B", "status": "OK", "sector": "Tech",
+             "ins_net_value_to_market_cap_short": -0.01, "ins_cluster_buy_short": 0.0,
+             "ins_days_since_last_purchase": 300.0},
+        ]
+        updated = apply_cross_sectional_scores(rows, config)
+        self.assertEqual(updated[0]["score_v3_rank"], 1)
+        self.assertIn("Form 4", json.loads(updated[0]["score_v3_breakdown"])["ins_cluster_buy_short"]["explanation"])
 
     def test_exclusions_and_confidence_gate(self):
         updated = apply_cross_sectional_scores(self._rows(), COMPOSITE_CONFIG)

@@ -93,5 +93,12 @@
         "cache_directory": "data/cache/sec_facts",
         "cache_ttl_hours": 168,
         "request_interval_seconds": 0.11
+    },
+    "insiders": {
+        "live_collection_enabled": true,
+        "cache_directory": "data/cache/sec_insiders",
+        "lookback_quarters": 6,
+        "request_interval_seconds": 0.11,
+        "unavailable_ttl_hours": 168
     }
 }

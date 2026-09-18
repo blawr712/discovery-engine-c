@@ -22,6 +22,7 @@ import pandas as pd
 from src.config import SCORING_V2_CONFIG, SCORING_V3_CONFIG
 from src.factors import FactorResult, score_confidence
 from src.fundamentals_pit import SIGNAL_NAMES as FUNDAMENTAL_SIGNAL_NAMES
+from src.insider_signals import SIGNAL_NAMES as INSIDER_SIGNAL_NAMES
 
 
 RAW_PREFIX = "v2_"
@@ -85,12 +86,28 @@ SIGNAL_LABELS = {
     "pit_fcf_yield": "Free cash flow yield",
     "pit_earnings_yield": "Earnings yield",
     "pit_sales_yield": "Sales yield",
+    "ins_purchase_count_short": "Insider open-market purchases (short window)",
+    "ins_sale_count_short": "Insider open-market sales (short window)",
+    "ins_net_count_short": "Net insider purchases less sales (short window)",
+    "ins_distinct_buyers_short": "Distinct insider buyers (short window)",
+    "ins_officer_purchase_count_short": "Officer and director purchases (short window)",
+    "ins_purchase_value_short": "Insider purchase value (short window)",
+    "ins_net_value_short": "Net insider purchase value (short window)",
+    "ins_net_value_to_market_cap_short": "Net insider buying to market cap (short window)",
+    "ins_cluster_buy_short": "Cluster buying by two or more insiders (short window)",
+    "ins_purchase_count_long": "Insider open-market purchases (long window)",
+    "ins_purchase_value_long": "Insider purchase value (long window)",
+    "ins_net_value_long": "Net insider purchase value (long window)",
+    "ins_net_value_to_market_cap_long": "Net insider buying to market cap (long window)",
+    "ins_days_since_last_purchase": "Days since last insider purchase",
 }
 
 
 def raw_column(name: str) -> str:
     """Return the result-row column holding a signal's raw value."""
-    return name if name.startswith("pit_") else f"{RAW_PREFIX}{name}"
+    if name.startswith("pit_") or name.startswith("ins_"):
+        return name
+    return f"{RAW_PREFIX}{name}"
 
 
 def model_configs() -> list[dict]:
@@ -335,7 +352,10 @@ def validated_config(config: dict | None = None) -> dict:
     signals = merged["signals"]
     if not isinstance(signals, dict) or not signals:
         raise ValueError("Score signals must be a non-empty mapping.")
-    unknown = set(signals) - set(PRICE_SIGNALS) - set(FUNDAMENTAL_SIGNAL_NAMES)
+    unknown = (
+        set(signals) - set(PRICE_SIGNALS) - set(FUNDAMENTAL_SIGNAL_NAMES)
+        - set(INSIDER_SIGNAL_NAMES)
+    )
     if unknown:
         raise ValueError(f"Unknown score signals: {sorted(unknown)}")
     validated_signals = {}
@@ -358,7 +378,11 @@ def validated_config(config: dict | None = None) -> dict:
         if not isinstance(rule, dict) or "signal" not in rule:
             raise ValueError("Each score exclusion needs a signal.")
         signal = str(rule["signal"])
-        if signal not in PRICE_SIGNALS and signal not in FUNDAMENTAL_SIGNAL_NAMES:
+        if (
+            signal not in PRICE_SIGNALS
+            and signal not in FUNDAMENTAL_SIGNAL_NAMES
+            and signal not in INSIDER_SIGNAL_NAMES
+        ):
             raise ValueError(f"Unknown exclusion signal {signal!r}.")
         below = rule.get("exclude_below_percentile")
         above = rule.get("exclude_above_percentile")
@@ -493,6 +517,10 @@ def _describe(name: str, raw: object, lookbacks: dict) -> str:
         )
     if name == "pit_cash_conversion":
         return f"{label} is {value:.2f}x"
+    if name.startswith("ins_") and "to_market_cap" in name:
+        return f"{label} is {value:.2%} from Form 4 filings public on the scoring date"
+    if name.startswith("ins_"):
+        return f"{label} is {value:,.0f} from Form 4 filings public on the scoring date"
     if name.startswith("pit_"):
         return f"{label} is {value:.1%} from filings available on the scoring date"
     return f"{label} is {value:.4f}"

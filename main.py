@@ -23,11 +23,18 @@ from src.analytics import export_run_analytics
 from src.backtest import (
     build_backtest,
     build_backtest_universe,
+    build_insider_histories,
     collect_fundamental_histories,
     collect_price_histories,
     export_backtest,
 )
+from src.data_sources.sec_insider_source import (
+    SecInsiderTransactionsSource,
+    current_quarter,
+    quarter_labels,
+)
 from src.data_sources.sec_xbrl_source import SecXbrlSource
+from src.insider_signals import build_insider_index, quarter_end
 from src.calibration import build_calibration, export_calibration
 from src.scoring_v2 import apply_all_models
 from src.engine import DiscoveryEngine
@@ -92,6 +99,8 @@ from src.config import (
     BASE_DIR,
     BENCHMARKS,
     FUNDAMENTALS_CONFIG,
+    INSIDERS_CONFIG,
+    INSIDER_SIGNALS_CONFIG,
     RESEARCH_RANKING_CONFIG,
     CACHE_DIR,
     CACHE_ENABLED,
@@ -179,6 +188,7 @@ def main(arguments=None):
             args.backtest_run,
             limit=args.backtest_limit,
             with_fundamentals=args.with_fundamentals,
+            with_insiders=args.with_insiders,
         )
         return
     if args.index_run:
@@ -277,6 +287,22 @@ def main(arguments=None):
         + ("enabled (U.S. filers)" if fundamentals_source else
            "disabled (set SEC_USER_AGENT in .env to enable)")
     )
+    insider_lookup = None
+    insider_index_stats = None
+    if INSIDERS_CONFIG.get("live_collection_enabled", True) and fundamentals_source is not None:
+        insider_source = build_sec_insider_source(required=False)
+        if insider_source is not None:
+            insider_index, insider_index_stats = load_insider_index(
+                insider_source, live_insider_start_quarter(),
+            )
+            insider_lookup = _insider_lookup(insider_index, fundamentals_source.cik_for)
+    print(
+        "SEC insiders: "
+        + (
+            f"enabled, data through {insider_index_stats['data_through']}"
+            if insider_index_stats else "disabled"
+        )
+    )
 
     engine = DiscoveryEngine(
         source,
@@ -287,6 +313,7 @@ def main(arguments=None):
         progress_callback=print_progress,
         result_callback=run_state.record_result,
         fundamentals_source=fundamentals_source,
+        insider_lookup=insider_lookup,
     )
     results = engine.run(universe, prior_results=prior_results)
 
@@ -350,6 +377,15 @@ def main(arguments=None):
             + ", ".join(f"{name} {count}" for name, count in sorted(statuses.items()))
             + f"; {fundamentals_source.stats.requests} requests, "
             f"{fundamentals_source.stats.hits} cache hits"
+        )
+    if insider_lookup is not None:
+        insider_statuses = Counter(
+            str(row.get("insiders_status", "not_requested")).split(":")[0]
+            for row in results if row.get("status") == "OK"
+        )
+        print(
+            "SEC insiders: "
+            + ", ".join(f"{name} {count}" for name, count in sorted(insider_statuses.items()))
         )
     if provider.enabled:
         print(f"Pacing waits: {provider.stats.pacing_waits}")
@@ -652,6 +688,14 @@ def analyze_moonshot_run(
     print(f"Manifest updated: {manifest_path}")
 
 
+def _insider_lookup(index: dict, cik_for):
+    """Adapt a CIK-keyed insider index to a ticker lookup."""
+    def lookup(ticker: str):
+        cik = cik_for(ticker)
+        return index.get(str(cik).zfill(10)) if cik is not None else None
+    return lookup
+
+
 def build_sec_xbrl_source(required: bool = True) -> SecXbrlSource | None:
     """Build the paced, compact-cached SEC company-facts source."""
     user_agent = os.environ.get("SEC_USER_AGENT", "").strip()
@@ -671,17 +715,64 @@ def build_sec_xbrl_source(required: bool = True) -> SecXbrlSource | None:
     )
 
 
+def build_sec_insider_source(required: bool = True) -> SecInsiderTransactionsSource | None:
+    """Build the cached SEC insider-transactions data-set source."""
+    user_agent = os.environ.get("SEC_USER_AGENT", "").strip()
+    if not user_agent:
+        if not required:
+            return None
+        raise SystemExit(
+            "--with-insiders requires SEC_USER_AGENT, for example "
+            "'Discovery Engine research@example.com'."
+        )
+    settings = INSIDERS_CONFIG
+    return SecInsiderTransactionsSource(
+        user_agent,
+        BASE_DIR / settings.get("cache_directory", "data/cache/sec_insiders"),
+        request_interval_seconds=float(settings.get("request_interval_seconds", 0.11)),
+        unavailable_ttl_hours=float(settings.get("unavailable_ttl_hours", 168)),
+    )
+
+
+def load_insider_index(source: SecInsiderTransactionsSource, start_quarter: str) -> tuple[dict, dict]:
+    """Load insider quarters from ``start_quarter`` and index them by CIK."""
+    transactions, loaded, unavailable = source.load_quarters(start_quarter)
+    data_through = quarter_end(loaded[-1]) if loaded else None
+    index = build_insider_index(
+        transactions, INSIDER_SIGNALS_CONFIG, data_through=data_through,
+    )
+    return index, {
+        "quarters_loaded": loaded,
+        "quarters_unavailable": unavailable,
+        "data_through": data_through.isoformat() if data_through else None,
+        "transactions": len(transactions),
+        "issuers": len(index),
+    }
+
+
+def live_insider_start_quarter() -> str:
+    """Quarter from which live runs need insider history for their windows."""
+    lookback = int(INSIDERS_CONFIG.get("lookback_quarters", 6))
+    labels = quarter_labels("2000q1", current_quarter())
+    return labels[max(0, len(labels) - lookback)]
+
+
 def backtest_saved_run(
     run_id: str,
     limit: int | None = None,
     with_fundamentals: bool = False,
+    with_insiders: bool = False,
 ) -> None:
     """Replay technical scoring point-in-time for a completed run's universe."""
     period = str(BACKTEST_CONFIG.get("price_history_period", "10y"))
     ttl_hours = float(BACKTEST_CONFIG.get("price_history_ttl_hours", 168))
     fundamental_settings = BACKTEST_CONFIG.get("sec_fundamentals", {})
-    sec_source = build_sec_xbrl_source() if with_fundamentals else None
+    sec_source = (
+        build_sec_xbrl_source() if (with_fundamentals or with_insiders) else None
+    )
+    insider_source = build_sec_insider_source() if with_insiders else None
     fundamental_stats = None
+    insider_stats = None
     try:
         manifest, results = load_saved_run(RUN_DIR, run_id)
         universe = build_backtest_universe(results)
@@ -699,7 +790,17 @@ def backtest_saved_run(
             progress_callback=print_progress,
         )
         fundamental_histories = None
-        if sec_source is not None:
+        insider_histories = None
+        if insider_source is not None:
+            index, index_stats = load_insider_index(
+                insider_source,
+                str(BACKTEST_CONFIG.get("sec_insiders", {}).get("start_quarter", "2015q1")),
+            )
+            insider_histories, insider_stats = build_insider_histories(
+                universe, index, sec_source.cik_for,
+            )
+            insider_stats = {**insider_stats, **index_stats}
+        if with_fundamentals and sec_source is not None:
             fundamental_histories, fundamental_errors, fundamental_stats = (
                 collect_fundamental_histories(
                     universe,
@@ -727,6 +828,8 @@ def backtest_saved_run(
             fundamental_histories=fundamental_histories,
             fundamental_stats=fundamental_stats,
             limit=limit,
+            insider_histories=insider_histories,
+            insider_stats=insider_stats,
         )
         artifacts = export_backtest(analysis, OUTPUT_DIR)
         coverage = analysis["coverage"]
@@ -747,6 +850,8 @@ def backtest_saved_run(
                 "observations": coverage["observations"],
                 "with_fundamentals": with_fundamentals,
                 "fundamental_coverage": analysis["fundamental_coverage"],
+                "with_insiders": with_insiders,
+                "insider_coverage": analysis["insider_coverage"],
                 "official_scores_and_ranks_unchanged": True,
                 **artifacts,
             },
@@ -780,6 +885,15 @@ def backtest_saved_run(
             f"{fundamental_stats['skipped_non_us']} non-U.S. skipped; "
             f"{sec_source.stats.requests} SEC requests, "
             f"{sec_source.stats.hits} cache hits"
+        )
+    if insider_stats is not None:
+        print(
+            "SEC insiders: "
+            f"{insider_stats['with_data']} tickers with Form 4 history, "
+            f"{insider_stats['without_data']} without, "
+            f"{insider_stats['unmapped']} unmapped; data through "
+            f"{insider_stats['data_through']}, "
+            f"{len(insider_stats['quarters_loaded'])} quarters"
         )
     ic = analysis["aggregate"]["information_coefficient"]
     for column in ("technical_score", "discovery_score_static", "score_v2", "score_v3"):

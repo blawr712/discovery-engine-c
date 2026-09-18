@@ -243,3 +243,37 @@ class FundamentalsIntegrationTests(unittest.TestCase):
         results = engine.run([{"ticker": "AAA", "country": "US"}])
         self.assertEqual(results[0]["fundamentals_status"], "not_requested")
         self.assertIsNone(results[0]["pit_revenue_ttm"])
+
+
+class InsiderIntegrationTests(unittest.TestCase):
+    def test_looks_up_insider_history_with_isolation(self):
+        from src.insider_signals import InsiderHistory
+
+        history = InsiderHistory([{
+            "issuer_cik": "1", "filed": "2025-01-10", "kind": "purchase",
+            "shares": 100, "price": 2.0, "value": 200.0, "owner_ciks": ["X"],
+            "officer_or_director": True,
+        }])
+
+        def lookup(ticker):
+            if ticker == "BOOM":
+                raise RuntimeError("index broken")
+            return history if ticker == "GOOD" else None
+
+        engine = DiscoveryEngine(
+            ConcurrentFakeSource(), benchmarks={"US": "SPY", "CA": "XIU.TO"},
+            max_workers=2, insider_lookup=lookup,
+        )
+        results = engine.run([
+            {"ticker": "GOOD", "country": "US"},
+            {"ticker": "NONE", "country": "US"},
+            {"ticker": "BOOM", "country": "US"},
+            {"ticker": "NORTH.TO", "country": "CA"},
+        ])
+        by = {row["ticker"]: row for row in results}
+        self.assertEqual(by["GOOD"]["insiders_status"], "collected")
+        self.assertIn("ins_purchase_count_long", by["GOOD"])
+        self.assertEqual(by["NONE"]["insiders_status"], "no_data")
+        self.assertTrue(by["BOOM"]["insiders_status"].startswith("unavailable: RuntimeError"))
+        self.assertEqual(by["NORTH.TO"]["insiders_status"], "not_applicable")
+        self.assertTrue(all(row["status"] == "OK" for row in results))

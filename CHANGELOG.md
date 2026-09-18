@@ -31,6 +31,19 @@
 - Added median, win-rate, and 2%-trimmed-mean statistics per score quantile
   and median excess for top-N selections, because mean excess returns in
   this universe are dominated by a few extreme rebounds
+- Added a compact, cached source for the SEC's quarterly insider-transaction
+  data sets (Forms 3/4/5), keeping open-market purchases and sales with
+  filing dates, values, and reporting-owner relationships
+- Added point-in-time Form 4 signals (purchase and sale counts, distinct
+  buyers, officer purchases, net value and its ratio to market cap, cluster
+  buying, days since last purchase) with a data-through date
+- Added `--with-insiders` to `--backtest-run` and live-run insider lookup
+  for U.S. filers, with an `insiders_status` field on each row
+- Accepted `ins_*` signals in the shadow-model registry and exclusions
+- Weighted net insider purchases (10 points) in Score v3 in place of medium
+  momentum after the full-universe backtest showed a one-year IC of 0.07
+  positive in 91% of months; v3's one-year IC rose from 0.10 to 0.11 and its
+  top-quintile median, trimmed mean, and win-rate spreads all widened
 - Added a research queue ordered by validated evidence: Score v3 first,
   Score v2 for companies without fundamentals, then the official Discovery
   Score; exported as `research_queue_*.csv/json` with basis, tier, drivers,

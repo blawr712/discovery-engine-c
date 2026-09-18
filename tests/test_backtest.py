@@ -379,6 +379,48 @@ class FundamentalIntegrationTests(unittest.TestCase):
         })
 
 
+class InsiderIntegrationTests(unittest.TestCase):
+    def test_insider_histories_join_observations_and_ic(self):
+        from src.backtest import build_insider_histories
+        from src.insider_signals import InsiderHistory
+
+        universe, histories, benchmarks = _synthetic_universe(ticker_count=25)
+        universe.append({"ticker": "CA1", "country": "CA", "sector": None,
+                         "market_cap": None, "source_status": "OK"})
+
+        class FakeHistory:
+            has_data = True
+
+            def __init__(self, strength):
+                self.strength = strength
+
+            def signals_as_of(self, as_of, market_cap=None):
+                return {"ins_purchase_count_short": float(self.strength),
+                        "ins_cluster_buy_short": 1.0 if self.strength > 12 else 0.0,
+                        "ins_data_through": "2026-03-31"}
+
+        index = {f"{i:010d}": FakeHistory(i) for i in range(1, 26)}
+        lookup = lambda t: (f"{int(t[1:]) + 1:010d}" if t != "T00" else None)  # noqa: E731
+        insider_histories, stats = build_insider_histories(universe, index, lookup)
+        self.assertEqual(stats, {"requested": 25, "unmapped": 1, "without_data": 0, "with_data": 24})
+        self.assertNotIn("CA1", insider_histories)
+
+        analysis = build_backtest(
+            universe, histories, benchmarks, {"US": "SPY", "CA": "XIU.TO"}, "RUN1",
+            config=CONFIG, insider_histories=insider_histories,
+            insider_stats={**stats, "data_through": "2026-03-31"},
+        )
+        frame = analysis["_observations"]
+        self.assertIn("ins_purchase_count_short", frame.columns)
+        ic = analysis["aggregate"]["information_coefficient"]
+        self.assertIn("ins_purchase_count_short", ic)
+        self.assertIsNotNone(ic["ins_purchase_count_short"]["1M"])
+        self.assertNotIn("ins_data_through", ic)
+        self.assertEqual(analysis["insider_coverage"]["tickers_with_history"], 24)
+        self.assertTrue(any("Form 4" in item for item in analysis["limitations"]))
+        self.assertIsNone(analysis["fundamental_coverage"])
+
+
 class ExportTests(unittest.TestCase):
     def test_limited_runs_use_distinct_artifact_names(self):
         universe, histories, benchmarks = _synthetic_universe(ticker_count=25)

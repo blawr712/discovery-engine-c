@@ -25,5 +25,8 @@
     "sec_fundamentals": {
         "collection_workers": 2,
         "maximum_report_age_days": 400
+    },
+    "sec_insiders": {
+        "start_quarter": "2015q1"
     }
 }

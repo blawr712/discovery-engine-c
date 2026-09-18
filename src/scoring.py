@@ -13,6 +13,10 @@ from src.fundamentals_pit import (
     FundamentalHistory,
     SIGNAL_NAMES as FUNDAMENTAL_SIGNAL_NAMES,
 )
+from src.insider_signals import (
+    InsiderHistory,
+    SIGNAL_NAMES as INSIDER_SIGNAL_NAMES,
+)
 from src.scoring_v2 import compute_raw_signals
 
 from src.config import (
@@ -32,6 +36,7 @@ def calculate_scores(
     benchmark_history: pd.DataFrame,
     fundamental_history: FundamentalHistory | None = None,
     as_of: datetime | None = None,
+    insider_history: InsiderHistory | None = None,
 ) -> dict:
     market_cap = stock_data.get("market_cap")
     sector = stock_data.get("sector")
@@ -103,12 +108,20 @@ def calculate_scores(
         )
     else:
         pit_signals = {name: None for name in FUNDAMENTAL_SIGNAL_NAMES}
+    if insider_history is not None:
+        insider_signals = insider_history.signals_as_of(
+            (as_of or datetime.now(timezone.utc)).date(),
+            market_cap=float(market_cap),
+        )
+    else:
+        insider_signals = {name: None for name in INSIDER_SIGNAL_NAMES}
 
     return {
         **stock_data,
         **fundamental_scores,
         **v2_raw_signals,
         **pit_signals,
+        **insider_signals,
         "latest_close": latest_close,
         "volume_score": volume_score,
         "volume_ratio": round(volume_ratio, 2) if volume_ratio is not None else None,

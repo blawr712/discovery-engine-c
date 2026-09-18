@@ -277,9 +277,9 @@
             "pit_fcf_margin_ttm": {"weight": 10, "direction": "higher"},
             "pit_operating_margin_ttm": {"weight": 5, "direction": "higher"},
             "pit_share_change_1y": {"weight": 10, "direction": "lower"},
+            "ins_net_count_short": {"weight": 10, "direction": "higher"},
             "high_proximity": {"weight": 10, "direction": "higher"},
             "momentum_long": {"weight": 5, "direction": "higher"},
-            "momentum_medium": {"weight": 5, "direction": "higher"},
             "volatility": {"weight": 5, "direction": "lower"}
         }
     },
@@ -391,6 +391,12 @@
     "reports": {
         "top_stocks": 100,
         "export_format": "csv"
+    },
+
+    "insider_signals": {
+        "short_window_days": 180,
+        "long_window_days": 365,
+        "minimum_transaction_value": 0
     },
 
     "research_ranking": {

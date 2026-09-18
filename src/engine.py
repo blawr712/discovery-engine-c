@@ -10,6 +10,7 @@ import pandas as pd
 
 from src.data_sources.base import MarketDataSource
 from src.fundamentals_pit import FundamentalHistory
+from src.insider_signals import InsiderHistory
 from src.pre_filter import evaluate_stock, filtered_result
 from src.scoring import calculate_scores
 
@@ -42,6 +43,7 @@ class DiscoveryEngine:
         result_callback: ResultCallback | None = None,
         fundamentals_source=None,
         fundamentals_countries: tuple[str, ...] = ("US",),
+        insider_lookup: Callable[[str], InsiderHistory | None] | None = None,
     ) -> None:
         if isinstance(max_workers, bool) or not isinstance(max_workers, int):
             raise TypeError("max_workers must be an integer.")
@@ -72,6 +74,7 @@ class DiscoveryEngine:
         self.fundamentals_countries = tuple(
             str(country).upper() for country in fundamentals_countries
         )
+        self.insider_lookup = insider_lookup
 
     def run(
         self,
@@ -260,12 +263,36 @@ class DiscoveryEngine:
     ) -> dict:
         price_history = self.source.get_price_history(candidate.ticker)
         fundamental_history, status = self._load_fundamentals(candidate)
+        insider_history, insider_status = self._load_insiders(candidate)
         return calculate_scores(
-            {**candidate.stock_data, "fundamentals_status": status},
+            {
+                **candidate.stock_data,
+                "fundamentals_status": status,
+                "insiders_status": insider_status,
+            },
             price_history,
             benchmark_history,
             fundamental_history=fundamental_history,
+            insider_history=insider_history,
         )
+
+    def _load_insiders(
+        self,
+        candidate: Candidate,
+    ) -> tuple[InsiderHistory | None, str]:
+        """Look up Form 4 history with per-company failure isolation."""
+        if self.insider_lookup is None:
+            return None, "not_requested"
+        country = str(candidate.stock_data.get("country") or "").upper()
+        if country not in self.fundamentals_countries:
+            return None, "not_applicable"
+        try:
+            history = self.insider_lookup(candidate.ticker)
+        except Exception as error:  # noqa: BLE001 - isolate lookup failures
+            return None, f"unavailable: {type(error).__name__}: {error}"
+        if history is None or not history.has_data:
+            return None, "no_data"
+        return history, "collected"
 
     def _load_fundamentals(
         self,

@@ -24,6 +24,7 @@ import pandas as pd
 from src.config import BACKTEST_CONFIG, SCORING_CONFIG
 from src.data_sources.base import MarketDataSource
 from src.fundamentals_pit import FundamentalHistory
+from src.insider_signals import InsiderHistory
 from src.scoring import (
     score_liquidity,
     score_market_cap,
@@ -73,6 +74,21 @@ FUNDAMENTAL_IC_COLUMNS = (
     "pit_fcf_yield",
     "pit_earnings_yield",
     "pit_sales_yield",
+)
+INSIDER_IC_COLUMNS = (
+    "ins_purchase_count_short",
+    "ins_net_count_short",
+    "ins_distinct_buyers_short",
+    "ins_officer_purchase_count_short",
+    "ins_net_value_to_market_cap_short",
+    "ins_cluster_buy_short",
+    "ins_purchase_count_long",
+    "ins_net_value_to_market_cap_long",
+)
+INSIDER_LIMITATIONS = (
+    "Insider signals use SEC structured Form 4 data sets, which cover U.S. "
+    "filers only and are published quarterly with a lag; months after the "
+    "last published quarter carry stale or empty insider signals.",
 )
 FUNDAMENTAL_LIMITATIONS = (
     "Point-in-time fundamentals cover U.S. GAAP filers only; Canadian and IFRS "
@@ -219,6 +235,31 @@ def collect_fundamental_histories(
     return histories, errors, stats
 
 
+def build_insider_histories(
+    universe: list[dict],
+    index: dict[str, InsiderHistory],
+    cik_lookup,
+) -> tuple[dict[str, InsiderHistory], dict]:
+    """Map U.S. tickers to insider histories through their SEC CIKs."""
+    histories: dict[str, InsiderHistory] = {}
+    stats = {"requested": 0, "unmapped": 0, "without_data": 0, "with_data": 0}
+    for row in universe:
+        if row["country"] != "US":
+            continue
+        stats["requested"] += 1
+        cik = cik_lookup(row["ticker"])
+        if cik is None:
+            stats["unmapped"] += 1
+            continue
+        history = index.get(str(cik).zfill(10))
+        if history is None or not history.has_data:
+            stats["without_data"] += 1
+            continue
+        histories[row["ticker"]] = history
+        stats["with_data"] += 1
+    return histories, stats
+
+
 def build_backtest(
     universe: list[dict],
     histories: dict[str, pd.DataFrame],
@@ -231,6 +272,8 @@ def build_backtest(
     fundamental_histories: dict[str, FundamentalHistory] | None = None,
     fundamental_stats: dict | None = None,
     limit: int | None = None,
+    insider_histories: dict[str, InsiderHistory] | None = None,
+    insider_stats: dict | None = None,
 ) -> dict:
     """Replay technical scoring at historical month-ends and measure outcomes."""
     config = _validated_config(config)
@@ -238,8 +281,12 @@ def build_backtest(
     horizons = config["forward_horizons_days"]
     fundamental_histories = fundamental_histories or {}
     with_fundamentals = bool(fundamental_histories)
-    config["ic_columns"] = list(IC_COLUMNS) + (
-        list(FUNDAMENTAL_IC_COLUMNS) if with_fundamentals else []
+    insider_histories = insider_histories or {}
+    with_insiders = bool(insider_histories)
+    config["ic_columns"] = (
+        list(IC_COLUMNS)
+        + (list(FUNDAMENTAL_IC_COLUMNS) if with_fundamentals else [])
+        + (list(INSIDER_IC_COLUMNS) if with_insiders else [])
     )
 
     calendars: dict[str, pd.DatetimeIndex] = {}
@@ -290,6 +337,7 @@ def build_backtest(
         )
         static_sector_score = score_sector_bonus(row["sector"])
         fundamental_history = fundamental_histories.get(ticker)
+        insider_history = insider_histories.get(ticker)
 
         for period_label, period_dates in periods:
             date = period_dates.get(benchmark_ticker)
@@ -346,6 +394,11 @@ def build_backtest(
                     date.date(),
                     price=float(start_close) if _positive(start_close) else None,
                 ))
+            if insider_history is not None:
+                observation.update(insider_history.signals_as_of(
+                    date.date(),
+                    market_cap=observation.get("pit_market_cap"),
+                ))
             for label, days in horizons.items():
                 end_position = position + days
                 stock_return = None
@@ -389,15 +442,28 @@ def build_backtest(
             ),
         }
 
+    insider_coverage = None
+    if with_insiders:
+        insider_coverage = {
+            **(insider_stats or {}),
+            "tickers_with_history": len(insider_histories),
+            "observations_with_signals": (
+                int(frame["ins_purchase_count_short"].notna().sum())
+                if "ins_purchase_count_short" in frame
+                else 0
+            ),
+        }
+
     return {
         "model_version": config["model_version"],
         "source_run_id": run_id,
         "limit": limit,
         "config": config,
-        "limitations": list(LIMITATIONS) + (
-            list(FUNDAMENTAL_LIMITATIONS) if with_fundamentals else []
-        ),
+        "limitations": list(LIMITATIONS)
+        + (list(FUNDAMENTAL_LIMITATIONS) if with_fundamentals else [])
+        + (list(INSIDER_LIMITATIONS) if with_insiders else []),
         "fundamental_coverage": fundamental_coverage,
+        "insider_coverage": insider_coverage,
         "filter_diagnostics": filter_diagnostics,
         "coverage": {
             "universe_tickers": len(universe),
