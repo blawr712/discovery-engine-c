@@ -71,6 +71,8 @@ SIGNAL_NAMES = (
     "pit_earnings_yield",
     "pit_sales_yield",
     "pit_report_age_days",
+    "pit_reporting_currency",
+    "pit_data_quality",
 )
 
 
@@ -92,6 +94,15 @@ class FundamentalHistory:
         self.config = {**DEFAULT_CONFIG, **(config or {})}
         self.ticker = str(extract.get("ticker", ""))
         facts = extract.get("facts", {}) if isinstance(extract, dict) else {}
+        self.data_quality = str(
+            (extract.get("data_quality") if isinstance(extract, dict) else None)
+            or "filed"
+        )
+        self.currency = _dominant_currency(
+            facts, extract.get("currency") if isinstance(extract, dict) else None,
+        )
+        facts = _single_currency(facts, self.currency)
+        self._annuals: dict[str, list[list[PeriodValue]]] = {}
         self._quarters: dict[str, dict[date, list[PeriodValue]]] = {}
         self._instants: dict[str, dict[date, list[PeriodValue]]] = {}
         self._quarter_ends: dict[str, list[date]] = {}
@@ -99,6 +110,7 @@ class FundamentalHistory:
 
         for concept in DURATION_CONCEPTS:
             values = _duration_values(facts.get(concept, []), concept)
+            self._annuals[concept] = _annual_values(values, self.config)
             quarters = _quarterly_values(values, self.config)
             self._quarters[concept] = _prefer_best_tag(quarters)
             self._quarter_ends[concept] = sorted(self._quarters[concept])
@@ -116,6 +128,33 @@ class FundamentalHistory:
     @property
     def has_data(self) -> bool:
         return any(self._quarter_ends.values()) or any(self._instant_ends.values())
+
+    def latest_period_end(self, as_of: date | None = None) -> date | None:
+        """Most recent period end known on ``as_of`` across every concept."""
+        latest = None
+        for concept in DURATION_CONCEPTS:
+            for entries in self._annuals.get(concept, []):
+                chosen = _latest_known(entries, as_of) if as_of else entries[-1]
+                if chosen is not None and (latest is None or chosen.end > latest):
+                    latest = chosen.end
+            for end, entries in self._quarters.get(concept, {}).items():
+                chosen = _latest_known(entries, as_of) if as_of else entries[-1]
+                if chosen is not None and (latest is None or end > latest):
+                    latest = end
+        for concept in INSTANT_CONCEPTS:
+            for end, entries in self._instants.get(concept, {}).items():
+                chosen = _latest_known(entries, as_of) if as_of else entries[-1]
+                if chosen is not None and (latest is None or end > latest):
+                    latest = end
+        return latest
+
+    def is_stale(self, as_of: date | datetime) -> bool:
+        """True when nothing known on ``as_of`` is within the maximum report age."""
+        as_of = as_of.date() if isinstance(as_of, datetime) else as_of
+        latest = self.latest_period_end(as_of)
+        if latest is None:
+            return True
+        return (as_of - latest).days > int(self.config["maximum_report_age_days"])
 
     def quarters_as_of(self, concept: str, as_of: date) -> list[PeriodValue]:
         """Quarterly values known on ``as_of``, latest filing per period."""
@@ -145,16 +184,35 @@ class FundamentalHistory:
         return None
 
     def ttm(self, concept: str, as_of: date, offset: int = 0) -> tuple[tuple[date, ...], float] | None:
-        """Sum of four consecutive quarters ending ``offset`` quarters back."""
+        """Sum of four consecutive quarters ending ``offset`` quarters back.
+
+        Falls back to a reported annual figure when quarterly data is absent
+        (annual-only filers); ``offset`` must then be a multiple of four.
+        """
         quarters = self.quarters_as_of(concept, as_of)
         end_index = len(quarters) - offset
         start_index = end_index - 4
-        if start_index < 0:
+        if start_index >= 0:
+            window = quarters[start_index:end_index]
+            if _consecutive(window, self.config) and _same_tag(window):
+                return tuple(item.end for item in window), float(sum(item.value for item in window))
+        if offset % 4 != 0:
             return None
-        window = quarters[start_index:end_index]
-        if not _consecutive(window, self.config) or not _same_tag(window):
+        annuals = self.annuals_as_of(concept, as_of)
+        index = len(annuals) - 1 - offset // 4
+        if index < 0:
             return None
-        return tuple(item.end for item in window), float(sum(item.value for item in window))
+        item = annuals[index]
+        return (item.end,), float(item.value)
+
+    def annuals_as_of(self, concept: str, as_of: date) -> list[PeriodValue]:
+        """Annual values known on ``as_of``, latest filing per fiscal year."""
+        known = []
+        for entries in self._annuals.get(concept, []):
+            chosen = _latest_known(entries, as_of)
+            if chosen is not None and chosen.end <= as_of:
+                known.append(chosen)
+        return known
 
     def signals_as_of(
         self,
@@ -168,7 +226,9 @@ class FundamentalHistory:
         given; otherwise an explicit ``market_cap`` is used when supplied.
         """
         as_of = as_of.date() if isinstance(as_of, datetime) else as_of
-        signals: dict[str, float | None] = {name: None for name in SIGNAL_NAMES}
+        signals: dict[str, object] = {name: None for name in SIGNAL_NAMES}
+        signals["pit_reporting_currency"] = self.currency
+        signals["pit_data_quality"] = self.data_quality
         maximum_age = int(self.config["maximum_report_age_days"])
 
         revenue = self.ttm("revenue", as_of)
@@ -258,7 +318,7 @@ class FundamentalHistory:
                             signals[name] = value / market_cap
 
         return {
-            name: (round(value, 6) if value is not None else None)
+            name: (round(value, 6) if isinstance(value, float) else value)
             for name, value in signals.items()
         }
 
@@ -281,6 +341,62 @@ class FundamentalHistory:
         if latest_base.value <= 0 or previous_base.value <= 0:
             return None
         return (latest.value / latest_base.value) - (previous.value / previous_base.value)
+
+
+def _dominant_currency(facts: dict, declared: object) -> str | None:
+    """Pick the money unit with the most facts, or the declared currency."""
+    counts: dict[str, int] = {}
+    for concept, rows in facts.items():
+        if concept == "shares_outstanding":
+            continue
+        for row in rows:
+            unit = row.get("unit")
+            if isinstance(unit, str) and unit:
+                counts[unit] = counts.get(unit, 0) + 1
+    if counts:
+        return max(sorted(counts), key=counts.get)
+    if isinstance(declared, str) and declared:
+        return str(declared)
+    # Extracts written before units were recorded hold only US-GAAP facts.
+    if any(
+        str(row.get("tag", "")).startswith("us-gaap:")
+        for rows in facts.values() for row in rows
+    ):
+        return "USD"
+    return None
+
+
+def _single_currency(facts: dict, currency: str | None) -> dict:
+    """Drop money facts reported in a currency other than the dominant one."""
+    if currency is None:
+        return facts
+    filtered = {}
+    for concept, rows in facts.items():
+        if concept == "shares_outstanding":
+            filtered[concept] = rows
+            continue
+        filtered[concept] = [
+            row for row in rows if not row.get("unit") or row.get("unit") == currency
+        ]
+    return filtered
+
+
+def _annual_values(values: list[PeriodValue], config: dict) -> list[list[PeriodValue]]:
+    """Group reported annual figures by fiscal-year end, versions sorted by filing."""
+    annual_min, annual_max = config["annual_days"]
+    by_end: dict[date, list[PeriodValue]] = {}
+    for item in values:
+        if annual_min <= (item.end - item.start).days <= annual_max:
+            by_end.setdefault(item.end, []).append(item)
+    groups = []
+    for end in sorted(by_end):
+        entries = by_end[end]
+        best = min(entry.priority for entry in entries)
+        groups.append(sorted(
+            (entry for entry in entries if entry.priority == best),
+            key=lambda entry: entry.filed,
+        ))
+    return groups
 
 
 def _duration_values(rows: list[dict], concept: str) -> list[PeriodValue]:

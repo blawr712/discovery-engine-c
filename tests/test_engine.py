@@ -209,8 +209,8 @@ class FundamentalsIntegrationTests(unittest.TestCase):
                 if ticker == "EMPTY":
                     return {"ticker": ticker, "facts": {}}
                 return {"ticker": ticker, "facts": {"revenue": [
-                    {"start": "2025-01-01", "end": "2025-03-31",
-                     "filed": "2025-05-01", "val": 100.0},
+                    {"start": "2026-04-01", "end": "2026-06-30",
+                     "filed": "2026-08-01", "val": 100.0},
                 ]}}
 
         fundamentals = FakeFundamentals()
@@ -277,3 +277,146 @@ class InsiderIntegrationTests(unittest.TestCase):
         self.assertTrue(by["BOOM"]["insiders_status"].startswith("unavailable: RuntimeError"))
         self.assertEqual(by["NORTH.TO"]["insiders_status"], "not_applicable")
         self.assertTrue(all(row["status"] == "OK" for row in results))
+
+
+class CanadianFundamentalsTests(unittest.TestCase):
+    def _statements(self):
+        quarters = ["2025-09-30", "2025-12-31", "2026-03-31", "2026-06-30"]
+        return {
+            "currency": "USD",
+            "quarterly": {
+                "income": {q: {"Total Revenue": 100.0, "Operating Income": 10.0} for q in quarters},
+                "balance": {q: {"Cash And Cash Equivalents": 50.0, "Ordinary Shares Number": 10.0}
+                            for q in quarters},
+                "cashflow": {q: {"Operating Cash Flow": 12.0, "Capital Expenditure": -2.0}
+                             for q in quarters},
+            },
+            "annual": {},
+        }
+
+    def test_statements_fallback_with_fx_conversion_and_resolver(self):
+        engine_source = ConcurrentFakeSource()
+        statements = self._statements()
+
+        class Statements:
+            calls = []
+
+            def get_financial_statements(inner, ticker):
+                inner.calls.append(ticker)
+                if ticker == "NOSTMT.TO":
+                    return {"currency": None, "quarterly": {}, "annual": {}}
+                return statements
+
+        class SecFacts:
+            def get_company_facts(inner, ticker):
+                assert ticker == "BCHT", ticker
+                return {"ticker": "BCHT", "facts": {"revenue": [
+                    {"start": "2026-04-01", "end": "2026-06-30", "filed": "2026-08-01",
+                     "val": 5.0, "tag": "us-gaap:Revenues", "unit": "USD"},
+                ]}}
+
+        def resolver(stock_data):
+            if stock_data["ticker"] == "BCHT.TO":
+                return "BCHT", "interlisted:BCHT name match 1.00"
+            return None, "not interlisted"
+
+        original = engine_source.get_stock_data
+
+        def with_currency(ticker):
+            data = original(ticker)
+            data["currency"] = "CAD" if ticker.endswith(".TO") else "USD"
+            return data
+
+        engine_source.get_stock_data = with_currency
+        engine = DiscoveryEngine(
+            engine_source, benchmarks={"US": "SPY", "CA": "XIU.TO"}, max_workers=2,
+            fundamentals_source=SecFacts(), statements_source=Statements(),
+            sec_ticker_resolver=resolver, fundamentals_countries=("US", "CA"),
+            fx_rates={("CAD", "USD"): 0.5, ("USD", "CAD"): 2.0},
+        )
+        results = engine.run([
+            {"ticker": "WELL.TO", "country": "CA", "root_ticker": "WELL",
+             "company_name": "WELL Health", "interlisted": None},
+            {"ticker": "BCHT.TO", "country": "CA", "root_ticker": "BCHT",
+             "company_name": "Birchtech Corp.", "interlisted": "NYSE Mkt"},
+            {"ticker": "NOSTMT.TO", "country": "CA"},
+        ])
+        by = {row["ticker"]: row for row in results}
+
+        # Statements fallback: reports in USD, trades in CAD -> converted.
+        self.assertTrue(by["WELL.TO"]["fundamentals_status"].startswith("statements; converted CAD->USD"))
+        self.assertEqual(by["WELL.TO"]["pit_reporting_currency"], "USD")
+        self.assertEqual(by["WELL.TO"]["pit_data_quality"], "estimated_filing_dates")
+        self.assertEqual(by["WELL.TO"]["pit_revenue_ttm"], 400.0)
+        # Price 229 CAD * 0.5 = 114.5 USD * 10 shares = market cap 1145 USD.
+        self.assertAlmostEqual(by["WELL.TO"]["pit_market_cap"], 1145.0, places=6)
+        self.assertEqual(by["WELL.TO"]["universe_interlisted"], None)
+        # Interlisted name resolved to SEC facts, currencies match.
+        self.assertEqual(by["BCHT.TO"]["fundamentals_status"], "collected via BCHT; converted CAD->USD")
+        self.assertEqual(by["BCHT.TO"]["universe_root_ticker"], "BCHT")
+        # Empty statements: no data, still scored.
+        self.assertEqual(by["NOSTMT.TO"]["fundamentals_status"], "no_data")
+        self.assertTrue(all(row["status"] == "OK" for row in results))
+
+    def test_missing_fx_rate_skips_valuation_ratios_only(self):
+        engine_source = ConcurrentFakeSource()
+        original = engine_source.get_stock_data
+        engine_source.get_stock_data = lambda t: {**original(t), "currency": "CAD"}
+
+        class Statements:
+            def get_financial_statements(inner, ticker):
+                return self._statements()
+
+        engine = DiscoveryEngine(
+            engine_source, benchmarks={"CA": "XIU.TO"}, max_workers=1,
+            statements_source=Statements(), fundamentals_countries=("CA",),
+        )
+        row = engine.run([{"ticker": "WELL.TO", "country": "CA"}])[0]
+        self.assertIn("rate unavailable", row["fundamentals_status"])
+        self.assertEqual(row["pit_revenue_ttm"], 400.0)
+        self.assertIsNone(row["pit_market_cap"])
+        self.assertIsNone(row["pit_sales_yield"])
+
+
+class StaleSecFallbackTests(unittest.TestCase):
+    def test_stale_sec_facts_fall_back_to_statements(self):
+        engine_source = ConcurrentFakeSource()
+
+        class SecFacts:
+            def get_company_facts(inner, ticker):
+                return {"ticker": ticker, "facts": {"revenue": [
+                    {"start": "2019-01-01", "end": "2019-03-31", "filed": "2019-05-01",
+                     "val": 5.0, "tag": "us-gaap:Revenues", "unit": "USD"},
+                ]}}
+
+        class Statements:
+            def get_financial_statements(inner, ticker):
+                quarters = ["2025-09-30", "2025-12-31", "2026-03-31", "2026-06-30"]
+                return {"currency": "USD", "annual": {}, "quarterly": {
+                    "income": {q: {"Total Revenue": 10.0} for q in quarters},
+                    "balance": {}, "cashflow": {}}}
+
+        engine = DiscoveryEngine(
+            engine_source, benchmarks={"US": "SPY"}, max_workers=1,
+            fundamentals_source=SecFacts(), statements_source=Statements(),
+        )
+        row = engine.run([{"ticker": "OLD", "country": "US"}])[0]
+        self.assertEqual(row["fundamentals_status"], "statements (SEC facts stale)")
+        self.assertEqual(row["pit_data_quality"], "estimated_filing_dates")
+        self.assertEqual(row["pit_revenue_ttm"], 40.0)
+
+    def test_stale_sec_facts_without_statements_are_kept_and_labeled(self):
+        class SecFacts:
+            def get_company_facts(inner, ticker):
+                return {"ticker": ticker, "facts": {"revenue": [
+                    {"start": "2019-01-01", "end": "2019-03-31", "filed": "2019-05-01",
+                     "val": 5.0, "tag": "us-gaap:Revenues", "unit": "USD"},
+                ]}}
+
+        engine = DiscoveryEngine(
+            ConcurrentFakeSource(), benchmarks={"US": "SPY"}, max_workers=1,
+            fundamentals_source=SecFacts(),
+        )
+        row = engine.run([{"ticker": "OLD", "country": "US"}])[0]
+        self.assertEqual(row["fundamentals_status"], "collected (stale)")
+        self.assertIsNone(row["pit_revenue_ttm"])

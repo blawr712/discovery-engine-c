@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from typing import Callable
 
 import pandas as pd
@@ -11,6 +12,7 @@ import pandas as pd
 from src.data_sources.base import MarketDataSource
 from src.fundamentals_pit import FundamentalHistory
 from src.insider_signals import InsiderHistory
+from src.statements_extract import extract_from_statements
 from src.pre_filter import evaluate_stock, filtered_result
 from src.scoring import calculate_scores
 
@@ -44,6 +46,9 @@ class DiscoveryEngine:
         fundamentals_source=None,
         fundamentals_countries: tuple[str, ...] = ("US",),
         insider_lookup: Callable[[str], InsiderHistory | None] | None = None,
+        statements_source: MarketDataSource | None = None,
+        sec_ticker_resolver: Callable[[dict], tuple[str | None, str]] | None = None,
+        fx_rates: dict[tuple[str, str], float] | None = None,
     ) -> None:
         if isinstance(max_workers, bool) or not isinstance(max_workers, int):
             raise TypeError("max_workers must be an integer.")
@@ -75,6 +80,9 @@ class DiscoveryEngine:
             str(country).upper() for country in fundamentals_countries
         )
         self.insider_lookup = insider_lookup
+        self.statements_source = statements_source
+        self.sec_ticker_resolver = sec_ticker_resolver
+        self.fx_rates = dict(fx_rates or {})
 
     def run(
         self,
@@ -161,6 +169,9 @@ class DiscoveryEngine:
         stock_data = {
             **stock_data,
             "asset_type": pre_filter.asset_type,
+            "universe_root_ticker": item.get("root_ticker"),
+            "universe_interlisted": item.get("interlisted"),
+            "universe_company_name": item.get("company_name"),
         }
 
         if not pre_filter.passed:
@@ -264,6 +275,7 @@ class DiscoveryEngine:
         price_history = self.source.get_price_history(candidate.ticker)
         fundamental_history, status = self._load_fundamentals(candidate)
         insider_history, insider_status = self._load_insiders(candidate)
+        fx_multiplier, status = self._reporting_fx(candidate, fundamental_history, status)
         return calculate_scores(
             {
                 **candidate.stock_data,
@@ -274,7 +286,26 @@ class DiscoveryEngine:
             benchmark_history,
             fundamental_history=fundamental_history,
             insider_history=insider_history,
+            reporting_fx_multiplier=fx_multiplier,
         )
+
+    def _reporting_fx(
+        self,
+        candidate: Candidate,
+        history: FundamentalHistory | None,
+        status: str,
+    ) -> tuple[float | None, str]:
+        """Multiplier converting the trading currency into the reporting one."""
+        if history is None or not history.currency:
+            return 1.0, status
+        trading = str(candidate.stock_data.get("currency") or "").upper()
+        reporting = str(history.currency).upper()
+        if not trading or trading == reporting:
+            return 1.0, status
+        rate = self.fx_rates.get((trading, reporting))
+        if rate is None:
+            return None, f"{status}; {trading}->{reporting} rate unavailable, valuation ratios skipped"
+        return float(rate), f"{status}; converted {trading}->{reporting}"
 
     def _load_insiders(
         self,
@@ -298,21 +329,56 @@ class DiscoveryEngine:
         self,
         candidate: Candidate,
     ) -> tuple[FundamentalHistory | None, str]:
-        """Load point-in-time fundamentals with per-company failure isolation."""
-        if self.fundamentals_source is None:
+        """Load point-in-time fundamentals with per-company failure isolation.
+
+        SEC facts are preferred (filed, point-in-time). Listings without an SEC
+        registrant fall back to provider statements with estimated filing
+        dates when a statements source is available.
+        """
+        if self.fundamentals_source is None and self.statements_source is None:
             return None, "not_requested"
         country = str(candidate.stock_data.get("country") or "").upper()
         if country not in self.fundamentals_countries:
             return None, "not_applicable"
-        try:
-            history = FundamentalHistory(
-                self.fundamentals_source.get_company_facts(candidate.ticker)
-            )
-        except Exception as error:  # noqa: BLE001 - isolate provider failures
-            return None, f"unavailable: {type(error).__name__}: {error}"
-        if not history.has_data:
+        sec_ticker, reason = self._sec_ticker(candidate)
+        if sec_ticker is not None and self.fundamentals_source is not None:
+            try:
+                history = FundamentalHistory(
+                    self.fundamentals_source.get_company_facts(sec_ticker)
+                )
+            except Exception as error:  # noqa: BLE001 - isolate provider failures
+                return None, f"unavailable: {type(error).__name__}: {error}"
+            suffix = "" if sec_ticker == candidate.ticker else f" via {sec_ticker}"
+            if history.has_data and not history.is_stale(datetime.now(timezone.utc)):
+                return history, f"collected{suffix}"
+            if self.statements_source is None:
+                return (history, f"collected{suffix} (stale)") if history.has_data else (None, "no_data")
+            reason = f"SEC facts {'stale' if history.has_data else 'empty'}{suffix}"
+        if self.statements_source is not None:
+            try:
+                statements = self.statements_source.get_financial_statements(candidate.ticker)
+                history = FundamentalHistory(
+                    extract_from_statements(candidate.ticker, statements)
+                )
+            except NotImplementedError:
+                return None, f"unavailable: {reason}"
+            except Exception as error:  # noqa: BLE001 - isolate provider failures
+                return None, f"unavailable: {type(error).__name__}: {error}"
+            if history.has_data:
+                return history, f"statements ({reason})" if "SEC facts" in reason else "statements"
             return None, "no_data"
-        return history, "collected"
+        return None, f"unavailable: {reason}"
+
+    def _sec_ticker(self, candidate: Candidate) -> tuple[str | None, str]:
+        if self.sec_ticker_resolver is not None:
+            try:
+                return self.sec_ticker_resolver(candidate.stock_data)
+            except Exception as error:  # noqa: BLE001 - isolate resolver failures
+                return None, f"resolver error: {type(error).__name__}: {error}"
+        country = str(candidate.stock_data.get("country") or "").upper()
+        if country == "US":
+            return candidate.ticker, "direct"
+        return None, "no SEC resolver for non-U.S. listing"
 
     def _report_progress(
         self,

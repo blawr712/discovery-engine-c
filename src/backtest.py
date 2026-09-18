@@ -134,6 +134,7 @@ def build_backtest_universe(
             "sector": row.get("sector"),
             "market_cap": _number(row.get("market_cap")),
             "source_status": str(row.get("status")),
+            "currency": row.get("currency"),
         }
     return [universe[ticker] for ticker in sorted(universe)]
 

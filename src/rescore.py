@@ -28,6 +28,7 @@ def rescore_results(
     fundamentals_lookup: Callable[[str], FundamentalHistory | None] | None = None,
     insider_lookup: Callable[[str], InsiderHistory | None] | None = None,
     countries: tuple[str, ...] = ("US",),
+    fx_rates: dict[tuple[str, str], float] | None = None,
 ) -> tuple[list[dict], dict]:
     """Fill cached point-in-time signals and reapply shadow models.
 
@@ -38,6 +39,7 @@ def rescore_results(
     """
     as_of_date = as_of.date() if isinstance(as_of, datetime) else as_of
     countries = tuple(str(country).upper() for country in countries)
+    fx_rates = dict(fx_rates or {})
     updated = [dict(row) for row in results]
     stats = {
         "successful_rows": 0,
@@ -60,12 +62,18 @@ def rescore_results(
         if fundamentals_lookup is not None and not _has_fundamentals(row):
             history = _safe(fundamentals_lookup, ticker)
             if history is not None and history.has_data:
+                multiplier, note = _fx_multiplier(row, history, fx_rates)
+                price = _number(row.get("latest_close"))
+                market_cap = _number(row.get("market_cap"))
                 row.update(history.signals_as_of(
                     as_of_date,
-                    price=_number(row.get("latest_close")),
-                    market_cap=_number(row.get("market_cap")),
+                    price=price * multiplier if price is not None and multiplier is not None else None,
+                    market_cap=(
+                        market_cap * multiplier
+                        if market_cap is not None and multiplier is not None else None
+                    ),
                 ))
-                row["fundamentals_status"] = "rescored"
+                row["fundamentals_status"] = "rescored" + note
                 stats["fundamentals_filled"] += 1
             else:
                 for name in FUNDAMENTAL_SIGNAL_NAMES:
@@ -100,6 +108,17 @@ def rescore_results(
     }
     stats["as_of"] = as_of_date.isoformat()
     return rescored, stats
+
+
+def _fx_multiplier(row: dict, history, fx_rates: dict) -> tuple[float | None, str]:
+    trading = str(row.get("currency") or "").upper()
+    reporting = str(getattr(history, "currency", "") or "").upper()
+    if not trading or not reporting or trading == reporting:
+        return 1.0, ""
+    rate = fx_rates.get((trading, reporting))
+    if rate is None:
+        return None, f"; {trading}->{reporting} rate unavailable, valuation ratios skipped"
+    return float(rate), f"; converted {trading}->{reporting}"
 
 
 def _has_fundamentals(row: dict) -> bool:

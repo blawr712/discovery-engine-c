@@ -219,7 +219,11 @@ class SignalTests(unittest.TestCase):
         self.assertFalse(history.has_data)
         signals = history.signals_as_of(date(2026, 1, 1), price=1.0)
         self.assertEqual(set(signals), set(SIGNAL_NAMES))
-        self.assertTrue(all(value is None for value in signals.values()))
+        self.assertEqual(signals["pit_data_quality"], "filed")
+        self.assertIsNone(signals["pit_reporting_currency"])
+        numeric = {k: v for k, v in signals.items()
+                   if k not in ("pit_data_quality", "pit_reporting_currency")}
+        self.assertTrue(all(value is None for value in numeric.values()))
 
     def test_non_consecutive_quarters_do_not_form_ttm(self):
         extract = _extract()
@@ -227,7 +231,27 @@ class SignalTests(unittest.TestCase):
             f for f in extract["facts"]["revenue"] if f["end"] != "2025-03-31"
         ]
         history = FundamentalHistory(extract)
-        self.assertIsNone(history.ttm("revenue", date(2025, 10, 1)))
+        # Broken quarterly chain: falls back to the latest reported annual figure.
+        self.assertEqual(history.ttm("revenue", date(2025, 10, 1)), ((date(2024, 12, 31),), 470.0))
+        # With no annual figure known either, there is no TTM.
+        self.assertIsNone(history.ttm("revenue", date(2025, 2, 14)))
+
+    def test_annual_only_filers_get_ttm_growth_and_currency(self):
+        extract = {"ticker": "FPI", "currency": "CAD", "facts": {"revenue": [
+            {"start": "2023-01-01", "end": "2023-12-31", "filed": "2024-03-30", "val": 400.0,
+             "tag": "ifrs-full:Revenue", "unit": "CAD"},
+            {"start": "2024-01-01", "end": "2024-12-31", "filed": "2025-03-30", "val": 500.0,
+             "tag": "ifrs-full:Revenue", "unit": "CAD"},
+            {"start": "2024-01-01", "end": "2024-12-31", "filed": "2025-03-30", "val": 370.0,
+             "tag": "ifrs-full:Revenue", "unit": "USD"},  # minority currency: dropped
+        ]}}
+        history = FundamentalHistory(extract)
+        self.assertEqual(history.currency, "CAD")
+        signals = history.signals_as_of(date(2025, 6, 1))
+        self.assertEqual(signals["pit_revenue_ttm"], 500.0)
+        self.assertAlmostEqual(signals["pit_revenue_growth_ttm"], 0.25, places=6)
+        self.assertEqual(signals["pit_reporting_currency"], "CAD")
+        self.assertEqual(signals["pit_report_age_days"], 152.0)
 
 
 if __name__ == "__main__":

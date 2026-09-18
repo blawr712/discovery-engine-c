@@ -96,6 +96,18 @@ class RateLimitedMarketDataSource(MarketDataSource):
             self._register_rate_limit(error)
             raise
 
+    def get_financial_statements(self, ticker: str) -> dict:
+        """Fetch statements after reserving a globally paced metadata slot."""
+        if not self.enabled:
+            return self.source.get_financial_statements(ticker)
+
+        self._wait_for_slot("metadata")
+        try:
+            return self.source.get_financial_statements(ticker)
+        except Exception as error:
+            self._register_rate_limit(error)
+            raise
+
     def get_share_history(self, ticker: str, period: str = "18mo"):
         """Fetch share history through the slower metadata pacing lane."""
         if not self.enabled:

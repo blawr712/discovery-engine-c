@@ -86,9 +86,19 @@ by default; set `research_ranking.packet_source` to `calibration_scenario` in
 queue orders attention; it is not a return forecast or a recommendation.
 
 When `SEC_USER_AGENT` is set (see `.env.example`), live runs collect SEC
-company facts for U.S. filers with per-company failure isolation and record a
-`fundamentals_status` on each row; set `fundamentals.live_collection_enabled`
-to `false` in `config/settings.json` to turn this off.
+company facts for U.S. filers and for interlisted Canadian names whose root
+symbol maps to an SEC registrant with a matching name, and record a
+`fundamentals_status` on each row. Canadian names without an SEC registrant
+fall back to the provider's quarterly and annual statements, which carry no
+filing dates; the engine assigns conservative Canadian filing deadlines (60
+days quarterly, 120 days annual) and labels those rows
+`pit_data_quality = estimated_filing_dates`. Filers reporting in a different
+currency than they trade in have prices and market caps converted with a cached
+CADUSD rate before valuation ratios are computed; if no rate is available the
+ratios are skipped and the status explains why. Statement-based fundamentals
+are live-run only and are never used in the backtest. Set
+`fundamentals.live_collection_enabled` or `statements_fallback_enabled` to
+`false` in `config/settings.json` to turn either off.
 
 Measure whether the configured technical screen has historically related to
 forward returns by replaying it point-in-time for a completed run's universe:

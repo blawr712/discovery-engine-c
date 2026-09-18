@@ -1,3 +1,5 @@
+import math
+
 import yfinance as yf
 import pandas as pd
 
@@ -73,8 +75,53 @@ class YFinanceSource(MarketDataSource):
             "Shares": pd.to_numeric(history.to_numpy(), errors="coerce"),
         }).dropna(subset=["Shares"])
 
+    def get_financial_statements(self, ticker: str) -> dict:
+        """Return Yahoo quarterly and annual statements as JSON-safe tables."""
+        stock = yf.Ticker(ticker)
+        info = stock.info or {}
+        tables = {
+            "quarterly": {
+                "income": _statement_table(stock.quarterly_income_stmt),
+                "balance": _statement_table(stock.quarterly_balance_sheet),
+                "cashflow": _statement_table(stock.quarterly_cashflow),
+            },
+            "annual": {
+                "income": _statement_table(stock.income_stmt),
+                "balance": _statement_table(stock.balance_sheet),
+                "cashflow": _statement_table(stock.cashflow),
+            },
+        }
+        return {
+            "ticker": ticker,
+            "currency": info.get("financialCurrency") or info.get("currency"),
+            **tables,
+        }
+
     @staticmethod
     def _infer_country(ticker: str) -> str:
         if ticker.endswith(".TO") or ticker.endswith(".V") or ticker.endswith(".CN"):
             return "CA"
         return "US"
+
+
+def _statement_table(frame) -> dict:
+    """Convert a Yahoo statement frame to ``{period_end: {label: value}}``."""
+    if frame is None or getattr(frame, "empty", True):
+        return {}
+    table: dict[str, dict] = {}
+    for column in frame.columns:
+        try:
+            end = pd.Timestamp(column).date().isoformat()
+        except (TypeError, ValueError):
+            continue
+        values = {}
+        for label, value in frame[column].items():
+            try:
+                number = float(value)
+            except (TypeError, ValueError):
+                continue
+            if math.isfinite(number):
+                values[str(label)] = number
+        if values:
+            table[end] = values
+    return table

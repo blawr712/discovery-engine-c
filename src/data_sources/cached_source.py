@@ -40,11 +40,13 @@ class CachedMarketDataSource(MarketDataSource):
         enabled: bool = True,
         clock: Callable[[], float] = time.time,
         share_history_ttl_hours: float = 168,
+        statements_ttl_hours: float = 168,
     ) -> None:
         if (
             metadata_ttl_hours < 0
             or price_history_ttl_hours < 0
             or share_history_ttl_hours < 0
+            or statements_ttl_hours < 0
         ):
             raise ValueError("Cache TTL values cannot be negative.")
 
@@ -56,6 +58,7 @@ class CachedMarketDataSource(MarketDataSource):
             raise ValueError("metadata_version cannot be empty.")
         self.price_history_ttl_seconds = price_history_ttl_hours * 60 * 60
         self.share_history_ttl_seconds = share_history_ttl_hours * 60 * 60
+        self.statements_ttl_seconds = statements_ttl_hours * 60 * 60
         self.enabled = enabled
         self.clock = clock
         self.stats = CacheStats()
@@ -65,6 +68,7 @@ class CachedMarketDataSource(MarketDataSource):
             (self.cache_directory / "metadata").mkdir(parents=True, exist_ok=True)
             (self.cache_directory / "prices").mkdir(parents=True, exist_ok=True)
             (self.cache_directory / "shares").mkdir(parents=True, exist_ok=True)
+            (self.cache_directory / "statements").mkdir(parents=True, exist_ok=True)
 
     def get_stock_data(self, ticker: str) -> dict:
         """Return company metadata from cache or the wrapped provider."""
@@ -107,6 +111,34 @@ class CachedMarketDataSource(MarketDataSource):
         data = self.source.get_price_history(ticker, period)
         self._write_price_history(path, data)
         return data
+
+    def get_financial_statements(self, ticker: str) -> dict:
+        """Return financial statements from cache or the wrapped provider."""
+        if not self.enabled:
+            return self.source.get_financial_statements(ticker)
+
+        path = self._cache_path("statements", f"statements-1|{ticker}", "json")
+        cached = self._read_json(path, self.statements_ttl_seconds)
+        if cached is not None:
+            return cached
+
+        data = self.source.get_financial_statements(ticker)
+        self._write_json(path, data)
+        return data
+
+    def get_cached_price_history(self, ticker: str, period: str = "1y") -> pd.DataFrame | None:
+        """Return cached price history without contacting the provider."""
+        if not self.enabled:
+            return None
+        path = self._cache_path("prices", f"{ticker}|{period}", "json")
+        return self._read_price_history(path, self.price_history_ttl_seconds)
+
+    def get_cached_financial_statements(self, ticker: str) -> dict | None:
+        """Return cached statements without contacting the provider."""
+        if not self.enabled:
+            return None
+        path = self._cache_path("statements", f"statements-1|{ticker}", "json")
+        return self._read_json(path, self.statements_ttl_seconds)
 
     def get_share_history(
         self,

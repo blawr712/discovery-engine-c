@@ -37,6 +37,7 @@ def calculate_scores(
     fundamental_history: FundamentalHistory | None = None,
     as_of: datetime | None = None,
     insider_history: InsiderHistory | None = None,
+    reporting_fx_multiplier: float | None = 1.0,
 ) -> dict:
     market_cap = stock_data.get("market_cap")
     sector = stock_data.get("sector")
@@ -102,9 +103,16 @@ def calculate_scores(
     # date and the latest close for market-cap ratios; missing histories
     # leave every pit_* field empty so cross-sectional passes can skip them.
     if fundamental_history is not None:
+        # A None multiplier means the trading and reporting currencies differ
+        # and no rate is known: keep statement signals, skip valuation ratios.
+        converted_price = (
+            latest_close * reporting_fx_multiplier
+            if latest_close is not None and reporting_fx_multiplier is not None
+            else None
+        )
         pit_signals = fundamental_history.signals_as_of(
             (as_of or datetime.now(timezone.utc)).date(),
-            price=latest_close,
+            price=converted_price,
         )
     else:
         pit_signals = {name: None for name in FUNDAMENTAL_SIGNAL_NAMES}

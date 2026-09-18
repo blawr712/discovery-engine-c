@@ -67,7 +67,14 @@ directly or derived by differencing cumulative and annual figures) and
 answers "what was knowable on this date" queries, so restated values only
 appear from their restating filing onward. The Backtest Engine consumes these
 histories, and the orchestration engine collects them per company during live
-runs (U.S. filers, failure-isolated) when `SEC_USER_AGENT` is configured.
+runs (failure-isolated) when `SEC_USER_AGENT` is configured. `src/sec_mapping.py`
+decides which listings have an SEC registrant: U.S. tickers directly, Canadian
+listings only when interlisted and the registrant name matches. Listings
+without one use `src/statements_extract.py`, which converts provider quarterly
+and annual statements into the same extract shape with estimated filing dates
+and an explicit `estimated_filing_dates` quality label. Reporting currencies
+are tracked per filer and trading-currency prices are converted before
+valuation ratios.
 
 Insiders (point-in-time): `src/data_sources/sec_insider_source.py` downloads
 the SEC's quarterly insider-transaction data sets once each, keeps only

@@ -13,3 +13,11 @@ class MarketDataSource(ABC):
     def get_share_history(self, ticker: str, period: str = "18mo"):
         """Return historical shares outstanding when the provider supports it."""
         raise NotImplementedError("Share-count history is not supported.")
+
+    def get_financial_statements(self, ticker: str) -> dict:
+        """Return quarterly and annual statements when the provider supports it.
+
+        Shape: ``{"currency": str | None, "quarterly": {statement: {period_end:
+        {label: value}}}, "annual": {...}}`` with ISO period ends.
+        """
+        raise NotImplementedError("Financial statements are not supported.")

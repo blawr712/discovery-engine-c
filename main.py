@@ -1,5 +1,6 @@
 import os
 import json
+import re
 import sqlite3
 from datetime import datetime
 from pathlib import Path
@@ -73,6 +74,8 @@ from src.openai_research import OpenAIResearchProvider
 from src.research_audit import export_research_audit, finalize_research_review
 from src.research_ranking import build_research_queue, export_research_queue
 from src.rescore import rescore_results
+from src.sec_mapping import resolve_sec_ticker
+from src.statements_extract import extract_from_statements
 from src.history import history_summary, index_saved_run
 from src.history_comparison import compare_indexed_runs, export_run_comparison
 from src.history_reporting import (
@@ -287,12 +290,25 @@ def main(arguments=None):
     print(f"Resumed results: {len(prior_results)}")
 
     fundamentals_source = None
+    statements_source = None
+    resolver = None
+    fx_rates = {}
     if FUNDAMENTALS_CONFIG.get("live_collection_enabled", True):
         fundamentals_source = build_sec_xbrl_source(required=False)
+        if fundamentals_source is not None:
+            resolver = build_sec_resolver(fundamentals_source)
+        if FUNDAMENTALS_CONFIG.get("statements_fallback_enabled", True):
+            statements_source = source
+        fx_rates = load_fx_rates(source)
     print(
         "SEC fundamentals: "
-        + ("enabled (U.S. filers)" if fundamentals_source else
+        + ("enabled (U.S. filers and verified interlisted Canadian filers)" if fundamentals_source else
            "disabled (set SEC_USER_AGENT in .env to enable)")
+    )
+    print(
+        "Statement fundamentals fallback: "
+        + ("enabled (estimated filing dates)" if statements_source is not None else "disabled")
+        + (f"; FX pairs {sorted(set(a for a, _ in fx_rates))}" if fx_rates else "; no FX rates")
     )
     insider_lookup = None
     insider_index_stats = None
@@ -321,6 +337,10 @@ def main(arguments=None):
         result_callback=run_state.record_result,
         fundamentals_source=fundamentals_source,
         insider_lookup=insider_lookup,
+        fundamentals_countries=tuple(FUNDAMENTALS_CONFIG.get("countries", ["US", "CA"])),
+        statements_source=statements_source,
+        sec_ticker_resolver=resolver,
+        fx_rates=fx_rates,
     )
     results = engine.run(universe, prior_results=prior_results)
 
@@ -374,16 +394,19 @@ def main(arguments=None):
     provider = retry_source.source
     print(f"Provider retries: {retry_source.stats.retries}")
     print(f"Retries exhausted: {retry_source.stats.exhausted}")
-    if fundamentals_source is not None:
+    if fundamentals_source is not None or statements_source is not None:
         statuses = Counter(
-            str(row.get("fundamentals_status", "not_requested")).split(":")[0]
+            re.split(r"[;:(]| via ", str(row.get("fundamentals_status", "not_requested")))[0].strip()
             for row in results if row.get("status") == "OK"
         )
         print(
             "SEC fundamentals: "
             + ", ".join(f"{name} {count}" for name, count in sorted(statuses.items()))
-            + f"; {fundamentals_source.stats.requests} requests, "
-            f"{fundamentals_source.stats.hits} cache hits"
+            + (
+                f"; {fundamentals_source.stats.requests} SEC requests, "
+                f"{fundamentals_source.stats.hits} SEC cache hits"
+                if fundamentals_source is not None else ""
+            )
         )
     if insider_lookup is not None:
         insider_statuses = Counter(
@@ -429,14 +452,28 @@ def rescore_saved_run(run_id: str) -> None:
         manifest, results = load_saved_run(RUN_DIR, run_id)
         as_of = datetime.fromisoformat(str(manifest["completed_at"]))
         sec_source = build_sec_xbrl_source(required=False)
+        market_source = build_market_data_source()
+        fx_rates = load_fx_rates(market_source, cached_only=True)
         fundamentals_lookup = None
         insider_lookup = None
         insider_index_stats = None
-        if sec_source is not None:
-            def fundamentals_lookup(ticker: str):
-                extract = sec_source.get_cached_company_facts(ticker)
-                return FundamentalHistory(extract) if extract else None
+        resolver = build_sec_resolver(sec_source) if sec_source is not None else None
+        rows_by_ticker = {str(row.get("ticker")): row for row in results}
 
+        def fundamentals_lookup(ticker: str):
+            row = rows_by_ticker.get(ticker, {})
+            if sec_source is not None:
+                sec_ticker, _ = resolver(row)
+                if sec_ticker is not None:
+                    extract = sec_source.get_cached_company_facts(sec_ticker)
+                    if extract:
+                        return FundamentalHistory(extract)
+            statements = market_source.get_cached_financial_statements(ticker)
+            if statements:
+                return FundamentalHistory(extract_from_statements(ticker, statements))
+            return None
+
+        if sec_source is not None:
             insider_source = build_sec_insider_source(required=False)
             if insider_source is not None:
                 lookback = int(INSIDERS_CONFIG.get("lookback_quarters", 6))
@@ -451,6 +488,8 @@ def rescore_saved_run(run_id: str) -> None:
             results, as_of,
             fundamentals_lookup=fundamentals_lookup,
             insider_lookup=insider_lookup,
+            countries=tuple(FUNDAMENTALS_CONFIG.get("countries", ["US", "CA"])),
+            fx_rates=fx_rates,
         )
         run_state = RunState.open(RUN_DIR, run_id)
         for index, row in enumerate(rescored):
@@ -770,6 +809,36 @@ def _insider_lookup(index: dict, cik_for):
         cik = cik_for(ticker)
         return index.get(str(cik).zfill(10)) if cik is not None else None
     return lookup
+
+
+def load_fx_rates(source, pairs: list[str] | None = None, cached_only: bool = False) -> dict:
+    """Load latest FX multipliers from Yahoo pair histories such as CADUSD=X."""
+    rates: dict[tuple[str, str], float] = {}
+    for symbol in pairs or FUNDAMENTALS_CONFIG.get("fx_pairs", ["CADUSD=X"]):
+        base, quote = str(symbol)[:3].upper(), str(symbol)[3:6].upper()
+        try:
+            history = (
+                source.get_cached_price_history(symbol) if cached_only
+                else source.get_price_history(symbol)
+            )
+        except Exception:  # noqa: BLE001 - FX is optional
+            history = None
+        if history is None or history.empty or "Close" not in history:
+            continue
+        closes = history["Close"].dropna()
+        if closes.empty or float(closes.iloc[-1]) <= 0:
+            continue
+        rate = float(closes.iloc[-1])
+        rates[(base, quote)] = rate
+        rates[(quote, base)] = 1.0 / rate
+    return rates
+
+
+def build_sec_resolver(sec_source):
+    """Resolve U.S. tickers directly and interlisted Canadian names by verified root symbol."""
+    def resolver(stock_data: dict):
+        return resolve_sec_ticker(stock_data, sec_source.cik_for, sec_source.title_for)
+    return resolver
 
 
 def build_sec_xbrl_source(required: bool = True) -> SecXbrlSource | None:

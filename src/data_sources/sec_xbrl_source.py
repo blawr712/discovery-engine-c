@@ -24,13 +24,16 @@ from urllib.request import Request, urlopen
 
 TICKER_MAP_URL = "https://www.sec.gov/files/company_tickers.json"
 COMPANY_FACTS_URL = "https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json"
-EXTRACT_VERSION = "sec-facts-1"
+# Bumped when the extract shape changes (v2: per-row units, IFRS aliases).
+EXTRACT_VERSION = "sec-facts-2"
 
 # Ordered aliases per concept: the first taxonomy tag with usable data wins
 # for each period, but every alias is retained so coverage can be measured.
+MONEY_UNITS = ["USD", "CAD"]
+
 CONCEPTS: dict[str, dict] = {
     "revenue": {
-        "unit": "USD",
+        "units": MONEY_UNITS,
         "kind": "duration",
         "tags": [
             "us-gaap:Revenues",
@@ -38,61 +41,77 @@ CONCEPTS: dict[str, dict] = {
             "us-gaap:RevenueFromContractWithCustomerIncludingAssessedTax",
             "us-gaap:SalesRevenueNet",
             "us-gaap:SalesRevenueGoodsNet",
+            "ifrs-full:Revenue",
+            "ifrs-full:RevenueFromContractsWithCustomers",
         ],
     },
     "gross_profit": {
-        "unit": "USD", "kind": "duration", "tags": ["us-gaap:GrossProfit"],
+        "units": MONEY_UNITS, "kind": "duration",
+        "tags": ["us-gaap:GrossProfit", "ifrs-full:GrossProfit"],
     },
     "operating_income": {
-        "unit": "USD", "kind": "duration", "tags": ["us-gaap:OperatingIncomeLoss"],
+        "units": MONEY_UNITS, "kind": "duration",
+        "tags": ["us-gaap:OperatingIncomeLoss", "ifrs-full:ProfitLossFromOperatingActivities"],
     },
     "net_income": {
-        "unit": "USD", "kind": "duration", "tags": ["us-gaap:NetIncomeLoss"],
+        "units": MONEY_UNITS, "kind": "duration",
+        "tags": ["us-gaap:NetIncomeLoss", "ifrs-full:ProfitLoss"],
     },
     "operating_cash_flow": {
-        "unit": "USD",
+        "units": MONEY_UNITS,
         "kind": "duration",
-        "tags": ["us-gaap:NetCashProvidedByUsedInOperatingActivities"],
+        "tags": [
+            "us-gaap:NetCashProvidedByUsedInOperatingActivities",
+            "ifrs-full:CashFlowsFromUsedInOperatingActivities",
+        ],
     },
     "capital_expenditure": {
-        "unit": "USD",
+        "units": MONEY_UNITS,
         "kind": "duration",
         "tags": [
             "us-gaap:PaymentsToAcquirePropertyPlantAndEquipment",
             "us-gaap:PaymentsToAcquireProductiveAssets",
+            "ifrs-full:PurchaseOfPropertyPlantAndEquipmentClassifiedAsInvestingActivities",
         ],
     },
     "cash": {
-        "unit": "USD",
+        "units": MONEY_UNITS,
         "kind": "instant",
         "tags": [
             "us-gaap:CashAndCashEquivalentsAtCarryingValue",
             "us-gaap:CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents",
+            "ifrs-full:CashAndCashEquivalents",
         ],
     },
     "long_term_debt": {
-        "unit": "USD",
+        "units": MONEY_UNITS,
         "kind": "instant",
-        "tags": ["us-gaap:LongTermDebtNoncurrent", "us-gaap:LongTermDebt"],
+        "tags": [
+            "us-gaap:LongTermDebtNoncurrent", "us-gaap:LongTermDebt",
+            "ifrs-full:NoncurrentBorrowings", "ifrs-full:Borrowings",
+        ],
     },
     "short_term_debt": {
-        "unit": "USD",
+        "units": MONEY_UNITS,
         "kind": "instant",
         "tags": [
             "us-gaap:LongTermDebtCurrent",
             "us-gaap:DebtCurrent",
             "us-gaap:ShortTermBorrowings",
+            "ifrs-full:CurrentBorrowings",
         ],
     },
     "stockholders_equity": {
-        "unit": "USD", "kind": "instant", "tags": ["us-gaap:StockholdersEquity"],
+        "units": MONEY_UNITS, "kind": "instant",
+        "tags": ["us-gaap:StockholdersEquity", "ifrs-full:Equity"],
     },
     "shares_outstanding": {
-        "unit": "shares",
+        "units": ["shares"],
         "kind": "instant",
         "tags": [
             "dei:EntityCommonStockSharesOutstanding",
             "us-gaap:CommonStockSharesOutstanding",
+            "ifrs-full:NumberOfSharesOutstanding",
         ],
     },
 }
@@ -149,6 +168,15 @@ class SecXbrlSource:
                     self._ticker_map = self._load_ticker_map()
         row = self._ticker_map.get(str(ticker).strip().upper())
         return str(row["cik_str"]).zfill(10) if row else None
+
+    def title_for(self, ticker: str) -> str | None:
+        """Return the SEC registrant title for a ticker, or None when unmapped."""
+        if self._ticker_map is None:
+            with self._map_lock:
+                if self._ticker_map is None:
+                    self._ticker_map = self._load_ticker_map()
+        row = self._ticker_map.get(str(ticker).strip().upper())
+        return str(row.get("title") or "") or None if row else None
 
     def get_cached_company_facts(self, ticker: str) -> dict | None:
         """Return a cached compact extract without any network request."""
@@ -251,14 +279,18 @@ def compact_company_facts(
             units = (
                 facts_by_taxonomy.get(taxonomy, {}).get(name, {}).get("units", {})
             )
-            entries = units.get(spec["unit"], [])
-            if entries:
+            unit_entries = [
+                (unit, units.get(unit, [])) for unit in spec.get("units", [spec.get("unit")])
+            ]
+            if any(entries for _, entries in unit_entries):
                 found.append(tag)
-            for entry in entries:
+            for unit, entries in unit_entries:
+              for entry in entries:
                 row = _fact_row(entry, spec["kind"], tag)
                 if row is None:
                     continue
-                key = (row.get("start"), row["end"], row["filed"], row["val"])
+                row["unit"] = unit
+                key = (row.get("start"), row["end"], row["filed"], row["val"], unit)
                 if key in seen:
                     continue
                 seen.add(key)

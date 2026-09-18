@@ -31,6 +31,21 @@
 - Added median, win-rate, and 2%-trimmed-mean statistics per score quantile
   and median excess for top-N selections, because mean excess returns in
   this universe are dominated by a few extreme rebounds
+- Added Canadian fundamentals: verified interlisted names resolve to their
+  SEC registrant (root symbol plus a registrant-name check, so `ACT.TO` no
+  longer maps to Enact Holdings) and use filed IFRS or US-GAAP facts;
+  everyone else falls back to provider quarterly and annual statements with
+  conservative estimated filing dates, labeled `estimated_filing_dates`
+- Added IFRS taxonomy aliases, multi-currency SEC units with a dominant
+  reporting currency per filer, annual-figure fallback for TTM values when
+  quarterly data is absent, and `pit_reporting_currency` / `pit_data_quality`
+  on every row
+- Converted trading-currency prices and market caps into the reporting
+  currency using cached CADUSD rates before computing valuation ratios;
+  when no rate is known the ratios are skipped and the status says so
+- Added `get_financial_statements` to the provider stack with weekly caching
+- Bumped the SEC extract version to `sec-facts-2`; cached extracts refresh
+  once on their next use (about 2,100 requests over a full run)
 - Added sector applicability to shadow models: signals listed under a
   model's `sector_exclusions` neither score, rank, nor filter companies in
   that sector and count as unavailable for the confidence gate; Score v3
