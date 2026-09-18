@@ -308,3 +308,57 @@ class ResearchTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ResearchQueuePacketTests(unittest.TestCase):
+    def test_packets_follow_supplied_research_queue(self):
+        results = [
+            {"ticker": "ONE", "company_name": "One Co", "status": "OK", "country": "US",
+             "sector": "Technology", "discovery_score": 60, "score_v3": 70.0,
+             "score_v3_confidence": 100.0, "fundamentals_status": "collected",
+             "factor_breakdown": factor("trend", 10, 10),
+             "fundamental_breakdown": factor("profitability", 8, 8),
+             "score_v3_breakdown": factor("pit_sales_yield", 20, 25)},
+            {"ticker": "TWO", "company_name": "Two Co", "status": "OK", "country": "CA",
+             "sector": "Industrials", "discovery_score": 90, "score_v2": 40.0,
+             "factor_breakdown": factor("trend", 0, 10),
+             "fundamental_breakdown": factor("profitability", 0, 8),
+             "score_v2_breakdown": factor("momentum_long", 3, 30)},
+        ]
+        calibration = {
+            "rows": [
+                {"ticker": "ONE", "official_rank": 2, "discovery_score": 60,
+                 "technical_percentile": 90},
+                {"ticker": "TWO", "official_rank": 1, "discovery_score": 90,
+                 "technical_percentile": 10},
+            ],
+            "summary": {"coverage_neutral_model": {"core_factors": ["profitability"]}},
+        }
+        queue = [
+            {"ticker": "ONE", "research_rank": 1, "ranking_basis": "score_v3",
+             "ranking_score": 70.0},
+            {"ticker": "TWO", "research_rank": 2, "ranking_basis": "score_v2",
+             "ranking_score": 40.0},
+        ]
+
+        packets, metadata = build_research_packets(
+            results, 2, calibration=calibration, queue=queue,
+        )
+
+        self.assertEqual([p["ticker"] for p in packets], ["ONE", "TWO"])
+        self.assertEqual(metadata["selected_scenario"], "research_queue")
+        self.assertEqual(packets[0]["ranking_basis"], "score_v3")
+        self.assertEqual(packets[0]["selected_rank"], 1)
+        self.assertEqual(packets[0]["official_rank"], 2)
+        self.assertEqual(packets[0]["rank_movement"], 1)
+        self.assertEqual(packets[0]["selected_research_score"], 70.0)
+        self.assertEqual(packets[0]["score_v3"], 70.0)
+        self.assertTrue(packets[0]["shadow_signals"])
+        self.assertEqual(packets[1]["ranking_basis"], "score_v2")
+        self.assertIsNone(packets[1]["score_v3"])
+        self.assertIn("score_v3", packets[0]["claim_classes"]["computed"])
+        # Balanced selection still works against the queue order.
+        balanced, _ = build_research_packets(
+            results, 2, calibration=calibration, queue=queue, balanced_per_country=1,
+        )
+        self.assertEqual([p["ticker"] for p in balanced], ["TWO", "ONE"])

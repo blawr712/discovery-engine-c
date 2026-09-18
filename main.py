@@ -61,6 +61,7 @@ from src.evidence import (
 )
 from src.openai_research import OpenAIResearchProvider
 from src.research_audit import export_research_audit, finalize_research_review
+from src.research_ranking import build_research_queue, export_research_queue
 from src.history import history_summary, index_saved_run
 from src.history_comparison import compare_indexed_runs, export_run_comparison
 from src.history_reporting import (
@@ -91,6 +92,7 @@ from src.config import (
     BASE_DIR,
     BENCHMARKS,
     FUNDAMENTALS_CONFIG,
+    RESEARCH_RANKING_CONFIG,
     CACHE_DIR,
     CACHE_ENABLED,
     CACHE_METADATA_TTL_HOURS,
@@ -371,6 +373,10 @@ def main(arguments=None):
         "Selected v0.3 research queue saved to: "
         f"{intelligence['research_artifacts']['selected_research_report_path']}"
     )
+    print(
+        "Research queue (v3 > v2 > official) saved to: "
+        f"{intelligence['research_artifacts']['research_queue_csv_path']}"
+    )
     print(f"Manifest saved to: {run_state.manifest_path}")
 
 
@@ -471,6 +477,9 @@ def export_intelligence_artifacts(results: list[dict], run_id: str) -> dict:
         calibration,
         run_id,
         output_directory=OUTPUT_DIR,
+    )
+    research_artifacts.update(
+        export_research_queue(results, run_id, OUTPUT_DIR)
     )
     return {
         "calibration_csv_path": calibration_csv_path,
@@ -862,11 +871,15 @@ def research_saved_run(
     try:
         _, results = load_saved_run(RUN_DIR, run_id)
         calibration = build_calibration(results)
+        queue = None
+        if RESEARCH_RANKING_CONFIG.get("packet_source", "research_queue") == "research_queue":
+            queue, _queue_summary = build_research_queue(results)
         packets, metadata = build_research_packets(
             results,
             top_n,
             calibration=calibration,
             balanced_per_country=balanced_per_country,
+            queue=queue,
         )
     except (FileNotFoundError, ValueError) as error:
         raise SystemExit(str(error)) from error

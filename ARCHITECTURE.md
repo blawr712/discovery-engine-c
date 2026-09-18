@@ -46,7 +46,11 @@ alters official scores or ranks, both are written back to checkpoints so saved
 runs stay authoritative, and the Backtest Engine reuses the same functions so
 historical and live behavior cannot diverge.
 
-Research Engine: Generate explainable research summaries.
+Research Engine: Generate explainable research summaries. Packet selection
+follows the research queue (`src/research_ranking.py`), which orders
+successful companies by Score v3, then Score v2, then the official Discovery
+Score, keeping the official rank alongside for provenance. The queue is a
+pure function of a completed run's rows and is exported with every run.
 
 Fundamentals (point-in-time): `src/data_sources/sec_xbrl_source.py` fetches
 SEC company facts for U.S. filers, keeps only configured concepts with their

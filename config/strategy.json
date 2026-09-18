@@ -393,6 +393,14 @@
         "export_format": "csv"
     },
 
+    "research_ranking": {
+        "primary_model": "score_v3",
+        "fallback_model": "score_v2",
+        "final_fallback": "discovery_score",
+        "top_stocks": 100,
+        "packet_source": "research_queue"
+    },
+
     "calibration": {
         "top_n": 100,
         "low_confidence_threshold": 50,

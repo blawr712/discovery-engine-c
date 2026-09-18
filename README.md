@@ -54,6 +54,17 @@ names without SEC fundamentals, receive no v3 score. Rows carry `score_v3`,
 `score_v3_rank`, `score_v3_confidence`, `score_v3_excluded`,
 `score_v3_exclusion_reasons`, and a per-signal `score_v3_breakdown`.
 
+Every run now also writes a **research queue**, `research_queue_RUN_ID.csv`
+(top N) and `.json` (complete), that orders research attention by the best
+validated basis available for each company: Score v3 first, Score v2 for
+companies without SEC fundamentals, and the official Discovery Score for the
+rest. Each row names its `ranking_basis` and tier, keeps the official
+`discovery_rank` for provenance, and lists its strongest and weakest drivers
+and any v3 exclusion reasons. `--research-run` builds packets from this queue
+by default; set `research_ranking.packet_source` to `calibration_scenario` in
+`config/strategy.json` to use the older v0.3 scenario ordering instead. The
+queue orders attention; it is not a return forecast or a recommendation.
+
 When `SEC_USER_AGENT` is set (see `.env.example`), live runs collect SEC
 company facts for U.S. filers with per-company failure isolation and record a
 `fundamentals_status` on each row; set `fundamentals.live_collection_enabled`

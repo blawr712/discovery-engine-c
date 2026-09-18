@@ -31,6 +31,12 @@
 - Added median, win-rate, and 2%-trimmed-mean statistics per score quantile
   and median excess for top-N selections, because mean excess returns in
   this universe are dominated by a few extreme rebounds
+- Added a research queue ordered by validated evidence: Score v3 first,
+  Score v2 for companies without fundamentals, then the official Discovery
+  Score; exported as `research_queue_*.csv/json` with basis, tier, drivers,
+  exclusion reasons, and the preserved official rank
+- Switched `--research-run` packets to the research queue by default, with
+  `research_ranking.packet_source` able to restore the calibration scenario
 - Generalized the cross-sectional scorer into a signal registry that accepts
   both price signals and point-in-time `pit_*` fundamentals, with
   percentile-based exclusion filters and a minimum-confidence gate

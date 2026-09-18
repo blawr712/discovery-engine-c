@@ -176,19 +176,18 @@ def build_research_packets(
     top_n: int,
     calibration: dict | None = None,
     balanced_per_country: int | None = None,
+    queue: list[dict] | None = None,
 ) -> tuple[list[dict], dict]:
-    """Build deterministic packets from the selected passing research queue."""
+    """Build deterministic packets from the research queue or a scenario.
+
+    When ``queue`` is given (rows from ``build_research_queue``) packets follow
+    that validated ordering; otherwise the configured calibration scenario
+    must be passing and supplies the order.
+    """
     if top_n < 1:
         raise ValueError("Research candidate count must be positive.")
     calibration = calibration or build_calibration(results)
     summary = calibration["summary"]
-    selection = summary.get("research_ranking_config", {})
-    selected = selection.get("selected_scenario")
-    acceptance = summary.get("scenario_acceptance", {}).get(selected, {})
-    if not selected or acceptance.get("status") != "pass":
-        raise ValueError("Configured research scenario is not passing.")
-    rank_field = f"experimental_{selected}_rank"
-    score_field = f"experimental_{selected}_score"
     result_lookup = {
         str(row.get("ticker", "")): row
         for row in results
@@ -197,10 +196,31 @@ def build_research_packets(
     core_factors = set(
         summary.get("coverage_neutral_model", {}).get("core_factors", [])
     )
-    ranked = [
-        row for row in calibration["rows"] if row.get(rank_field) is not None
-    ]
-    ranked.sort(key=lambda row: (row[rank_field], str(row.get("ticker", ""))))
+    calibration_rows = {
+        str(row.get("ticker", "")): row for row in calibration["rows"]
+    }
+    if queue is not None:
+        selected = "research_queue"
+        acceptance = {"status": "pass", "source": "research_queue"}
+        rank_field = "research_rank"
+        score_field = "ranking_score"
+        ranked = [
+            {**calibration_rows.get(str(row.get("ticker", "")), {}), **row}
+            for row in queue
+            if str(row.get("ticker", "")) in result_lookup
+        ]
+    else:
+        selection = summary.get("research_ranking_config", {})
+        selected = selection.get("selected_scenario")
+        acceptance = summary.get("scenario_acceptance", {}).get(selected, {})
+        if not selected or acceptance.get("status") != "pass":
+            raise ValueError("Configured research scenario is not passing.")
+        rank_field = f"experimental_{selected}_rank"
+        score_field = f"experimental_{selected}_score"
+        ranked = [
+            row for row in calibration["rows"] if row.get(rank_field) is not None
+        ]
+        ranked.sort(key=lambda row: (row[rank_field], str(row.get("ticker", ""))))
     selected_rows = (
         _balanced_ranked_rows(ranked, balanced_per_country, result_lookup)
         if balanced_per_country is not None
@@ -222,9 +242,23 @@ def build_research_packets(
             "asset_type": source.get("asset_type"),
             "market_cap": source.get("market_cap"),
             "selected_scenario": selected,
+            "ranking_basis": row.get("ranking_basis", selected),
             "selected_rank": row.get(rank_field),
             "official_rank": row.get("official_rank"),
-            "rank_movement": row.get("official_rank") - row.get(rank_field),
+            "rank_movement": (
+                row.get("official_rank") - row.get(rank_field)
+                if row.get("official_rank") is not None
+                and row.get(rank_field) is not None
+                else None
+            ),
+            "score_v3": source.get("score_v3"),
+            "score_v3_confidence": source.get("score_v3_confidence"),
+            "score_v3_exclusion_reasons": source.get("score_v3_exclusion_reasons"),
+            "score_v2": source.get("score_v2"),
+            "fundamentals_status": source.get("fundamentals_status"),
+            "shadow_signals": _factor_notes(
+                source, f"{row.get('ranking_basis', '')}_breakdown",
+            ),
             "discovery_score": row.get("discovery_score"),
             "technical_percentile": row.get("technical_percentile"),
             "selected_research_score": row.get(score_field),
@@ -253,6 +287,7 @@ def build_research_packets(
                     "selected_rank", "official_rank", "discovery_score",
                     "technical_percentile", "selected_research_score",
                     "core_fundamental_score", "peer_fundamental_percentile",
+                    "score_v3", "score_v2",
                 ],
                 "sourced": [],
                 "ai_interpretation": [],
