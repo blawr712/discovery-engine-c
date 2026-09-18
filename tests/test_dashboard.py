@@ -76,7 +76,7 @@ class DashboardTests(unittest.TestCase):
         self.assertIn("color-scheme:dark", html)
         self.assertIn("/api/compare", html)
         self.assertIn("/api/watchlists", html)
-        self.assertIn("Score anatomy", html)
+        self.assertIn("Official score", html)
         self.assertIn("moving_averages", html)
         self.assertIn("Vs benchmark", html)
         self.assertIn("Candles", html)

@@ -253,6 +253,21 @@ from the candidate explorer, then reviewed against the immediately preceding
 indexed run for status, rank, and Discovery Score changes. Watchlists are local
 workflow state and never trigger market-data or AI requests.
 
+The dashboard opens on the **Research Queue** for the selected run: every
+successful company ordered by Score v3, then Score v2, then the official score,
+with basis chips, v3 and v2 scores, official rank, key point-in-time ratios,
+exclusion markers, and filters by basis, country, sector, and text. Clicking a
+company opens the candidate terminal, which now carries a model-rank strip and
+three additional tabs: **Score v3** (each signal's percentile, contribution,
+applicability, and plain-language explanation for v3 and v2, plus exclusion
+reasons or the confidence gate), **Fundamentals** (point-in-time statement
+values with reporting currency, conversion, and data-quality labels), and
+**Insiders** (Form 4 activity over 180 and 365 days with its data-through
+date). An **Evidence** workspace shows the run's backtest: rank correlations
+per signal and horizon, outcomes by score quintile, top-N baskets, exclusion
+filter diagnostics, and limitations. Runs recorded before the shadow models
+existed say so; rescore them to populate these views.
+
 The dashboard also includes a read-only Moonshot Research Terminal for runs
 with saved Moonshot artifacts. It separates Priority Research, Asymmetric
 Watch, Speculative Watch, and control cohorts; shows Upside Potential beside

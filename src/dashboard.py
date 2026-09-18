@@ -12,7 +12,13 @@ from urllib.parse import parse_qs, unquote, urlparse
 from src.history import connect_history_read_only
 from src.history_comparison import _candidate_ranks, _compare_ticker, _load_run
 from src.history_reporting import build_ticker_history, build_weekly_report
-from src.moonshot_dashboard import MoonshotDashboardStore
+from src.moonshot_dashboard import MoonshotDashboardStore, RUN_ID_PATTERN
+from src.shadow_explainability import (
+    SHADOW_GLOSSARY,
+    explain_fundamentals,
+    explain_insiders,
+    explain_shadow_models,
+)
 from src.score_explainability import (
     SCORE_GLOSSARY,
     explain_candidate,
@@ -191,8 +197,21 @@ class DashboardStore:
         performance = build_price_performance(equity_snapshot, benchmark_snapshot)
         if performance is not None:
             performance["currency"] = row.get("currency")
+        queue_row = self._queue_row(run_id, ticker)
         return {
             "run_id": run_id,
+            "shadow_models": explain_shadow_models(row),
+            "fundamentals": explain_fundamentals(row),
+            "insiders": explain_insiders(row),
+            "model_ranks": {
+                "official_rank": ranks.get(str(row.get("ticker"))),
+                "score_v2_rank": row.get("score_v2_rank"),
+                "score_v3_rank": row.get("score_v3_rank"),
+                "research_rank": (queue_row or {}).get("research_rank"),
+                "ranking_basis": (queue_row or {}).get("ranking_basis"),
+                "candidate_count": len(ranks),
+            },
+            "shadow_glossary": SHADOW_GLOSSARY,
             "candidate": explain_candidate(
                 row,
                 ranks.get(str(row.get("ticker"))),
@@ -205,6 +224,128 @@ class DashboardStore:
             "glossary": SCORE_GLOSSARY,
             "price_performance": performance,
         }
+
+    def research_queue(
+        self,
+        run_id: str | None = None,
+        basis: str | None = None,
+        country: str | None = None,
+        sector: str | None = None,
+        search: str | None = None,
+        hide_excluded: bool = False,
+        limit: int = 100,
+    ) -> dict:
+        """Return the exported research queue for a run, filtered and bounded."""
+        run_id = run_id or self.overview()["latest_run_id"]
+        document = self._export_document("research_queue", run_id)
+        if document is None:
+            return {
+                "available": False, "run_id": run_id, "total": 0, "rows": [],
+                "message": "No research queue is exported for this run. Rescore or rerun it.",
+            }
+        limit = max(1, min(int(limit), 300))
+        basis_filter = (basis or "").strip()
+        country_filter = (country or "").strip().upper()
+        sector_filter = (sector or "").strip()
+        needle = (search or "").strip().upper()
+        rows = []
+        sectors = set()
+        for row in document.get("queue", []):
+            if row.get("sector"):
+                sectors.add(str(row["sector"]))
+            if basis_filter and str(row.get("ranking_basis")) != basis_filter:
+                continue
+            if country_filter and str(row.get("country") or "").upper() != country_filter:
+                continue
+            if sector_filter and str(row.get("sector") or "") != sector_filter:
+                continue
+            if needle and needle not in str(row.get("ticker", "")).upper() \
+                    and needle not in str(row.get("company_name", "")).upper():
+                continue
+            if hide_excluded and row.get("score_v3_excluded"):
+                continue
+            rows.append(row)
+        return {
+            "available": True,
+            "run_id": run_id,
+            "summary": document.get("summary", {}),
+            "sectors": sorted(sectors),
+            "total": len(rows),
+            "rows": rows[:limit],
+        }
+
+    def evidence(self, run_id: str | None = None) -> dict:
+        """Return the exported backtest evidence for a run, bounded for display."""
+        run_id = run_id or self.overview()["latest_run_id"]
+        document = self._export_document("backtest", run_id)
+        fallback_from = None
+        if document is None:
+            # Backtests describe the models, not one run: show the newest
+            # full-universe backtest and say which run produced it.
+            fallback_from, document = self._latest_backtest()
+        if document is None:
+            return {
+                "available": False, "run_id": run_id,
+                "message": "No backtest is exported. Run --backtest-run to create one.",
+            }
+        aggregate = document.get("aggregate", {})
+        config = document.get("config", {})
+        composites = [c for c in ("technical_score", "score_v2", "score_v3")
+                      if c in aggregate.get("information_coefficient", {})]
+        return {
+            "available": True,
+            "run_id": run_id,
+            "backtest_run_id": document.get("source_run_id") or fallback_from or run_id,
+            "fallback_from_run_id": fallback_from,
+            "model_version": document.get("model_version"),
+            "horizons": list(config.get("forward_horizons_days", {})),
+            "quantile_count": config.get("quantiles"),
+            "top_n": config.get("top_n", []),
+            "coverage": document.get("coverage", {}),
+            "fundamental_coverage": document.get("fundamental_coverage"),
+            "insider_coverage": document.get("insider_coverage"),
+            "composites": composites,
+            "information_coefficient": aggregate.get("information_coefficient", {}),
+            "quantiles": {c: aggregate.get("quantiles", {}).get(c, {}) for c in composites},
+            "top_n_results": {c: aggregate.get("top_n", {}).get(c, {}) for c in composites},
+            "compounded": {c: aggregate.get("compounded", {}).get(c, {}) for c in composites},
+            "turnover": {c: aggregate.get("turnover", {}).get(c, {}) for c in composites},
+            "filter_diagnostics": document.get("filter_diagnostics") or {},
+            "limitations": document.get("limitations", []),
+        }
+
+    def _latest_backtest(self) -> tuple[str | None, dict | None]:
+        directory = self.moonshot_store.artifact_directory
+        candidates = sorted(
+            path for path in directory.glob("backtest_*.json")
+            if "_limit" not in path.stem
+        )
+        for path in reversed(candidates):
+            run_id = path.stem.removeprefix("backtest_")
+            if RUN_ID_PATTERN.fullmatch(run_id):
+                with path.open("r", encoding="utf-8") as file:
+                    return run_id, json.load(file)
+        return None, None
+
+    def _queue_row(self, run_id: str, ticker: str) -> dict | None:
+        document = self._export_document("research_queue", run_id, required=False)
+        if not document:
+            return None
+        for row in document.get("queue", []):
+            if str(row.get("ticker", "")).upper() == ticker:
+                return row
+        return None
+
+    def _export_document(self, prefix: str, run_id: str | None, required: bool = False):
+        if not run_id or not RUN_ID_PATTERN.fullmatch(str(run_id)):
+            if required:
+                raise ValueError("Run ID contains invalid characters.")
+            return None
+        path = self.moonshot_store.artifact_directory / f"{prefix}_{run_id}.json"
+        if not path.is_file():
+            return None
+        with path.open("r", encoding="utf-8") as file:
+            return json.load(file)
 
     def weekly_report(self) -> dict:
         report = build_weekly_report(self.database_path)
@@ -437,6 +578,18 @@ def create_dashboard_server(
                     self._json(200, store.candidate_detail(
                         ticker, run_id=_one(query, "run_id")
                     ))
+                elif parsed.path == "/api/research-queue":
+                    self._json(200, store.research_queue(
+                        run_id=_one(query, "run_id"),
+                        basis=_one(query, "basis"),
+                        country=_one(query, "country"),
+                        sector=_one(query, "sector"),
+                        search=_one(query, "search"),
+                        hide_excluded=_one(query, "hide_excluded", "0") == "1",
+                        limit=int(_one(query, "limit", "100")),
+                    ))
+                elif parsed.path == "/api/evidence":
+                    self._json(200, store.evidence(run_id=_one(query, "run_id")))
                 elif parsed.path == "/api/weekly":
                     self._json(200, store.weekly_report())
                 elif parsed.path == "/api/compare":

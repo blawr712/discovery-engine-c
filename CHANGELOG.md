@@ -31,6 +31,17 @@
 - Added median, win-rate, and 2%-trimmed-mean statistics per score quantile
   and median excess for top-N selections, because mean excess returns in
   this universe are dominated by a few extreme rebounds
+- Added a Research Queue workspace to the dashboard: evidence-ranked table
+  with basis chips, v3/v2/official scores, key ratios, exclusion markers,
+  and filters by basis, country, sector, and search, read from the
+  exported queue for the selected run
+- Added an Evidence workspace showing the run's backtest: rank
+  correlations per signal and horizon, outcomes by score quintile, top-N
+  baskets, exclusion-filter diagnostics, and limitations
+- Added Score v3, Fundamentals, and Insiders tabs to the candidate
+  terminal with a model-rank strip (queue, v3, v2, official), per-signal
+  percentile bars and explanations, point-in-time statement values with
+  currency and quality labels, and Form 4 activity with its data-through date
 - Added Canadian fundamentals: verified interlisted names resolve to their
   SEC registrant (root symbol plus a registrant-name check, so `ACT.TO` no
   longer maps to Enact Holdings) and use filed IFRS or US-GAAP facts;
