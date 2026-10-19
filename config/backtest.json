@@ -28,5 +28,18 @@
     },
     "sec_insiders": {
         "start_quarter": "2015q1"
+    },
+    "baseline_resolution": {
+        "maximum_price_staleness_days": 10,
+        "minimum_cohort_size": 5,
+        "selected_classifications": [
+            "priority_research",
+            "asymmetric_watch",
+            "speculative_watch"
+        ],
+        "control_classifications": [
+            "low_upside_signal",
+            "insufficient_evidence"
+        ]
     }
 }

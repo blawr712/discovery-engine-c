@@ -248,3 +248,13 @@ class BacktestCliTests(unittest.TestCase):
         self.assertEqual(parse_args(["--rescore-run", "RUN1"]).rescore_run, "RUN1")
         with self.assertRaises(SystemExit):
             parse_args(["--rescore-run", "RUN1", "--backtest-run", "RUN1"])
+
+    def test_resolve_baselines_and_collect_prices(self):
+        args = parse_args(["--resolve-baselines", "RUN1", "--collect-prices"])
+        self.assertEqual(args.resolve_baselines, "RUN1")
+        self.assertTrue(args.collect_prices)
+        self.assertFalse(parse_args(["--resolve-baselines", "RUN1"]).collect_prices)
+        with self.assertRaises(SystemExit):
+            parse_args(["--collect-prices"])
+        with self.assertRaises(SystemExit):
+            parse_args(["--resolve-baselines", "RUN1", "--rescore-run", "RUN1"])

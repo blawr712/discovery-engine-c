@@ -157,6 +157,24 @@ rows in live runs when `SEC_USER_AGENT` is set, labeled with an
 with a lag. `ins_*` signals can be weighted or used as exclusions in
 `scoring_v2` and `scoring_v3`.
 
+Measure a frozen Moonshot forward baseline against what actually happened:
+
+```powershell
+python main.py --resolve-baselines RUN_ID
+python main.py --resolve-baselines RUN_ID --collect-prices
+```
+
+Resolution reads the baseline exported by `--calibrate-moonshot`, measures
+every horizon that has become eligible, and compares the selected cohorts
+with the control cohorts by median, trimmed mean, and win rate. It works
+from cached prices alone; `--collect-prices` refreshes only the series that
+stop short of a horizon, which is usually just the benchmarks. Candidates
+whose prices stop before a horizon are reported as unresolved rather than
+dropped, because treating a delisting as missing data would bias results
+upward. The frozen baseline is never modified. Results land in
+`baseline_resolution_RUN_ID.json` and `.csv`. One baseline resolved on one
+date is a single observation, not a backtest.
+
 Compare two previously indexed runs without making provider calls:
 
 ```powershell

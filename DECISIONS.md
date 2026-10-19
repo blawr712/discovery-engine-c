@@ -110,6 +110,35 @@ top 25 unchanged. v3's weights already keep these names out of the top 25.
 **Where.** Scratch analysis over `backtest_observations_*.csv.gz`; not in
 the repo. Revisit only with delisting-inclusive data.
 
+## 2026-10-19: First resolved forward baseline shows no Moonshot edge at 1M
+
+**Decision.** Record the result; change nothing yet. Moonshot stays a
+research queue, not a validated model.
+
+**Evidence.** The Aug 23 cohort was frozen on 2026-09-05 and its one-month
+horizon became eligible on 2026-10-05. Resolved against realized prices,
+benchmark-relative:
+
+| Cohort | Resolved | Median excess | Win rate |
+|---|---|---|---|
+| Selected (priority + asymmetric + speculative) | 95 of 96 | -8.05% | 24.2% |
+| Control (low upside + insufficient evidence) | 1,166 of 1,182 | -8.75% | 31.1% |
+
+Selected beat control by 0.7 points of median and lost by 6.9 points of win
+rate; its trimmed mean was 1.8 points worse. Within the selection,
+priority_research (7 names) had the best median at -6.51% and
+speculative_watch (10 names) the worst at -18.24%. Both cohorts trailed their
+benchmarks by roughly 8%, so the month was broadly bad for micro caps rather
+than specifically bad for the selection.
+
+**Why it does not settle anything.** One horizon, one baseline, one month is a
+single observation that cannot separate model skill from the regime. Priority
+Research is only seven names. The 3M, 6M and 1Y horizons are still pending,
+and the Sep 18 baseline adds a second cohort from 2026-10-07.
+
+**Where.** `--resolve-baselines`, artifacts under
+`baseline_resolution_20260823T133945Z-4e30d9d9.*`.
+
 ## Standing caveats that gate any promotion to "official"
 
 - **Survivorship.** The universe is companies alive at the source run; the

@@ -83,6 +83,14 @@ and caches the compact extract; `src/insider_signals.py` answers windowed
 "what was filed by this date" queries per issuer. The Backtest Engine and the
 live orchestration engine both consume these histories for U.S. filers.
 
+Baseline Resolution (`src/baseline_resolution.py`, `--resolve-baselines`):
+read a frozen Moonshot forward baseline back and measure each eligible
+horizon against realized prices, comparing selected cohorts with control
+cohorts. Both prices for a return come from one provider series, and
+candidates whose prices stop before a horizon stay visible as unresolved
+rather than being dropped. The baseline file is never modified; each
+resolution is a separate artifact recorded in the run manifest.
+
 Backtest Engine: Replay the Scoring Engine's technical factor functions at
 historical month-ends using only price data available on each date, then
 measure rank correlation, quantile spreads, and top-N outcomes against forward

@@ -31,6 +31,18 @@
 - Added median, win-rate, and 2%-trimmed-mean statistics per score quantile
   and median excess for top-N selections, because mean excess returns in
   this universe are dominated by a few extreme rebounds
+- Added `--resolve-baselines` to measure a frozen Moonshot forward
+  baseline against realized prices: every eligible horizon per candidate,
+  benchmark-relative, with selected-versus-control cohort reports
+- Took both prices for a return from one provider series so a split
+  cannot inflate it, and reported candidates whose prices stop before a
+  horizon as unresolved rather than dropping them, since a vanished
+  price is usually a delisting
+- Gave a ticker return without a usable benchmark its own status instead
+  of counting it as a failure, and added `--collect-prices` to refresh
+  only the series that fall short of a horizon
+- Left the frozen baseline file untouched; resolutions are separate
+  artifacts recorded in the run manifest
 - Added a Research Queue workspace to the dashboard: evidence-ranked table
   with basis chips, v3/v2/official scores, key ratios, exclusion markers,
   and filters by basis, country, sector, and search, read from the

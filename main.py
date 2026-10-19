@@ -48,6 +48,7 @@ from src.run_state import (
     load_saved_manifest,
     record_recalibration,
     record_backtest,
+    record_baseline_resolution,
     record_rescore,
     record_moonshot_analysis,
     record_moonshot_calibration,
@@ -73,6 +74,13 @@ from src.evidence import (
 from src.openai_research import OpenAIResearchProvider
 from src.research_audit import export_research_audit, finalize_research_review
 from src.research_ranking import build_research_queue, export_research_queue
+from src.baseline_resolution import (
+    export_baseline_resolution,
+    load_forward_baseline,
+    load_price_series,
+    resolve_baseline,
+    tickers_needing_prices,
+)
 from src.rescore import rescore_results
 from src.sec_mapping import resolve_sec_ticker
 from src.statements_extract import extract_from_statements
@@ -196,6 +204,11 @@ def main(arguments=None):
             limit=args.backtest_limit,
             with_fundamentals=args.with_fundamentals,
             with_insiders=args.with_insiders,
+        )
+        return
+    if args.resolve_baselines:
+        resolve_saved_baseline(
+            args.resolve_baselines, collect_prices=args.collect_prices,
         )
         return
     if args.rescore_run:
@@ -444,6 +457,101 @@ def main(arguments=None):
         f"{intelligence['research_artifacts']['research_queue_csv_path']}"
     )
     print(f"Manifest saved to: {run_state.manifest_path}")
+
+
+def resolve_saved_baseline(run_id: str, collect_prices: bool = False) -> None:
+    """Measure a frozen forward baseline against realized prices."""
+    settings = BACKTEST_CONFIG.get("baseline_resolution", {})
+    try:
+        baseline = load_forward_baseline(OUTPUT_DIR, run_id)
+        tickers = [str(row["ticker"]) for row in baseline["candidates"]]
+        benchmarks = sorted({
+            str(row.get("benchmark") or "") for row in baseline["candidates"]
+            if row.get("benchmark")
+        })
+        series, cache_stats = load_price_series(
+            CACHE_DIR, benchmarks + tickers,
+        )
+        collection = None
+        if collect_prices:
+            wanted = tickers_needing_prices(baseline, series, config=settings)
+            collection = {"requested": len(wanted), "errors": 0}
+            if wanted:
+                source = build_market_data_source(price_history_ttl_hours=0)
+                for completed, ticker in enumerate(wanted, start=1):
+                    try:
+                        source.get_price_history(ticker)
+                    except Exception:  # noqa: BLE001 - isolate failures
+                        collection["errors"] += 1
+                    print_progress("resolve-prices", completed, len(wanted), ticker)
+                series, cache_stats = load_price_series(
+                    CACHE_DIR, benchmarks + tickers,
+                )
+        resolution = resolve_baseline(baseline, series, config=settings)
+        artifacts = export_baseline_resolution(resolution, OUTPUT_DIR)
+        manifest_path = record_baseline_resolution(
+            RUN_DIR,
+            run_id,
+            {
+                "baseline_id": resolution["baseline_id"],
+                "baseline_as_of": resolution["baseline_as_of"],
+                "model_version": resolution["model_version"],
+                "resolved_at": resolution["resolved_at"],
+                "candidate_count": resolution["candidate_count"],
+                "eligible_horizons": resolution["eligible_horizons"],
+                "pending_horizons": resolution["pending_horizons"],
+                "prices_collected": collect_prices,
+                "baseline_unchanged": True,
+                "official_scores_and_ranks_unchanged": True,
+                **artifacts,
+            },
+        )
+    except (FileNotFoundError, OSError, TypeError, ValueError, KeyError) as error:
+        raise SystemExit(f"Unable to resolve forward baseline: {error}") from error
+
+    print(f"Forward baseline resolved for run: {run_id}")
+    print(f"Baseline frozen {resolution['baseline_as_of']} · model {resolution['model_version']}")
+    print(f"Candidates: {resolution['candidate_count']}")
+    print(
+        "Price series: "
+        f"{cache_stats['loaded']} loaded, {cache_stats['missing']} missing, "
+        f"{cache_stats['read_errors']} read errors"
+    )
+    if collection is not None:
+        print(
+            "Price collection: "
+            f"{collection['requested']} requested, {collection['errors']} errors"
+        )
+    if not resolution["eligible_horizons"]:
+        print("No horizon is eligible yet; nothing to measure.")
+    for label in resolution["eligible_horizons"]:
+        report = resolution["horizons"][label]
+        selected, control = report["selected"], report["control"]
+        difference = report["selected_minus_control"]
+        print(f"\n{label} horizon ({'comparable' if report['comparable'] else 'cohorts too small'})")
+        for name, cohort in (("Selected", selected), ("Control", control)):
+            print(
+                f"  {name}: {cohort['resolved']}/{cohort['candidates']} resolved, "
+                f"median {cohort['median_excess_percent']}%, "
+                f"win rate {cohort['win_rate_percent']}%, "
+                f"{cohort['unresolved_stale']} stopped trading"
+            )
+            if cohort["resolved_without_benchmark"]:
+                print(
+                    f"    {cohort['resolved_without_benchmark']} have a return but no "
+                    "benchmark for this window; rerun with --collect-prices"
+                )
+        print(
+            f"  Selected minus control: median "
+            f"{difference['median_excess_percent']} pts, win rate "
+            f"{difference['win_rate_percent']} pts"
+        )
+    if resolution["pending_horizons"]:
+        print(f"\nStill pending: {', '.join(resolution['pending_horizons'])}")
+    print("Forward baseline file: unchanged")
+    print(f"Resolution JSON saved to: {artifacts['baseline_resolution_json_path']}")
+    print(f"Resolution CSV saved to: {artifacts['baseline_resolution_csv_path']}")
+    print(f"Manifest updated: {manifest_path}")
 
 
 def rescore_saved_run(run_id: str) -> None:
