@@ -1,0 +1,1287 @@
+moonshot_rank,ticker,company_name,country,sector,size_tier,classification,upside_score,risk_of_ruin_score,moonshot_confidence,market_risk_confidence,benchmark,baseline_as_of,tracking_status
+1,JCSE,JE Cleantech Holdings Limited,US,Industrials,nano_cap,priority_research,90.29,28.88,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+2,GTEC,Greenland Technologies Holding ,US,Consumer Cyclical,micro_cap,priority_research,88.29,20.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+3,CRE,Cre8 Enterprise Limited,US,Industrials,nano_cap,priority_research,85.88,29.88,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+4,ARBB,ARB IOT Group Limited,US,Technology,nano_cap,priority_research,85.88,33.18,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+5,CHAI,"Core AI Holdings, Inc.",US,Communication Services,nano_cap,priority_research,81.47,29.13,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+6,TORR.V,TORRENT CAPITAL LTD,CA,Financial Services,micro_cap,priority_research,80.05,24.13,100.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+7,HOLO,MicroCloud Hologram Inc.,US,Technology,micro_cap,priority_research,78.47,17.68,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+8,PW,Power REIT (MD),US,Real Estate,nano_cap,asymmetric_watch,96.25,48.2,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+9,GRF.V,GREEN RISE FOODS INC,CA,Consumer Defensive,micro_cap,asymmetric_watch,95.05,47.66,65.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+10,PSHG,Performance Shipping Inc.,US,Industrials,micro_cap,asymmetric_watch,95.05,54.43,97.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+11,CRWN.TO,CROWN CAPITAL PARTNERS INC,CA,Financial Services,nano_cap,asymmetric_watch,90.29,40.75,85.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+12,TLIH,Ten-League International Holdin,US,Industrials,micro_cap,asymmetric_watch,86.3,46.05,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+13,EHLD,Euroholdings Ltd.,US,Industrials,micro_cap,asymmetric_watch,86.2,42.84,97.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+14,OCG,Oriental Culture Holding LTD,US,Consumer Cyclical,nano_cap,asymmetric_watch,85.0,38.35,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+15,YEG.V,YORKTON EQUITY GROUP INC,CA,Real Estate,micro_cap,asymmetric_watch,83.88,45.98,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+16,GMM,Global Mofy AI Limited,US,Technology,micro_cap,asymmetric_watch,78.59,47.98,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+17,AGRZ,Agroz Inc.,US,Consumer Defensive,nano_cap,asymmetric_watch,77.94,40.86,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+18,HIHO,Highway Holdings Limited,US,Industrials,nano_cap,asymmetric_watch,77.06,36.48,80.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+19,SURG,"SurgePays, Inc.",US,Communication Services,nano_cap,asymmetric_watch,76.47,51.82,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+20,PLSM,Pulsenmore Ltd.,US,Healthcare,micro_cap,asymmetric_watch,76.0,43.97,55.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+21,CTEK.V,CLEANTEK INDUSTRIES INC,CA,Industrials,micro_cap,asymmetric_watch,74.76,50.93,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+22,SDI.V,STAMPEDE DRILLING INC,CA,Energy,micro_cap,asymmetric_watch,74.06,31.03,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+23,RAY,Raytech Holding Limited,US,Consumer Defensive,micro_cap,asymmetric_watch,73.3,30.8,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+24,CIIT,"Tianci International, Inc.",US,Industrials,nano_cap,asymmetric_watch,72.65,50.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+25,BANL,CBL International Limited,US,Energy,micro_cap,asymmetric_watch,72.59,17.48,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+26,LESL,"Leslie's, Inc.",US,Consumer Cyclical,nano_cap,asymmetric_watch,71.25,40.21,95.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+27,SAM.TO,STARCORE INTERNATIONAL MINES LT,CA,Basic Materials,micro_cap,asymmetric_watch,70.75,25.11,60.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+28,TOPS,"TOP Ships, Inc.",US,Energy,nano_cap,asymmetric_watch,70.59,49.88,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+29,AERT,"Aeries Technology, Inc.",US,Industrials,micro_cap,asymmetric_watch,69.2,26.11,95.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+30,JWEL,Jowell Global Ltd.,US,Consumer Cyclical,nano_cap,asymmetric_watch,68.24,22.68,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+31,SNOA,"Sonoma Pharmaceuticals, Inc.",US,Healthcare,nano_cap,asymmetric_watch,68.24,29.63,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+32,MASK,3 E Network Technology Group Lt,US,Technology,nano_cap,asymmetric_watch,68.24,50.13,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+33,DXST,Decent Holding Inc.,US,Industrials,nano_cap,asymmetric_watch,68.24,50.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+34,TMG.V,Thermal Energy International In,CA,Industrials,micro_cap,asymmetric_watch,67.88,16.98,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+35,RYM,"RYTHM, Inc.",US,Consumer Defensive,micro_cap,asymmetric_watch,67.88,41.43,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+36,HFC.V,HAMPTON FINANCIAL CORPORATION,CA,Financial Services,micro_cap,asymmetric_watch,67.71,34.35,75.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+37,MSGM,Motorsport Games Inc.,US,Communication Services,micro_cap,asymmetric_watch,67.55,16.1,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+38,AEG.TO,AEGIS BRANDS INC,CA,Consumer Cyclical,micro_cap,asymmetric_watch,67.55,40.1,100.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+39,SFI.TO,SOLUTION FINANCIAL INC,CA,Consumer Cyclical,micro_cap,asymmetric_watch,67.55,46.7,100.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+40,FIEE,"FiEE, Inc",US,Technology,micro_cap,asymmetric_watch,67.0,15.98,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+41,ECOM.V,EMERGE COMMERCE LTD,CA,Consumer Cyclical,micro_cap,asymmetric_watch,66.82,36.03,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+42,CLIK,CLICK HOLDINGS LIMITED,US,Consumer Cyclical,micro_cap,asymmetric_watch,66.82,39.66,80.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+43,SMXT,Solarmax Technology Inc.,US,Technology,micro_cap,asymmetric_watch,66.82,43.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+44,AMS,American Shared Hospital Servic,US,Healthcare,micro_cap,asymmetric_watch,66.82,44.48,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+45,AWX,Avalon Holdings Corporation,US,Industrials,micro_cap,asymmetric_watch,66.8,38.71,97.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+46,ZBAO,Zhibao Technology Inc.,US,Financial Services,nano_cap,asymmetric_watch,66.76,28.91,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+47,LEDS,SemiLEDS Corporation,US,Technology,micro_cap,asymmetric_watch,66.3,22.55,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+48,CPOP,"Pop Culture Group Co., Ltd",US,Communication Services,nano_cap,asymmetric_watch,66.25,44.35,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+49,CTRM,Castor Maritime Inc.,US,Industrials,micro_cap,asymmetric_watch,66.24,18.79,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+50,BOSC,B.O.S. Better Online Solutions,US,Technology,micro_cap,asymmetric_watch,65.24,15.22,80.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+51,AAME,Atlantic American Corporation,US,Financial Services,micro_cap,asymmetric_watch,65.24,21.01,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+52,ICMB,Investcorp Credit Management BD,US,Financial Services,micro_cap,asymmetric_watch,64.76,36.29,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+53,IFBD,"Infobird Co., Ltd",US,Technology,nano_cap,asymmetric_watch,64.71,33.63,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+54,ATXG,Addentax Group Corp.,US,Industrials,nano_cap,asymmetric_watch,64.71,41.33,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+55,PAVS,Paranovus Entertainment Technol,US,Consumer Defensive,nano_cap,asymmetric_watch,64.71,41.43,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+56,JTAI,Jet.AI Inc.,US,Technology,nano_cap,asymmetric_watch,64.71,45.72,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+57,HTCR,"Heartcore Enterprises, Inc.",US,Technology,nano_cap,asymmetric_watch,64.71,51.23,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+58,FBGL,FBS Global Limited,US,Industrials,nano_cap,asymmetric_watch,64.71,52.3,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+59,NTCL,NETCLASS TECHNOLOGY INC,US,Technology,nano_cap,asymmetric_watch,64.71,53.43,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+60,DFSC,DEFSEC Technologies Inc.,US,Industrials,nano_cap,asymmetric_watch,64.71,54.33,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+61,KFFB,Kentucky First Federal Bancorp,US,Financial Services,micro_cap,asymmetric_watch,64.35,25.4,71.25,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+62,HTCO,High-Trend International Group,US,Industrials,micro_cap,asymmetric_watch,63.76,28.28,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+63,HUBC,Hub Cyber Security Ltd.,US,Technology,micro_cap,asymmetric_watch,63.29,44.45,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+64,UFG,Uni-Fuels Holdings Limited,US,Industrials,micro_cap,asymmetric_watch,62.41,27.87,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+65,ITP,"IT Tech Packaging, Inc.",US,Basic Materials,nano_cap,asymmetric_watch,62.35,41.22,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+66,MWG,Multi Ways Holdings Limited,US,Industrials,nano_cap,asymmetric_watch,62.35,50.88,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+67,MXC,Mexco Energy Corporation,US,Energy,micro_cap,asymmetric_watch,62.3,28.51,97.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+68,CWL.TO,CALDWELL PARTNERS INTERNATIONAL,CA,Industrials,micro_cap,asymmetric_watch,61.7,13.55,100.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+69,FDI.V,FINDEV INC,CA,Financial Services,nano_cap,asymmetric_watch,61.47,37.97,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+70,NEPH,"Nephros, Inc.",US,Healthcare,micro_cap,asymmetric_watch,60.95,17.55,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+71,MBBC,"Marathon Bancorp, Inc.",US,Financial Services,micro_cap,asymmetric_watch,60.95,19.05,75.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+72,MTEX,"Mannatech, Incorporated",US,Consumer Defensive,micro_cap,asymmetric_watch,60.94,26.03,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+73,BRCC,BRC Inc.,US,Consumer Defensive,micro_cap,asymmetric_watch,60.94,32.68,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+74,BCG,"Binah Capital Group, Inc.",US,Financial Services,micro_cap,asymmetric_watch,60.94,41.52,75.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+75,VTX.V,VERTEX RESOURCE GROUP LTD,CA,Industrials,micro_cap,asymmetric_watch,60.94,42.3,85.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+76,SQFT,"Presidio Property Trust, Inc.",US,Real Estate,nano_cap,asymmetric_watch,60.88,46.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+77,RUBI,Rubico Inc.,US,Industrials,nano_cap,asymmetric_watch,60.88,53.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+78,REKO.V,REKO INTERNATIONAL GROUP INC,CA,Industrials,micro_cap,asymmetric_watch,60.65,25.58,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+79,AHT,Ashford Hospitality Trust Inc,US,Real Estate,micro_cap,asymmetric_watch,60.35,34.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+80,UPLD,"Upland Software, Inc.",US,Technology,micro_cap,asymmetric_watch,60.35,44.23,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+81,ORKT,Orangekloud Technology Inc.,US,Technology,nano_cap,asymmetric_watch,60.29,46.23,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+82,LUCY,"Innovative Eyewear, Inc.",US,Healthcare,nano_cap,asymmetric_watch,60.29,49.51,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+83,CRWS,"Crown Crafts, Inc.",US,Consumer Cyclical,micro_cap,asymmetric_watch,60.24,16.78,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+84,CNTY,"Century Casinos, Inc.",US,Consumer Cyclical,micro_cap,asymmetric_watch,60.24,33.35,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+85,EVGN.V,EVERGEN INFRASTRUCTURE CORP,CA,Industrials,micro_cap,asymmetric_watch,60.06,53.43,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+86,WETH,Wetouch Technology Inc.,US,Technology,micro_cap,asymmetric_watch,60.05,21.75,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+87,GURE,"Gulf Resources, Inc.",US,Basic Materials,nano_cap,speculative_watch,85.88,63.88,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+88,LGCL,Lucas GC Limited,US,Technology,nano_cap,speculative_watch,84.41,61.33,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+89,PMAX,Powell Max Limited,US,Financial Services,nano_cap,speculative_watch,82.35,73.66,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+90,ABTS,Abits Group Inc,US,Financial Services,nano_cap,speculative_watch,82.35,75.16,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+91,VMAR,Vision Marine Technologies Inc.,US,Consumer Cyclical,nano_cap,speculative_watch,82.35,78.13,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+92,STFS,Star Fashion Culture Holdings L,US,Communication Services,nano_cap,speculative_watch,75.71,61.08,70.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+93,YMAT,"J-Star Holding Co., Ltd.",US,Basic Materials,nano_cap,speculative_watch,75.0,70.01,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+94,GAME,"GameSquare Holdings, Inc.",US,Communication Services,nano_cap,speculative_watch,72.65,63.13,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+95,CAPS,Capstone Holding Corp.,US,Basic Materials,nano_cap,speculative_watch,72.65,72.43,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+96,AMBO,Ambow Education Holding Ltd. Am,US,Consumer Defensive,nano_cap,speculative_watch,70.0,58.29,80.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+98,GYGY,"Game Your Game, Inc.",US,Technology,micro_cap,market_data_required,41.24,34.93,57.0,40.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+99,NTZ,"Natuzzi, S.p.A.",US,Consumer Cyclical,micro_cap,market_data_required,33.0,40.82,77.0,40.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+100,SBEV,"Splash Beverage Group, Inc. (NV",US,Consumer Defensive,nano_cap,market_data_required,25.0,56.51,60.0,6.67,SPY,2026-09-05T17:47:48.669736+00:00,pending
+101,ALCH.V,ALCHEMY LABS INC,CA,Industrials,micro_cap,market_data_required,22.0,44.58,57.0,40.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+102,FNC.V,Fancamp Exploration Ltd.,CA,Basic Materials,micro_cap,market_data_required,19.5,5.78,60.0,6.67,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+103,BIGG.V,BIGG DIGITAL ASSETS INC,CA,Financial Services,micro_cap,market_data_required,18.88,63.92,77.5,40.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+104,AIHS,Senmiao Technology Limited,US,Industrials,micro_cap,market_data_required,11.82,21.99,67.0,6.67,SPY,2026-09-05T17:47:48.669736+00:00,pending
+105,NUR,Nuran Wireless Inc. Common Shares,US,Technology,micro_cap,market_data_required,5.82,66.13,82.0,40.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+106,YDKG,Yueda Digital Holding,US,Communication Services,nano_cap,insufficient_evidence,100.0,62.17,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+107,BTTC,Black Titan Corp,US,,nano_cap,insufficient_evidence,100.0,67.9,11.25,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+108,CMU.V,Comet Industries Ltd.,CA,Real Estate,micro_cap,insufficient_evidence,77.67,16.92,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+109,APUS,"Apimeds Pharmaceuticals US, Inc",US,Healthcare,nano_cap,insufficient_evidence,72.5,57.87,22.5,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+110,MLEC,Moolec Science SA,US,Healthcare,nano_cap,insufficient_evidence,72.5,68.89,22.5,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+111,WRX.TO,WESTERN RESOURCES CORP,CA,Basic Materials,micro_cap,insufficient_evidence,67.0,37.43,0.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+112,GYRO,"Gyrodyne , LLC",US,Real Estate,micro_cap,insufficient_evidence,67.0,42.82,0.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+113,DSY,Big Tree Cloud Holdings Limited,US,Consumer Defensive,micro_cap,insufficient_evidence,67.0,44.1,0.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+114,AIXC,"AIxCrypto Holdings, Inc.",US,Technology,micro_cap,insufficient_evidence,67.0,45.02,0.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+115,IQST,iQSTEL Inc.,US,Communication Services,micro_cap,insufficient_evidence,67.0,49.32,0.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+116,TMDE,TMD Energy Limited,US,Energy,micro_cap,insufficient_evidence,67.0,57.94,0.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+117,ATCX,Atlas Critical Minerals Corpora,US,,micro_cap,insufficient_evidence,67.0,68.5,11.25,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+118,SONM,"DNA X, Inc.",US,Financial Services,nano_cap,insufficient_evidence,66.67,73.89,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+119,VLC.V,VELOCITY MINERALS LTD,CA,Basic Materials,micro_cap,insufficient_evidence,59.33,33.24,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+120,BIOT,Instinct Bio Technical Company ,US,Consumer Defensive,micro_cap,insufficient_evidence,56.0,34.21,22.5,40.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+121,DMCU.V,DOMESTIC METALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,56.0,38.45,30.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+122,UTWO.V,U92 ENERGY CORP,CA,Basic Materials,micro_cap,insufficient_evidence,56.0,38.62,30.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+123,VLLC.V,ARGENTINA METALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,56.0,52.07,22.5,40.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+124,PMI.V,PERSEVERANCE METALS INC,CA,Basic Materials,micro_cap,insufficient_evidence,56.0,53.72,22.5,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+125,AURA.V,AURANOVA RESOURCES INC,CA,Basic Materials,micro_cap,insufficient_evidence,56.0,58.11,22.5,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+126,BIRD.V,THUNDERBIRD MINERALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,56.0,63.53,22.5,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+127,CLRO,"ClearOne, Inc.",US,Technology,micro_cap,insufficient_evidence,55.67,28.59,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+128,NEUP,Neuphoria Therapeutics Inc.,US,Healthcare,micro_cap,insufficient_evidence,55.67,35.76,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+129,KDSX.V,KADESTONE CAPITAL CORP,CA,Real Estate,micro_cap,insufficient_evidence,55.67,64.74,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+130,EVNI.V,EV NICKEL INC,CA,Basic Materials,micro_cap,insufficient_evidence,50.67,38.57,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+131,STRM.V,STORM EXPLORATION INC,CA,Basic Materials,micro_cap,insufficient_evidence,50.67,40.52,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+132,BCU.V,BELL COPPER CORPORATION,CA,Basic Materials,micro_cap,insufficient_evidence,50.67,50.94,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+133,STUV.V,STUVE GOLD CORP,CA,Basic Materials,micro_cap,insufficient_evidence,50.67,51.49,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+134,LABT,Lakewood-Amedex Biotherapeutics,US,Healthcare,nano_cap,insufficient_evidence,48.33,28.34,45.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+135,NVNO,enVVeno Medical Corporation,US,Healthcare,nano_cap,insufficient_evidence,48.33,31.69,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+136,PMCB,"PharmaCyte  Biotech, Inc.",US,Healthcare,nano_cap,insufficient_evidence,48.33,33.67,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+137,MBIO,"Mustang Bio, Inc.",US,Healthcare,nano_cap,insufficient_evidence,48.33,34.46,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+138,WGF.V,WESCAN GOLDFIELDS INC,CA,Basic Materials,nano_cap,insufficient_evidence,48.33,34.73,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+139,ACXP,"Acurx Pharmaceuticals, Inc.",US,Healthcare,nano_cap,insufficient_evidence,48.33,35.78,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+140,GT.V,GT RESOURCES INC,CA,Basic Materials,nano_cap,insufficient_evidence,48.33,36.04,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+141,APMI.V,APOGEE MINERALS LTD,CA,Basic Materials,nano_cap,insufficient_evidence,48.33,36.29,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+142,SHPH,Shuttle Pharmaceuticals Holding,US,Healthcare,nano_cap,insufficient_evidence,48.33,36.29,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+143,CMND,Clearmind Medicine Inc.,US,Healthcare,nano_cap,insufficient_evidence,48.33,36.79,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+144,PPCB,"Propanc Biopharma, Inc.",US,Healthcare,nano_cap,insufficient_evidence,48.33,37.54,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+145,GLMD,Galmed Pharmaceuticals Ltd.,US,Healthcare,nano_cap,insufficient_evidence,48.33,37.94,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+146,CNSP,"CNS Pharmaceuticals, Inc.",US,Healthcare,nano_cap,insufficient_evidence,48.33,38.41,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+147,NIKI,"Niki BioSolutions, Inc.",US,Healthcare,nano_cap,insufficient_evidence,48.33,38.49,45.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+148,SKEL.V,SKELETON COAST URANIUM CORP,CA,Basic Materials,nano_cap,insufficient_evidence,48.33,38.58,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+149,KAPA,"Kairos Pharma, Ltd.",US,Healthcare,nano_cap,insufficient_evidence,48.33,39.52,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+150,REC.V,RECORD RESOURCES INC,CA,Energy,nano_cap,insufficient_evidence,48.33,39.59,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+151,GRI,"GRI Bio, Inc.",US,Healthcare,nano_cap,insufficient_evidence,48.33,40.39,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+152,OBUL.V,ONE BULLION LIMITED,CA,Basic Materials,nano_cap,insufficient_evidence,48.33,40.46,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+153,CDT,CDT Equity Inc.,US,Healthcare,nano_cap,insufficient_evidence,48.33,40.54,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+154,MTVA,MetaVia Inc.,US,Healthcare,nano_cap,insufficient_evidence,48.33,42.09,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+155,AZTR,Azitra Inc,US,Healthcare,nano_cap,insufficient_evidence,48.33,42.89,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+156,GNPX,"Genprex, Inc.",US,Healthcare,nano_cap,insufficient_evidence,48.33,43.04,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+157,REVB,"Revelation Biosciences, Inc.",US,Healthcare,nano_cap,insufficient_evidence,48.33,43.09,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+158,SNGX,"Soligenix, Inc.",US,Healthcare,nano_cap,insufficient_evidence,48.33,43.09,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+159,NXTS,Nexentis Technologies Inc.,US,Basic Materials,nano_cap,insufficient_evidence,48.33,44.22,45.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+160,ENVB,"Enveric Biosciences, Inc.",US,Healthcare,nano_cap,insufficient_evidence,48.33,44.31,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+161,DRMA,"Dermata Therapeutics, Inc.",US,Healthcare,nano_cap,insufficient_evidence,48.33,44.62,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+162,AQB,"AquaBounty Technologies, Inc.",US,Consumer Defensive,nano_cap,insufficient_evidence,48.33,45.19,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+163,BGL,Blue Gold Limited,US,Basic Materials,nano_cap,insufficient_evidence,48.33,45.99,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+164,RNAZ,"TransCode Therapeutics, Inc.",US,Healthcare,nano_cap,insufficient_evidence,48.33,46.89,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+165,LITT.V,FUTUREGEN INDUSTRIES CORP,CA,Financial Services,nano_cap,insufficient_evidence,48.33,47.8,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+166,ERNA,Ernexa Therapeutics Inc.,US,Healthcare,nano_cap,insufficient_evidence,48.33,48.89,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+167,OGEN,Oragenics Inc.,US,Healthcare,nano_cap,insufficient_evidence,48.33,49.04,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+168,ALZN,"Alzamend Neuro, Inc.",US,Healthcare,nano_cap,insufficient_evidence,48.33,49.15,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+169,APVO,Aptevo Therapeutics Inc.,US,Healthcare,nano_cap,insufficient_evidence,48.33,49.19,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+170,NDRA,ENDRA Life Sciences Inc.,US,Healthcare,nano_cap,insufficient_evidence,48.33,49.49,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+171,PURO.V,PLATAURO METALS CORP,CA,Basic Materials,nano_cap,insufficient_evidence,48.33,49.61,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+172,PULM,"Pulmatrix, Inc.",US,Healthcare,nano_cap,insufficient_evidence,48.33,49.88,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+173,MTNB,"Matinas Biopharma Holdings, Inc",US,Healthcare,nano_cap,insufficient_evidence,48.33,50.29,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+174,GDC,GD Culture Group Limited,US,Communication Services,nano_cap,insufficient_evidence,48.33,50.49,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+175,IMNN,"Imunon, Inc.",US,Healthcare,nano_cap,insufficient_evidence,48.33,51.34,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+176,AEON,"AEON Biopharma, Inc.",US,Healthcare,nano_cap,insufficient_evidence,48.33,52.09,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+177,CVKD,"Cadrenal Therapeutics, Inc.",US,Healthcare,nano_cap,insufficient_evidence,48.33,52.15,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+178,AMIX,"Autonomix Medical, Inc.",US,Healthcare,nano_cap,insufficient_evidence,48.33,53.15,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+179,SLXN,Silexion Therapeutics Corp,US,Healthcare,nano_cap,insufficient_evidence,48.33,53.39,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+180,PCSA,"Processa Pharmaceuticals, Inc.",US,Healthcare,nano_cap,insufficient_evidence,48.33,53.88,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+181,CHNR,"China Natural Resources, Inc.",US,Basic Materials,nano_cap,insufficient_evidence,48.33,54.07,45.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+182,XCUR,"Exicure, Inc.",US,Healthcare,nano_cap,insufficient_evidence,48.33,54.2,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+183,FBLG,"FibroBiologics, Inc.",US,Healthcare,nano_cap,insufficient_evidence,48.33,54.49,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+184,CURX,Curanex Pharmaceuticals Inc,US,Healthcare,nano_cap,insufficient_evidence,48.33,55.44,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+185,LIMN,"Liminatus Pharma, Inc.",US,Healthcare,nano_cap,insufficient_evidence,48.33,55.49,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+186,DNO.V,DINERO VENTURES LTD,CA,Basic Materials,nano_cap,insufficient_evidence,48.33,55.78,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+187,GOVX,"GeoVax Labs, Inc.",US,Healthcare,nano_cap,insufficient_evidence,48.33,56.29,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+188,AQMS,"Aqua Metals, Inc.",US,Industrials,nano_cap,insufficient_evidence,48.33,56.49,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+189,ARTL,"Artelo Biosciences, Inc.",US,Healthcare,nano_cap,insufficient_evidence,48.33,56.79,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+190,CLDI,"Calidi Biotherapeutics, Inc.",US,Healthcare,nano_cap,insufficient_evidence,48.33,58.29,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+191,PHGE,BiomX Inc.,US,Industrials,nano_cap,insufficient_evidence,48.33,59.25,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+192,LEAP.V,QUANTUM CRITICAL METALS CORP,CA,Basic Materials,nano_cap,insufficient_evidence,48.33,59.41,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+193,TRAW,"Traws Pharma, Inc.",US,Healthcare,nano_cap,insufficient_evidence,48.33,59.46,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+194,GCTK,"GlucoTrack, Inc.",US,Healthcare,nano_cap,insufficient_evidence,48.33,60.57,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+195,SDST,Stardust Power Inc.,US,Industrials,nano_cap,insufficient_evidence,48.33,60.73,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+196,XRTX,XORTX Therapeutics Inc.,US,Healthcare,nano_cap,insufficient_evidence,48.33,62.41,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+197,RTH.V,RATHDOWNEY RESOURCES LTD,CA,Basic Materials,nano_cap,insufficient_evidence,48.33,63.99,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+198,CHGA,Change Agents Corporation,US,Real Estate,nano_cap,insufficient_evidence,48.33,64.22,45.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+199,STS.V,SOUTH STAR BATTERY METALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,44.33,29.91,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+200,BCF.V,BUILDERS CAPITAL MORTGAGE CORP,CA,Financial Services,micro_cap,insufficient_evidence,39.0,34.86,22.5,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+201,JAY.V,BLUE JAY GOLD CORP,CA,Basic Materials,micro_cap,insufficient_evidence,39.0,37.93,22.5,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+202,HOH.V,HIGH ARCTIC OVERSEAS HOLDINGS C,CA,Energy,micro_cap,insufficient_evidence,39.0,38.45,22.5,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+203,KIRO.V,KAIROS GOLD INC,CA,Basic Materials,micro_cap,insufficient_evidence,39.0,42.84,22.5,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+204,CCEC.V,CANCAMBRIA ENERGY CORP,CA,Energy,micro_cap,insufficient_evidence,39.0,43.78,22.5,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+205,LBNK.V,LITHIUMBANK RESOURCES CORP,CA,Basic Materials,micro_cap,insufficient_evidence,39.0,44.37,22.5,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+206,GRDX,GridAI Technologies Corp.,US,Healthcare,micro_cap,insufficient_evidence,39.0,47.7,22.5,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+207,CLCO.V,CULICO METALS INC,CA,Financial Services,micro_cap,insufficient_evidence,39.0,47.78,22.5,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+208,GRL.V,GREENLIGHT METALS INC,CA,Basic Materials,micro_cap,insufficient_evidence,39.0,53.87,22.5,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+209,SAGE.V,SAGE POTASH CORP,CA,Basic Materials,micro_cap,insufficient_evidence,39.0,54.37,22.5,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+210,MKDW,MKDWELL Tech Inc.,US,Consumer Cyclical,micro_cap,insufficient_evidence,39.0,60.62,22.5,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+211,TREO,Tactical Resources Corp. Common Shares,US,Basic Materials,micro_cap,insufficient_evidence,37.33,11.33,45.0,6.67,SPY,2026-09-05T17:47:48.669736+00:00,pending
+212,KPRX,"Kiora Pharmaceuticals, Inc.",US,Healthcare,micro_cap,insufficient_evidence,37.33,22.29,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+213,HWY.V,HIGHWAY 50 GOLD CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,24.04,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+214,STE.V,STARR PEAK MINING LTD,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,24.83,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+215,MOX.V,MORIEN RESOURCES CORP,CA,Energy,micro_cap,insufficient_evidence,37.33,25.64,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+216,CVB.V,COMPASS GOLD CORPORATION,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,25.84,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+217,CLRB,"Cellectar Biosciences, Inc.",US,Healthcare,micro_cap,insufficient_evidence,37.33,26.54,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+218,ZAU.V,ZODIAC GOLD INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,27.15,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+219,COCO.V,COAST COPPER CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,27.73,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+220,MN.V,MANGANESE X ENERGY CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,27.78,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+221,SNG.V,SILVER RANGE RESOURCES LTD,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,27.78,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+222,OTMC.V,ORETERRA METALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,28.14,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+223,AZR.V,AZARGA METALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,28.25,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+224,PLRZ,Polyrizon Ltd.,US,Healthcare,micro_cap,insufficient_evidence,37.33,28.52,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+225,CRG.V,CROSSROADS GOLD CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,28.68,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+226,ADIL,"Adial Pharmaceuticals, Inc",US,Healthcare,micro_cap,insufficient_evidence,37.33,29.04,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+227,CPAU.V,COPAUR MINERALS INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,29.04,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+228,TRBC.V,TRIBECA RESOURCES CORPORATION,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,29.04,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+229,RBZ.V,ARYA RESOURCES LTD,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,29.29,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+230,INAB,"IN8bio, Inc.",US,Healthcare,micro_cap,insufficient_evidence,37.33,29.34,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+231,DEC.V,DECADE RESOURCES LTD.,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,29.57,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+232,GZD.V,GRIZZLY DISCOVERIES INC.,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,29.59,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+233,GIGA.V,GIGA METALS CORPORATION,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,30.04,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+234,EXG.V,EXGEN RESOURCES INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,30.15,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+235,RGNT,Regentis Biomaterials Ltd.,US,Healthcare,micro_cap,insufficient_evidence,37.33,30.29,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+236,KTTA,Pasithea Therapeutics Corp.,US,Healthcare,micro_cap,insufficient_evidence,37.33,30.36,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+237,CGM.V,CANADIAN GOLDFIELDS DISCOVERY C,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,30.8,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+238,EAM.V,EAST AFRICA METALS INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,30.83,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+239,WRR.V,WALKER RIVER RESOURCES CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,30.83,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+240,NSU.V,NORTH SHORE URANIUM LTD,CA,Energy,micro_cap,insufficient_evidence,37.33,30.94,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+241,PAIN.V,VECTOR SCIENCE AND THERAPEUTICS,CA,Healthcare,micro_cap,insufficient_evidence,37.33,30.99,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+242,HPL.V,HORIZON PETROLEUM LTD,CA,Energy,micro_cap,insufficient_evidence,37.33,31.2,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+243,BAG.V,BLENDE SILVER CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,31.29,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+244,MBAI,Check-Cap Ltd.,US,Healthcare,micro_cap,insufficient_evidence,37.33,31.34,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+245,GMV.V,GMV MINERALS INC.,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,31.62,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+246,LIT.V,ARGENTINA LITHIUM AND ENERGY CO,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,31.62,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+247,FCI.V,FIRST CANADIAN GRAPHITE INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,32.2,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+248,MSC.V,MILLENNIUM SILVER CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,32.25,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+249,TWR.V,TOWER RESOURCES LTD,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,32.25,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+250,ABVC,"ABVC Biopharma, Inc.",US,Healthcare,micro_cap,insufficient_evidence,37.33,32.29,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+251,VIZ.V,VISIONARY METALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,32.34,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+252,ANOR.V,ANORTECH INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,32.46,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+253,PCQ.V,PETROLYMPIC LTD.,CA,Energy,micro_cap,insufficient_evidence,37.33,32.46,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+254,ZNX.V,ZINCX RESOURCES CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,32.49,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+255,GRC.TO,GOLD SPRINGS RESOURCE CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,32.59,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+256,JG.V,JAPAN GOLD CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,32.67,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+257,TG.V,TRIFECTA GOLD LTD,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,32.67,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+258,BIVI,BioVie Inc.,US,Healthcare,micro_cap,insufficient_evidence,37.33,32.69,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+259,SAO.V,SOUTH ATLANTIC GOLD INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,32.73,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+260,ZAC.V,ZACATECAS SILVER CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,32.73,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+261,WML.V,WEALTH MINERALS LTD.,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,32.79,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+262,USCU.V,US COPPER CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,32.94,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+263,NCP.V,NICKEL CREEK PLATINUM CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,33.04,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+264,AUST,Austin Gold Corp.,US,Basic Materials,micro_cap,insufficient_evidence,37.33,33.09,45.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+265,RDU.V,RADIUS GOLD INC.,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,33.44,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+266,NBY.V,NIOBAY METALS INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,33.46,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+267,RKTO,Rocket One Inc.,US,Technology,micro_cap,insufficient_evidence,37.33,34.45,45.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+268,QCLS,"Q/C Technologies, Inc.",US,Technology,micro_cap,insufficient_evidence,37.33,34.69,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+269,GPS.V,GREAT PLAINS METALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,34.83,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+270,LXM.V,LUX METALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,34.83,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+271,PHIO,Phio Pharmaceuticals Corp.,US,Healthcare,micro_cap,insufficient_evidence,37.33,35.2,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+272,SWA.V,SARAMA RESOURCES LTD,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,35.2,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+273,NOB.V,NOBLE MINERAL EXPLORATION INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,35.42,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+274,TRO.V,TARANIS RESOURCES INC.,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,35.44,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+275,MEK.V,METALS CREEK RESOURCES CORP.,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,35.46,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+276,GRB.V,GREENBRIAR SUSTAINABLE LIVING I,CA,Utilities,micro_cap,insufficient_evidence,37.33,35.59,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+277,SEND.V,SENDERO RESOURCES CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,35.8,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+278,PA.V,PALAMINA CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,35.99,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+279,PASG,"Passage Bio, Inc.",US,Healthcare,micro_cap,insufficient_evidence,37.33,36.52,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+280,SMX,SMX (Security Matters) Public L,US,Industrials,micro_cap,insufficient_evidence,37.33,36.69,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+281,BCDA,"BioCardia, Inc.",US,Healthcare,micro_cap,insufficient_evidence,37.33,37.44,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+282,GPM.V,GPM METALS INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,37.78,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+283,PEX.V,PACIFIC RIDGE EXPLORATION LTD,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,37.88,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+284,STND.V,STANDARD URANIUM LTD,CA,Energy,micro_cap,insufficient_evidence,37.33,37.88,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+285,INTS,"Intensity Therapeutics, Inc.",US,Healthcare,micro_cap,insufficient_evidence,37.33,37.94,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+286,TBK.V,TRAILBREAKER RESOURCES LTD,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,38.04,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+287,OOR.V,OPUS ONE GOLD CORPORATION,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,38.09,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+288,AIR.V,CLEAN AIR METALS INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,38.52,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+289,TSLV.V,TIER ONE SILVER INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,38.52,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+290,KAPA.V,KAPA GOLD INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,38.57,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+291,PBM,Psyence Biomedical Ltd.,US,Healthcare,micro_cap,insufficient_evidence,37.33,38.62,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+292,NAM.V,NEW AGE METALS INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,38.64,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+293,SXL.V,SLAM EXPLORATION INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,38.64,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+294,NICN.V,NICAN LIMITED,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,39.2,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+295,RAMP.V,RAMP METALS INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,39.44,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+296,FABC,"Fabric.AI, Inc.",US,Technology,micro_cap,insufficient_evidence,37.33,39.68,45.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+297,RYO.V,RIO SILVER INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,39.69,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+298,TVRD,"Tvardi Therapeutics, Inc.",US,Healthcare,micro_cap,insufficient_evidence,37.33,39.69,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+299,EVI.V,EASTPORT CRITICAL METALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,40.01,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+300,ARU.V,AURANIA RESOURCES LTD,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,40.31,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+301,GDP.V,GOLDEN PURSUIT RESOURCES LTD,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,40.35,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+302,FRI.V,Freeport Resources Inc.,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,40.67,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+303,AMY.V,RECYCLICO BATTERY MATERIALS INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,40.69,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+304,CALC,"CalciMedica, Inc.",US,Healthcare,micro_cap,insufficient_evidence,37.33,40.69,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+305,SKP.V,STRIKEPOINT GOLD INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,40.7,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+306,QNTM,Quantum Biopharma Ltd.,US,Healthcare,micro_cap,insufficient_evidence,37.33,40.74,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+307,VTEN.V,V TEN METALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,41.4,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+308,SAE.V,SABLE RESOURCES LTD,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,41.46,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+309,RZL.V,RZOLV TECHNOLOGIES INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,41.57,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+310,SGC.V,SOLSTICE GOLD CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,41.74,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+311,DGC.V,DAURA GOLD CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,41.78,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+312,RAGE.V,RENEGADE GOLD INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,41.94,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+313,BFM.V,BEDFORD METALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,41.99,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+314,RSMX.V,REGENCY SILVER CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,42.19,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+315,BEX.V,BENTON RESOURCES INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,42.36,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+316,FYL.V,FINLAY MINERALS LTD.,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,42.36,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+317,ROX.V,CANSTAR RESOURCES INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,42.89,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+318,KALO.V,KALO GOLD CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,43.09,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+319,TWO.V,T2 METALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,43.15,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+320,HLU.V,HOMELAND URANIUM CORP,CA,Energy,micro_cap,insufficient_evidence,37.33,43.28,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+321,ADVB,Advanced Biomed Inc.,US,Healthcare,micro_cap,insufficient_evidence,37.33,43.54,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+322,TRCG.V,THISTLE RESOURCES INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,43.83,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+323,GRG.V,GOLDEN ARROW RES CORP.,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,43.99,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+324,SR.V,STRATEGIC RESOURCES INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,44.22,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+325,PINN.V,PINNACLE SILVER AND GOLD CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,44.25,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+326,MTS.V,METALLIS RESOURCES INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,44.44,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+327,BSK.V,BLUE SKY URANIUM CORP,CA,Energy,micro_cap,insufficient_evidence,37.33,44.46,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+328,CVM,Cel-Sci Corporation,US,Healthcare,micro_cap,insufficient_evidence,37.33,44.74,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+329,OMM.V,OMINECA MINING AND METALS LTD,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,44.84,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+330,PUMA.V,PUMA EXPLORATION INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,44.94,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+331,NCEL,NewcelX Ltd.,US,Healthcare,micro_cap,insufficient_evidence,37.33,45.24,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+332,JZR.V,JZR GOLD INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,45.73,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+333,PTX.V,PTX METALS INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,45.79,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+334,TT.V,TOTAL METALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,46.04,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+335,JSPR,"Jasper Therapeutics, Inc.",US,Healthcare,micro_cap,insufficient_evidence,37.33,46.09,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+336,GTBP,"GT Biopharma, Inc.",US,Healthcare,micro_cap,insufficient_evidence,37.33,46.31,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+337,AWE.V,THUNDERSTRUCK RESOURCES LTD,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,46.36,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+338,MKT.V,PROSPECT PREDICTION MARKETS INC,CA,Technology,micro_cap,insufficient_evidence,37.33,46.49,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+339,ENDR.V,ENDURO METALS CORPORATION,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,46.59,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+340,PDSB,PDS Biotechnology Corporation,US,Healthcare,micro_cap,insufficient_evidence,37.33,46.62,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+341,AUX.V,GOLDEN CROSS RESOURCES INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,46.78,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+342,FFOX.V,FIREFOX GOLD CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,46.83,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+343,AEMC.V,ALASKA ENERGY METALS CORPORATIO,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,47.57,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+344,PEMC.V,PACIFIC EMPIRE MINERALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,48.24,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+345,STMP.V,STAMPER OIL AND GAS CORP,CA,Energy,micro_cap,insufficient_evidence,37.33,48.45,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+346,PTEC.V,PRINCIPAL TECHNOLOGIES INC,CA,Healthcare,micro_cap,insufficient_evidence,37.33,48.61,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+347,BAY.V,ASTON BAY HOLDINGS LTD,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,48.83,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+348,FMST,Foremost Clean Energy Ltd.,US,Basic Materials,micro_cap,insufficient_evidence,37.33,49.25,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+349,MOO.V,MOON RIVER MOLY LTD,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,49.31,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+350,MBRX,"Moleculin Biotech, Inc.",US,Healthcare,micro_cap,insufficient_evidence,37.33,49.59,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+351,MDCX,Medicus Pharma Ltd.,US,Healthcare,micro_cap,insufficient_evidence,37.33,50.52,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+352,CCMC.V,CORE CRITICAL METALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,50.78,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+353,MAX.V,MAX RESOURCE CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,51.9,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+354,NTH.V,NORD PRECIOUS METALS MINING INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,51.94,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+355,MCI.V,MINNOVA CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,52.15,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+356,ABA.V,ABASCA RESOURCES INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,52.2,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+357,KALA,"KALA BIO, Inc.",US,Healthcare,micro_cap,insufficient_evidence,37.33,52.2,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+358,BEEP.V,GEIGER ENERGY CORPORATION,CA,Energy,micro_cap,insufficient_evidence,37.33,52.41,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+359,VO.V,VALORE METALS CORP,CA,Energy,micro_cap,insufficient_evidence,37.33,53.04,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+360,NVLH.V,NEVADA LITHIUM RESOURCES INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,53.09,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+361,NRSN,NeuroSense Therapeutics Ltd.,US,Healthcare,micro_cap,insufficient_evidence,37.33,53.2,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+362,BARU.V,BARU GOLD CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,54.04,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+363,FMN.V,FIDELITY MINERALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,54.39,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+364,DIAM.TO,STAR DIAMOND CORPORATION,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,54.59,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+365,ADGM,"Adagio Medical Holdings, Inc",US,Healthcare,micro_cap,insufficient_evidence,37.33,54.94,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+366,KORE.V,KORE MINING LTD,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,55.34,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+367,BONE.V,BORON ONE HOLDINGS INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,55.79,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+368,HEM.V,HEMOSTEMIX INC,CA,Healthcare,micro_cap,insufficient_evidence,37.33,55.83,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+369,ERA.V,ELCORA ADVANCED MATERIALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,55.94,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+370,REX.V,OREX MINERALS INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,56.34,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+371,ABR.V,ARBOR METALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,56.62,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+372,CRI.V,CHURCHILL RESOURCES INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,56.62,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+373,SBMI.V,SILVER BULLET MINES CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,57.04,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+374,CMC.V,CIELO WASTE SOLUTIONS CORP,CA,Industrials,micro_cap,insufficient_evidence,37.33,57.94,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+375,TPST,"Tempest Therapeutics, Inc.",US,Healthcare,micro_cap,insufficient_evidence,37.33,57.99,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+376,BAT.V,BATERO GOLD CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,58.08,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+377,CTV.V,CLEANTECH VANADIUM MINING CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,58.29,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+378,LMG.V,LINCOLN GOLD MINING INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,58.73,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+379,GX.V,GUARDIAN EXPLORATION INC.,CA,Energy,micro_cap,insufficient_evidence,37.33,59.31,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+380,SMY.V,SEARCH MINERALS INC,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,62.04,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+381,EMM.V,GIYANI METALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,37.33,68.84,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+382,ARH.V,ALTIMA ENERGY INC,CA,Energy,micro_cap,insufficient_evidence,33.0,25.46,0.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+383,BENF,Beneficient,US,Financial Services,micro_cap,insufficient_evidence,33.0,59.46,0.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+384,NTIP,"Network-1 Technologies, Inc.",US,Industrials,micro_cap,insufficient_evidence,26.0,16.15,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+385,COPR,Idaho Copper Corporation,US,Basic Materials,micro_cap,insufficient_evidence,26.0,18.62,45.0,40.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+386,BYSI,"BeyondSpring, Inc.",US,Healthcare,micro_cap,insufficient_evidence,26.0,19.57,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+387,OCI.V,ORECAP INVEST CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,20.88,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+388,FRED.V,FREDONIA MINING INC,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,21.67,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+389,BTR.V,BONTERRA RESOURCES INC.,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,22.46,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+390,RRI.V,RIVERSIDE RESOURCES INC.,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,22.46,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+391,MCC.V,MOROCCO STRATEGIC MINERALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,23.09,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+392,IDEX.V,IDEX METALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,23.34,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+393,GUN.V,GUNPOINT EXPLORATION LTD.,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,23.47,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+394,CTM.V,CANTERRA MINERALS CORPORATION,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,23.52,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+395,MIRA,"MIRA Pharmaceuticals, Inc.",US,Healthcare,micro_cap,insufficient_evidence,26.0,23.52,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+396,VAU.V,VIVA GOLD CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,23.52,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+397,FOXT.V,FOX TUNGSTEN LTD,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,23.79,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+398,SME.V,SAMA RESOURCES INC RESSOURCES S,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,23.79,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+399,WEB.V,WESTBRIDGE RENEWABLE ENERGY COR,CA,Utilities,micro_cap,insufficient_evidence,26.0,23.79,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+400,IGO.V,INDEPENDENCE GOLD CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,24.79,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+401,RLYG.V,RILEY GOLD CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,24.84,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+402,NMC.V,NUVAU MINERALS INC,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,25.04,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+403,LME.V,LAURION MINERAL EXPLORATION INC,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,25.31,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+404,NICE.V,NI CO ENERGY INC,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,25.46,45.0,40.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+405,EDSA,"Edesa Biotech, Inc.",US,Healthcare,micro_cap,insufficient_evidence,26.0,25.57,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+406,IXHL,Incannex Healthcare Inc.,US,Healthcare,micro_cap,insufficient_evidence,26.0,25.59,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+407,FLNA,"Filana Therapeutics, Inc.",US,Healthcare,micro_cap,insufficient_evidence,26.0,25.64,45.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+408,BKI.TO,BLACK IRON INC,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,25.67,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+409,MUN.V,MUNDORO CAPITAL INC,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,25.67,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+410,JAGU,Jaguar Uranium Corp.,US,Energy,micro_cap,insufficient_evidence,26.0,25.91,45.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+411,CNTX,Context Therapeutics Inc.,US,Healthcare,micro_cap,insufficient_evidence,26.0,25.97,45.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+412,RAK.V,RACKLA METALS INC,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,26.04,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+413,WEX.V,WESTERN EXPLORATION INC,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,26.09,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+414,SRA.V,STRIA LITHIUM INC,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,26.15,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+415,VERU,Veru Inc.,US,Healthcare,micro_cap,insufficient_evidence,26.0,26.39,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+416,COR.V,CAMINO MINERALS CORPORATION,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,26.59,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+417,GRCE,"Grace Therapeutics, Inc.",US,Healthcare,micro_cap,insufficient_evidence,26.0,26.73,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+418,KNG.V,KINGSMEN RESOURCES LTD,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,26.88,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+419,SNAG.V,SILVER NORTH RESOURCES LTD,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,26.88,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+420,TAJ.V,TAJIRI RESOURCES CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,26.94,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+421,KCC.V,KINCORA COPPER LIMITED,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,27.2,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+422,SPC.V,SPC NICKEL CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,27.59,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+423,PNTR.V,PANTERA SILVER CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,27.99,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+424,XGC.V,XALI GOLD CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,28.25,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+425,NQC.V,NORDIQUE CRITICAL METALS INC,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,28.63,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+426,LCE.V,CENTURY LITHIUM CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,28.73,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+427,VIPR.V,SILVER VIPER MINERALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,28.73,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+428,OZ.V,VALKEA RESOURCES CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,28.78,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+429,MERG.V,METAL ENERGY CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,29.09,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+430,PX.V,PELANGIO EXPLORATION INC.,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,29.52,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+431,QNCX,"Quince Therapeutics, Inc.",US,Healthcare,micro_cap,insufficient_evidence,26.0,29.57,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+432,BCTX,BriaCell Therapeutics Corp.,US,Healthcare,micro_cap,insufficient_evidence,26.0,29.67,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+433,NVO.TO,NOVO RESOURCES CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,29.79,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+434,HART.V,GOLD HART COPPER CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,30.09,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+435,FNUC,Frontier Nuclear and Minerals I,US,Basic Materials,micro_cap,insufficient_evidence,26.0,30.1,45.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+436,NMI.V,NAMIBIA CRITICAL METALS INC,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,30.36,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+437,CEC.V,CANASIA ENERGY CORP,CA,Energy,micro_cap,insufficient_evidence,26.0,30.49,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+438,BVA.V,BRAVADA GOLD CORPORATION,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,30.57,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+439,PRG.V,PRECIPITATE GOLD CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,30.83,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+440,RDG.V,RIDGELINE MINERALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,30.94,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+441,TTI.V,THIOGENESIS THERAPEUTICS CORP,CA,Healthcare,micro_cap,insufficient_evidence,26.0,30.94,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+442,PTU.V,PUREPOINT URANIUM GROUP INC.,CA,Energy,micro_cap,insufficient_evidence,26.0,31.09,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+443,V.V,VERDERA ENERGY CORP,CA,Energy,micro_cap,insufficient_evidence,26.0,31.28,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+444,ALGR.V,ALGO GRANDE COPPER CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,31.9,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+445,GEMG.V,GEMDALE GOLD INC,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,32.08,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+446,TRR.V,TERRA ROSSA GOLD LTD,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,32.2,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+447,NHHH.V,FUELPOSITIVE CORPORATION,CA,Industrials,micro_cap,insufficient_evidence,26.0,32.59,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+448,NPR.V,NORTH PEAK RESOURCES LTD,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,32.73,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+449,MANU.V,MANHATTAN URANIUM DISCOVERY COR,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,32.98,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+450,BRW.V,BRUNSWICK EXPLORATION INC,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,33.04,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+451,BAU.V,BLUE STAR GOLD CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,33.69,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+452,ATOS,"Atossa Therapeutics, Inc.",US,Healthcare,micro_cap,insufficient_evidence,26.0,33.83,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+453,SMN.V,SUN SUMMIT MINERALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,33.83,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+454,NSRX,Nasus Pharma Ltd.,US,Healthcare,micro_cap,insufficient_evidence,26.0,33.89,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+455,QZM.V,QUARTZ MOUNTAIN RESOURCES LTD,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,33.89,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+456,AMC.TO,ARIZONA METALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,34.41,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+457,QGR.V,Q GOLD RESOURCES LTD,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,34.83,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+458,TITI.V,TITIMINAS SILVER INC,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,35.36,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+459,TVGN,Tevogen Inc.,US,Healthcare,micro_cap,insufficient_evidence,26.0,35.36,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+460,AZEM.V,ARIZONA EAGLE MINING CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,35.78,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+461,LAF.V,LITHIUM AFRICA CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,35.85,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+462,BEAT,"Heartbeam, Inc.",US,Healthcare,micro_cap,insufficient_evidence,26.0,36.25,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+463,DAU.V,DESERT GOLD VENTURES INC.,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,36.49,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+464,VCG.V,VISIONARY COPPER AND GOLD MINES,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,36.49,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+465,FHYD.V,FIRST HYDROGEN CORP,CA,Consumer Cyclical,micro_cap,insufficient_evidence,26.0,36.57,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+466,LTRN,Lantern Pharma Inc.,US,Healthcare,micro_cap,insufficient_evidence,26.0,36.78,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+467,NNVC,"NanoViricides, Inc.",US,Healthcare,micro_cap,insufficient_evidence,26.0,36.83,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+468,BRO.V,BARKSDALE RESOURCES CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,36.94,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+469,W.V,SPARTAN METALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,37.35,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+470,BCT.TO,BRIACELL THERAPEUTICS CORP,CA,Healthcare,micro_cap,insufficient_evidence,26.0,37.57,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+471,NXTC,"NextCure, Inc.",US,Healthcare,micro_cap,insufficient_evidence,26.0,37.74,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+472,AMM.V,ALMADEN MINERALS LTD,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,37.79,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+473,LMS.V,LATIN METALS INC,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,37.79,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+474,EMNT.V,EMINENT GOLD CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,38.24,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+475,PJX.V,PJX RESOURCES INC,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,38.36,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+476,BHS.V,BAYHORSE SILVER INC,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,38.39,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+477,FTUR.V,FUTURE FUELS INC,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,39.41,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+478,LITS,"Lite Strategy, Inc.",US,Healthcare,micro_cap,insufficient_evidence,26.0,39.41,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+479,MSG.V,MITHRIL SILVER AND GOLD LIMITED,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,39.41,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+480,KG.V,KLONDIKE GOLD CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,40.2,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+481,GRDM.V,GRID METALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,40.25,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+482,GSTM.V,GOLDSTORM METALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,40.99,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+483,CD.V,CANTEX MINE DEVELOPMENT CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,41.04,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+484,RSM.V,RESOURO STRATEGIC METALS INC,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,41.44,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+485,CDB.V,CORDOBA MINERALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,41.88,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+486,SAGA.V,SAGA METALS CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,42.09,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+487,MDNA.TO,MEDICENNA THERAPEUTICS CORP,CA,Healthcare,micro_cap,insufficient_evidence,26.0,42.44,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+488,HMR.V,HOMERUN RESOURCES INC,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,42.74,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+489,ACTU,"Actuate Therapeutics, Inc.",US,Healthcare,micro_cap,insufficient_evidence,26.0,43.73,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+490,ALEX.V,ALPHA EXPLORATION LTD,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,44.25,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+491,MODD,"Modular Medical, Inc.",US,Healthcare,micro_cap,insufficient_evidence,26.0,45.09,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+492,ENLV,Enlivex Ltd.,US,Healthcare,micro_cap,insufficient_evidence,26.0,45.59,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+493,CN.V,CONDOR RESOURCES INC.,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,46.73,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+494,DLTA.V,DELTA RESOURCES LIMITED,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,46.89,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+495,FMS.V,FOCUS GRAPHITE INC,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,47.15,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+496,GSR.V,GOLD STRIKE RESOURCES CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,47.2,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+497,KRI.V,KOBO RESOURCES INC,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,47.94,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+498,ROAR.V,LION ROCK RESOURCES INC,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,47.94,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+499,TIG.V,TRIUMPH GOLD CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,47.94,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+500,RME.V,ROLAND MINERAL ENTERPRISES CORP,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,49.29,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+501,WHY.V,WEST HIGH YIELD RESOURCES LTD,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,50.78,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+502,LOD.V,LODE GOLD RESOURCES INC,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,51.04,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+503,SVA.TO,SERNOVA BIOTHERAPEUTICS INC,CA,Healthcare,micro_cap,insufficient_evidence,26.0,51.15,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+504,ESLA,"Estrella Immunopharma, Inc.",US,Healthcare,micro_cap,insufficient_evidence,26.0,51.62,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+505,EML.V,ELECTRIC METALS USA LIMITED,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,51.88,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+506,GBU.V,GABRIEL RESOURCES LTD,CA,Basic Materials,micro_cap,insufficient_evidence,26.0,51.88,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+507,GIII.V,REGEN III CORP,CA,Energy,micro_cap,insufficient_evidence,26.0,51.94,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+508,RVX.TO,RESVERLOGIX CORP.,CA,Healthcare,micro_cap,insufficient_evidence,26.0,63.78,45.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+509,RMSG,Real Messenger Corporation,US,Technology,nano_cap,insufficient_evidence,25.0,70.27,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+510,SRXH,SRX Global Inc.,US,Consumer Defensive,micro_cap,insufficient_evidence,24.33,48.68,45.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+511,ALZI.V,ALZAI HEALTH CORP,CA,Healthcare,micro_cap,insufficient_evidence,22.33,52.51,45.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+512,HODO,House of Doge Inc.,US,Technology,micro_cap,insufficient_evidence,11.0,53.58,45.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+513,ICON,Icon Energy Corp.,US,Industrials,nano_cap,low_upside_signal,68.24,57.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+514,OXBR,Oxbridge Re Holdings Limited,US,Financial Services,micro_cap,low_upside_signal,67.12,57.1,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+515,TULP,"Bloomia Holdings, Inc.",US,Consumer Defensive,micro_cap,low_upside_signal,66.82,59.04,77.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+516,IZM,ICZOOM Group Inc.,US,Technology,nano_cap,low_upside_signal,66.76,55.19,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+517,MKZR,"MacKenzie Realty Capital, Inc.",US,Real Estate,nano_cap,low_upside_signal,66.76,70.63,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+518,BGI,Birks Group Inc.,US,Consumer Cyclical,nano_cap,low_upside_signal,66.47,60.03,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+519,BNKK,"Bonk, Inc.",US,Consumer Defensive,nano_cap,low_upside_signal,64.71,61.88,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+520,BMGL,Basel Medical Group Ltd,US,Healthcare,nano_cap,low_upside_signal,64.71,62.28,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+521,RIME,"Algorhythm Holdings, Inc.",US,Technology,nano_cap,low_upside_signal,64.71,66.03,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+522,IPST,"IP Strategy Holdings, Inc.",US,Financial Services,nano_cap,low_upside_signal,64.71,70.41,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+523,OLOX,Olenox Industries Inc.,US,Industrials,nano_cap,low_upside_signal,64.71,79.43,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+524,TNON,"Tenon Medical, Inc.",US,Healthcare,nano_cap,low_upside_signal,64.71,79.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+525,TTGI.V,TURNIUM TECHNOLOGY GROUP INC,CA,Technology,nano_cap,low_upside_signal,64.71,80.87,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+526,HCWB,HCW Biologics Inc.,US,Healthcare,nano_cap,low_upside_signal,64.71,81.43,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+527,TRNR,Interactive Strength Inc.,US,Consumer Cyclical,nano_cap,low_upside_signal,64.71,82.33,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+528,RENX,RenX Enterprises Corp.,US,Real Estate,nano_cap,low_upside_signal,64.71,82.63,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+529,PEI.V,PROSPERA ENERGY INC,CA,Energy,micro_cap,low_upside_signal,62.41,64.19,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+530,BCAB,"BioAtla, Inc.",US,Healthcare,nano_cap,low_upside_signal,61.25,68.17,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+531,IMI.V,IRONMAN INTERNATIONAL LTD,CA,Industrials,micro_cap,low_upside_signal,60.94,56.2,80.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+532,TGL,Treasure Global Inc.,US,Technology,nano_cap,low_upside_signal,60.29,60.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+533,TTZ.V,Total Telcom Inc.,CA,Technology,micro_cap,low_upside_signal,59.8,22.1,100.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+534,FMFC,Kandal M Venture Limited,US,Consumer Cyclical,nano_cap,low_upside_signal,59.41,27.25,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+535,UFC.V,URBANFUND CORP.,CA,Real Estate,micro_cap,low_upside_signal,59.2,30.05,100.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+536,LZMH,LZ Technology Holdings Limited,US,Technology,micro_cap,low_upside_signal,58.88,48.88,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+537,QNME,"Quanome Technologies, Inc.",US,Industrials,micro_cap,low_upside_signal,58.88,51.27,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+538,JDZG,JIADE LIMITED,US,Consumer Defensive,micro_cap,low_upside_signal,58.88,54.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+539,PSQH,"PSQ Holdings, Inc.",US,Technology,micro_cap,low_upside_signal,58.88,63.83,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+540,REBN,"Reborn Coffee, Inc.",US,Consumer Cyclical,micro_cap,low_upside_signal,58.88,63.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+541,HCTI,"Healthcare Triangle, Inc.",US,Healthcare,micro_cap,low_upside_signal,58.88,70.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+542,GWAV,"Greenwave Technology Solutions,",US,Industrials,nano_cap,low_upside_signal,58.82,53.33,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+543,YYGH,YY Group Holding Limited,US,Industrials,nano_cap,low_upside_signal,58.82,57.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+544,CYAB,"Cyabra, Inc.",US,Technology,nano_cap,low_upside_signal,58.82,67.53,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+545,GSUN,Golden Sun Technology Group Lim,US,Consumer Defensive,nano_cap,low_upside_signal,58.82,71.78,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+546,VVOS,"Vivos Therapeutics, Inc.",US,Healthcare,nano_cap,low_upside_signal,58.82,72.77,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+547,FLYE,"Fly-E Group, Inc.",US,Consumer Cyclical,nano_cap,low_upside_signal,58.82,76.73,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+548,SHFS,"SHF Holdings, Inc.",US,Financial Services,nano_cap,low_upside_signal,58.82,80.6,75.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+549,MNDO,MIND C.T.I. Ltd.,US,Technology,micro_cap,low_upside_signal,58.8,14.8,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+550,DND.TO,DYE AND DURHAM LIMITED,CA,Technology,micro_cap,low_upside_signal,58.76,40.73,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+551,ATNM,"Actinium Pharmaceuticals, Inc. ",US,Healthcare,micro_cap,low_upside_signal,58.25,17.61,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+552,PBK,PowerBank Corporation,US,Utilities,micro_cap,low_upside_signal,58.25,63.57,60.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+553,HWO.TO,HIGH ARCTIC ENERGY SERVICES INC,CA,Energy,micro_cap,low_upside_signal,58.0,22.98,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+554,GVH,Globavend Holdings Limited - Or,US,Industrials,nano_cap,low_upside_signal,57.94,34.48,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+555,BTBD,"BT Brands, Inc.",US,Consumer Cyclical,nano_cap,low_upside_signal,57.75,26.95,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+556,MAMO,Massimo Group,US,Consumer Cyclical,micro_cap,low_upside_signal,57.45,27.05,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+557,OML.V,OMNI-LITE INDUSTRIES CANADA INC,CA,Industrials,micro_cap,low_upside_signal,56.71,22.14,85.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+558,FGI,FGI Industries Ltd.,US,Consumer Cyclical,micro_cap,low_upside_signal,56.53,37.98,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+559,BFRI,Biofrontera Inc.,US,Healthcare,micro_cap,low_upside_signal,56.53,40.33,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+560,INEO,INNEOVA Holdings Limited,US,Consumer Cyclical,nano_cap,low_upside_signal,56.47,50.18,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+561,ILLM.TO,iLLUMIN HOLDINGS INC,CA,Communication Services,micro_cap,low_upside_signal,56.41,21.98,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+562,LSF,"Laird Superfood, Inc.",US,Consumer Defensive,micro_cap,low_upside_signal,56.41,28.88,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+563,STRR,"Star Equity Holdings, Inc.",US,Industrials,micro_cap,low_upside_signal,56.41,40.13,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+564,NXB,NextBoat Inc.,US,Consumer Cyclical,micro_cap,low_upside_signal,56.41,64.21,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+565,ICGH.V,IC GROUP HOLDINGS INC,CA,Communication Services,micro_cap,low_upside_signal,56.24,37.23,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+566,YRB.TO,YORBEAU RESOURCES INC,CA,Basic Materials,micro_cap,low_upside_signal,56.05,52.1,100.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+567,AXIL,"AXIL Brands, Inc.",US,Technology,micro_cap,low_upside_signal,55.82,16.53,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+568,RDI,Reading International Inc,US,Communication Services,micro_cap,low_upside_signal,55.82,28.14,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+569,MYID.V,REKLAIM LTD,CA,Technology,micro_cap,low_upside_signal,55.65,52.48,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+570,INCR,Intercure Ltd.,US,Healthcare,micro_cap,low_upside_signal,55.55,41.02,55.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+571,SQG.V,SPACKMAN EQUITIES GROUP INC,CA,Financial Services,micro_cap,low_upside_signal,55.53,35.23,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+572,JL,J-Long Group Limited,US,Consumer Cyclical,micro_cap,low_upside_signal,55.06,20.03,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+573,UONEK,"Urban One, Inc.",US,Communication Services,micro_cap,low_upside_signal,55.06,44.98,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+574,UONE,"Urban One, Inc.",US,Communication Services,micro_cap,low_upside_signal,55.06,50.43,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+575,NVNI,Nvni Group Limited,US,Technology,micro_cap,low_upside_signal,55.06,68.35,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+576,GTIM,Good Times Restaurants Inc.,US,Consumer Cyclical,micro_cap,low_upside_signal,55.05,31.24,97.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+577,TOPP,Toppoint Holdings Inc.,US,Industrials,nano_cap,low_upside_signal,55.0,33.43,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+578,MTEN,Mingteng International Corporat,US,Industrials,nano_cap,low_upside_signal,55.0,34.68,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+579,SFHG,Samfine Creation Holdings Group,US,Industrials,nano_cap,low_upside_signal,55.0,49.98,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+580,DLXY,Delixy Holdings Limited,US,Energy,nano_cap,low_upside_signal,55.0,67.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+581,QRHC,Quest Resource Holding Corporat,US,Industrials,micro_cap,low_upside_signal,54.94,41.48,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+582,INIK.V,IONIK CORPORATION,CA,Communication Services,micro_cap,low_upside_signal,54.94,47.35,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+583,FRTT,Fort Technology Inc.,US,Consumer Cyclical,micro_cap,low_upside_signal,54.47,51.73,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+584,HTOO,Fusion Fuel Green PLC,US,Utilities,micro_cap,low_upside_signal,54.47,56.68,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+585,MYSZ,"My Size, Inc.",US,Consumer Cyclical,micro_cap,low_upside_signal,54.47,57.48,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+586,FORT.V,FORT TECHNOLOGY INC,CA,Consumer Cyclical,micro_cap,low_upside_signal,54.47,63.38,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+587,BRFH,Barfresh Food Group Inc.,US,Consumer Defensive,micro_cap,low_upside_signal,54.47,64.66,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+588,GLXG,Galaxy Payroll Group Limited,US,Industrials,nano_cap,low_upside_signal,54.41,36.83,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+589,CXAI,CXApp Inc.,US,Technology,nano_cap,low_upside_signal,54.41,39.13,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+590,LCFY,Locafy Limited,US,Communication Services,nano_cap,low_upside_signal,54.41,48.23,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+591,INBS,Intelligent Bio Solutions Inc.,US,Healthcare,nano_cap,low_upside_signal,54.41,55.03,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+592,PMI,"Picard Medical, Inc.",US,Healthcare,nano_cap,low_upside_signal,54.41,62.58,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+593,AREN,"The Arena Group Holdings, Inc.",US,Communication Services,micro_cap,low_upside_signal,54.35,34.98,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+594,UNI.TO,UNISYNC CORP,CA,Consumer Cyclical,micro_cap,low_upside_signal,54.2,33.55,100.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+595,ICCM,IceCure Medical Ltd.,US,Healthcare,nano_cap,low_upside_signal,54.12,44.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+596,CTNT,Cheetah Net Supply Chain Servic,US,Industrials,nano_cap,low_upside_signal,54.12,60.13,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+597,CCEL,"Cryo-Cell International, Inc.",US,Healthcare,micro_cap,low_upside_signal,53.7,16.89,95.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+598,ZDGE,"Zedge, Inc.",US,Communication Services,micro_cap,low_upside_signal,53.45,9.8,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+599,CBG.V,CHIBOUGAMAU INDEPENDENT MINES I,CA,Basic Materials,micro_cap,low_upside_signal,53.4,23.53,75.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+600,COHN,Cohen & Company Inc.,US,Financial Services,micro_cap,low_upside_signal,53.2,35.38,75.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+601,IQ.V,AIRIQ INC.,CA,Technology,micro_cap,low_upside_signal,53.0,30.4,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+602,MTT.V,MAGNA TERRA MINERALS INC,CA,Basic Materials,micro_cap,low_upside_signal,53.0,33.69,60.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+603,IOTR,iOThree Limited,US,Communication Services,micro_cap,low_upside_signal,53.0,36.68,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+604,GEC.TO,GLOBAL EDUCATION COMMUNITIES CO,CA,Consumer Defensive,micro_cap,low_upside_signal,53.0,58.73,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+605,HPAI,Helport AI Limited,US,Technology,micro_cap,low_upside_signal,53.0,59.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+606,WIMI,WiMi Hologram Cloud Inc.,US,Communication Services,micro_cap,low_upside_signal,52.95,22.05,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+607,MLGO,"MicroAlgo, Inc.",US,Technology,micro_cap,low_upside_signal,52.95,22.6,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+608,NPTH.V,NEUPATH HEALTH INC,CA,Healthcare,micro_cap,low_upside_signal,52.95,23.55,100.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+609,IEI.V,Imperial Equities Inc.,CA,Real Estate,micro_cap,low_upside_signal,52.95,53.14,97.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+610,FEBO,Fenbo Holdings Limited,US,Technology,nano_cap,low_upside_signal,52.94,37.58,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+611,AEHL,Antelope Enterprise Holdings Li,US,Industrials,nano_cap,low_upside_signal,52.94,50.01,80.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+612,FAMI,"Farmmi, Inc. Ordinary Shares",US,Consumer Defensive,nano_cap,low_upside_signal,52.94,54.43,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+613,ACD.TO,ACCORD FINANCIAL,CA,Financial Services,nano_cap,low_upside_signal,52.94,70.93,75.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+614,CREX,"Creative Realities, Inc.",US,Technology,micro_cap,low_upside_signal,52.88,39.63,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+615,QYOU.V,QYOU MEDIA INC,CA,Communication Services,micro_cap,low_upside_signal,52.71,40.93,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+616,NSCI.V,NANALYSIS SCIENTIFIC CORP,CA,Technology,micro_cap,low_upside_signal,52.12,36.48,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+617,DTSS,Datasea Intelligent Technology ,US,Technology,nano_cap,low_upside_signal,52.06,57.08,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+618,POCI,"Precision Optics Corporation, I",US,Healthcare,micro_cap,low_upside_signal,52.0,16.23,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+619,ALGS,"Aligos Therapeutics, Inc.",US,Healthcare,micro_cap,low_upside_signal,52.0,39.78,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+620,LFT,"Lument Finance Trust, Inc.",US,Real Estate,micro_cap,low_upside_signal,52.0,48.49,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+621,NXG.V,NEXGENRX INC.,CA,Healthcare,micro_cap,low_upside_signal,51.95,15.55,100.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+622,GIGM,GigaMedia Limited,US,Communication Services,micro_cap,low_upside_signal,51.82,26.34,77.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+623,WGT.V,WESTGATE ENERGY INC,CA,Energy,micro_cap,low_upside_signal,51.82,61.28,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+624,VAND.V,LARGO PHYSICAL VANADIUM CORP,CA,Basic Materials,micro_cap,low_upside_signal,51.75,27.13,60.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+625,BESS,Bimergen Energy Corporation,US,Utilities,micro_cap,low_upside_signal,51.75,28.41,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+626,BON,Bon Natural Life Limited,US,Basic Materials,micro_cap,low_upside_signal,51.75,54.91,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+627,YCBD,"cbdMD, Inc.",US,Healthcare,nano_cap,low_upside_signal,51.47,41.28,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+628,EHGO,Eshallgo Inc.,US,Industrials,nano_cap,low_upside_signal,51.47,46.78,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+629,LOBO,LOBO TECHNOLOGIES LTD.,US,Consumer Cyclical,nano_cap,low_upside_signal,51.47,51.13,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+630,NXGL,"NexGel, Inc",US,Healthcare,nano_cap,low_upside_signal,51.47,55.38,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+631,WOK,WORK Medical Technology Group L,US,Healthcare,nano_cap,low_upside_signal,51.47,56.23,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+632,MSGY,Masonglory Limited,US,Industrials,nano_cap,low_upside_signal,51.47,57.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+633,IVF,"INVO Fertility, Inc.",US,Healthcare,nano_cap,low_upside_signal,51.47,58.58,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+634,MEGL,Magic Empire Global Limited,US,Financial Services,nano_cap,low_upside_signal,51.47,63.35,75.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+635,WKSP,"Worksport, Ltd.",US,Consumer Cyclical,nano_cap,low_upside_signal,51.47,64.63,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+636,EEIQ,EpicQuest Education Group Inter,US,Consumer Defensive,nano_cap,low_upside_signal,51.47,74.88,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+637,SOU.V,SOUTHERN ENERGY CORP,CA,Energy,micro_cap,low_upside_signal,51.41,30.73,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+638,ELC.V,ELYSEE DEVELOPMENT CORP,CA,Financial Services,micro_cap,low_upside_signal,51.3,21.94,100.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+639,CRMT,"America's Car-Mart, Inc.",US,Consumer Cyclical,micro_cap,low_upside_signal,50.65,45.53,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+640,CEQ.V,CRITERIUM ENERGY LTD,CA,Energy,micro_cap,low_upside_signal,50.65,63.24,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+641,MRNO,Murano Global Investments PLC,US,Real Estate,micro_cap,low_upside_signal,50.65,70.53,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+642,SPWH,"Sportsman's Warehouse Holdings,",US,Consumer Cyclical,micro_cap,low_upside_signal,50.53,36.98,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+643,KLXE,"KLX Energy Services Holdings, I",US,Energy,micro_cap,low_upside_signal,50.53,37.08,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+644,TLF,"Tandy Leather Factory, Inc.",US,Consumer Cyclical,micro_cap,low_upside_signal,50.35,29.78,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+645,OC.V,OLIVE RESOURCE CAPITAL INC,CA,Basic Materials,micro_cap,low_upside_signal,50.3,19.74,95.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+646,NLH.V,NOVA LEAP HEALTH CORP,CA,Healthcare,micro_cap,low_upside_signal,50.24,20.73,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+647,ELEC.V,ELECTRIC ROYALTIES LTD,CA,Basic Materials,micro_cap,low_upside_signal,50.07,60.05,70.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+648,WBUY,WEBUY GLOBAL LTD.,US,Consumer Cyclical,nano_cap,low_upside_signal,50.0,42.36,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+649,UK,Ucommune International Ltd,US,Real Estate,nano_cap,low_upside_signal,50.0,44.56,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+650,ELPW,Elong Power Holding Limited,US,Industrials,nano_cap,low_upside_signal,50.0,60.91,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+651,CRIS,"Curis, Inc.",US,Healthcare,nano_cap,low_upside_signal,50.0,64.86,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+652,GUF.V,Gulf & Pacific Equities Corp.,CA,Real Estate,micro_cap,low_upside_signal,49.76,34.98,85.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+653,EPL.V,Eagle Plains Resources Ltd.,CA,Basic Materials,micro_cap,low_upside_signal,49.3,21.95,95.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+654,MWYN,"Marwynn Holdings, Inc.",US,Consumer Cyclical,micro_cap,low_upside_signal,49.18,41.83,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+655,BODI,"The Beachbody Company, Inc.",US,Communication Services,micro_cap,low_upside_signal,49.06,17.98,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+656,BRE.TO,BRIDGEMARQ REAL ESTATE SERVICES,CA,Real Estate,micro_cap,low_upside_signal,49.06,32.03,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+657,LIVE,Live Ventures Incorporated,US,Consumer Cyclical,micro_cap,low_upside_signal,49.06,37.3,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+658,DPF.V,DR PHONE FIX CANADA CORPORATION,CA,Technology,micro_cap,low_upside_signal,48.59,71.24,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+659,ZCMD,Zhongchao Inc.,US,Healthcare,nano_cap,low_upside_signal,48.53,38.13,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+660,ATCH,"AtlasClear Holdings, Inc.",US,Financial Services,micro_cap,low_upside_signal,48.47,48.79,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+661,KSCP,"Knightscope, Inc.",US,Industrials,micro_cap,low_upside_signal,48.47,50.23,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+662,QTI,"QT Imaging Holdings, Inc.",US,Healthcare,micro_cap,low_upside_signal,48.47,55.28,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+663,LSL.V,LSL PHARMA GROUP INC,CA,Healthcare,micro_cap,low_upside_signal,48.47,56.64,80.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+664,WKHS,"Workhorse Group, Inc.",US,Consumer Cyclical,micro_cap,low_upside_signal,48.47,72.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+665,GXAI,Gaxos.ai Inc.,US,Communication Services,micro_cap,low_upside_signal,48.29,31.82,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+666,INHD,Inno Holdings Inc.,US,Basic Materials,micro_cap,low_upside_signal,48.29,41.33,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+667,WFF,WF Holding Limited,US,Industrials,micro_cap,low_upside_signal,48.29,43.58,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+668,EFOI,"Energy Focus, Inc.",US,Consumer Cyclical,micro_cap,low_upside_signal,48.29,50.03,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+669,AVX,Avax One Technology Ltd.,US,Technology,micro_cap,low_upside_signal,48.29,53.38,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+670,TOMZ,"TOMI Environmental Solutions, I",US,Industrials,micro_cap,low_upside_signal,48.29,58.08,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+671,RETO,"ReTo Eco-Solutions, Inc.",US,Basic Materials,micro_cap,low_upside_signal,48.29,58.48,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+672,NTRP,"NextTrip, Inc.",US,Consumer Cyclical,micro_cap,low_upside_signal,48.29,61.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+673,AZIO,"Azio AI Holdings, Inc.",US,Technology,micro_cap,low_upside_signal,48.29,63.84,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+674,CLIP.V,CLIP MONEY INC,CA,Technology,micro_cap,low_upside_signal,48.29,77.29,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+675,AIDX,"20/20 Biolabs, Inc.",US,Healthcare,nano_cap,low_upside_signal,48.24,43.63,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+676,SPRU,Spruce Power Holding Corporatio,US,Technology,micro_cap,low_upside_signal,48.18,41.18,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+677,MNY,MoneyHero Limited,US,Communication Services,micro_cap,low_upside_signal,48.14,36.64,70.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+678,CHSN,Chanson International Holding,US,Consumer Cyclical,nano_cap,low_upside_signal,48.0,52.8,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+679,MIND,"MIND Technology, Inc.",US,Technology,micro_cap,low_upside_signal,47.59,16.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+680,SAGT,SAGTEC GLOBAL LIMITED,US,Technology,micro_cap,low_upside_signal,47.12,50.13,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+681,OPAD,Offerpad Solutions Inc.,US,Real Estate,micro_cap,low_upside_signal,47.12,55.18,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+682,ITOC,iTonic Holdings Ltd,US,Healthcare,nano_cap,low_upside_signal,47.06,36.73,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+683,WLDS,Wearable Devices Ltd.,US,Technology,nano_cap,low_upside_signal,47.06,38.13,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+684,TPET,Trio Petroleum Corp.,US,Energy,nano_cap,low_upside_signal,47.06,39.08,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+685,VRAX,Virax Biolabs Group Limited,US,Healthcare,nano_cap,low_upside_signal,47.06,47.53,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+686,CUPR,Cuprina Holdings (Cayman) Limit,US,Healthcare,nano_cap,low_upside_signal,47.06,58.28,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+687,CNET,ZW Data Action Technologies Inc,US,Communication Services,nano_cap,low_upside_signal,47.06,60.13,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+688,AMST,Amesite Inc.,US,Technology,nano_cap,low_upside_signal,47.06,62.45,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+689,FCUV,Focus Universal Inc.,US,Technology,nano_cap,low_upside_signal,47.06,76.13,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+690,VEEA,Veea Inc.,US,Technology,nano_cap,low_upside_signal,47.06,78.13,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+691,FTCI,"FTC Solar, Inc.",US,Technology,micro_cap,low_upside_signal,47.0,53.77,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+692,NXXT,"NextNRG, Inc.",US,Utilities,micro_cap,low_upside_signal,47.0,60.14,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+693,GPUS,"Hyperscale Data, Inc.",US,Industrials,micro_cap,low_upside_signal,47.0,70.23,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+694,SWVL,Swvl Holdings Corp,US,Industrials,micro_cap,low_upside_signal,46.75,31.06,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+695,MGLD,"The Marygold Companies, Inc.",US,Financial Services,micro_cap,low_upside_signal,46.12,28.85,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+696,TWG,Top Wealth Group Holding Limite,US,Consumer Defensive,micro_cap,low_upside_signal,45.95,41.8,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+697,ASG.V,AURORA SPINE CORPORATION,CA,Healthcare,micro_cap,low_upside_signal,45.94,33.23,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+698,YHGJ,Yunhong Green CTI Ltd.,US,Consumer Cyclical,nano_cap,low_upside_signal,45.88,53.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+699,BNGO,"Bionano Genomics, Inc.",US,Healthcare,micro_cap,low_upside_signal,45.65,32.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+700,NIXX,"Nixxy, Inc.",US,Communication Services,micro_cap,low_upside_signal,45.65,41.53,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+701,NAII,Natural Alternatives Internatio,US,Consumer Defensive,micro_cap,low_upside_signal,45.65,42.88,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+702,LFWD,Lifeward Ltd.,US,Healthcare,micro_cap,low_upside_signal,45.65,43.28,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+703,COSM,Cosmos Health Inc.,US,Healthcare,micro_cap,low_upside_signal,45.65,61.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+704,RECT,Rectitude Holdings Ltd,US,Consumer Cyclical,micro_cap,low_upside_signal,45.55,31.5,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+705,ARTW,"Art's-Way Manufacturing Co., In",US,Industrials,micro_cap,low_upside_signal,45.55,39.8,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+706,LGPS,LogProstyle Inc.,US,Industrials,micro_cap,low_upside_signal,45.55,47.5,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+707,MENE.V,MENE INC,CA,Consumer Cyclical,micro_cap,low_upside_signal,45.53,22.2,85.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+708,CLPS,CLPS Incorporation,US,Technology,micro_cap,low_upside_signal,45.29,34.2,70.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+709,CGTL,Creative Global Technology Hold,US,Consumer Cyclical,nano_cap,low_upside_signal,45.0,23.65,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+710,HXHX,Haoxin Holdings Limited,US,Industrials,nano_cap,low_upside_signal,45.0,62.58,97.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+711,CETX,Cemtrex Inc.,US,Technology,nano_cap,low_upside_signal,44.71,69.63,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+712,PVT.V,PIVOTREE INC,CA,Technology,micro_cap,low_upside_signal,44.65,20.03,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+713,DTEA.V,DAVIDSTEA INC,CA,Consumer Defensive,micro_cap,low_upside_signal,44.65,23.48,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+714,ZOMD.V,ZOOMD TECHNOLOGIES LTD,CA,Communication Services,micro_cap,low_upside_signal,44.65,23.73,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+715,BRAG,Bragg Gaming Group Inc.,US,Consumer Cyclical,micro_cap,low_upside_signal,44.65,26.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+716,KTCC,Key Tronic Corporation,US,Technology,micro_cap,low_upside_signal,44.65,36.11,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+717,FSP,Franklin Street Properties Corp,US,Real Estate,micro_cap,low_upside_signal,44.65,37.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+718,NCI,Neo-Concept International Group,US,Consumer Cyclical,micro_cap,low_upside_signal,44.65,43.53,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+719,GGR,Gogoro Inc.,US,Consumer Cyclical,micro_cap,low_upside_signal,44.65,43.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+720,SMD.V,STRATEGIC METALS LTD,CA,Basic Materials,micro_cap,low_upside_signal,44.5,24.17,60.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+721,GROW,"U.S. Global Investors, Inc.",US,Financial Services,micro_cap,low_upside_signal,44.35,17.79,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+722,KBSX,FST Corp.,US,Consumer Cyclical,micro_cap,low_upside_signal,44.35,36.27,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+723,HCAI,Huachen AI Parking Management T,US,Industrials,nano_cap,low_upside_signal,43.75,47.81,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+724,INM,InMed Pharmaceuticals Inc.,US,Healthcare,nano_cap,low_upside_signal,43.75,49.16,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+725,COOT,Australian Oilseeds Holdings Li,US,Consumer Defensive,micro_cap,low_upside_signal,43.29,60.18,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+726,MGX,"Metagenomi Therapeutics, Inc.",US,Healthcare,micro_cap,low_upside_signal,43.25,19.11,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+727,HOWL,"Werewolf Therapeutics, Inc.",US,Healthcare,micro_cap,low_upside_signal,43.25,27.12,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+728,BOXL,Boxlight Corporation,US,Technology,nano_cap,low_upside_signal,43.24,48.87,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+729,RSS.V,RESAAS SERVICES INC,CA,Technology,micro_cap,low_upside_signal,43.18,37.77,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+730,CAF.V,CANAF INVESTMENTS INC,CA,Basic Materials,micro_cap,low_upside_signal,43.05,16.9,92.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+731,JVA,"Coffee Holding Co., Inc.",US,Consumer Defensive,micro_cap,low_upside_signal,43.05,18.05,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+732,IRO.V,INTER ROCK MINERALS INC,CA,Consumer Defensive,micro_cap,low_upside_signal,43.05,19.05,100.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+733,THH,TryHard Holdings Limited,US,Industrials,micro_cap,low_upside_signal,42.93,64.83,70.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+734,AZI,Autozi Internet Technology (Glo,US,Consumer Cyclical,nano_cap,low_upside_signal,42.86,78.57,70.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+735,EDUC,Educational Development Corpora,US,Communication Services,micro_cap,low_upside_signal,42.71,31.43,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+736,BTOC,Armlogi Holding Corp.,US,Industrials,micro_cap,low_upside_signal,42.71,49.58,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+737,ACL.V,ACL CONSTRUCTION LTD,CA,Industrials,micro_cap,low_upside_signal,42.71,55.39,85.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+738,ONEG,OneConstruction Group Limited,US,Industrials,micro_cap,low_upside_signal,42.71,59.0,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+739,BNG.TO,BENGAL ENERGY LTD.,CA,Energy,micro_cap,low_upside_signal,42.41,38.88,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+740,SOAR,"Volato Group, Inc.",US,Industrials,nano_cap,low_upside_signal,42.35,42.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+741,PMA,Ming Shing Group Holdings Limit,US,Industrials,nano_cap,low_upside_signal,42.35,44.92,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+742,OFAL,OFA Group,US,Industrials,nano_cap,low_upside_signal,42.35,69.18,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+743,NSPR,InspireMD Inc.,US,Healthcare,micro_cap,low_upside_signal,42.29,37.48,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+744,PLAN.V,PROGRESSIVE PLANET SOLUTIONS IN,CA,Basic Materials,micro_cap,low_upside_signal,42.29,42.33,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+745,RPGL,Republic Power Group Limited,US,Technology,micro_cap,low_upside_signal,42.29,55.23,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+746,USS.V,UNISERVE COMMUNICATIONS CORPORA,CA,Communication Services,micro_cap,low_upside_signal,42.29,58.88,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+747,BLNE,"Beeline Holdings, Inc.",US,Financial Services,micro_cap,low_upside_signal,42.29,63.1,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+748,GFAI,"Guardforce AI Co., Limited",US,Industrials,micro_cap,low_upside_signal,41.75,34.56,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+749,NXTT,Next Technology Holding Inc.,US,Technology,micro_cap,low_upside_signal,41.75,36.16,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+750,STAK,STAK Inc.,US,Energy,micro_cap,low_upside_signal,41.3,50.31,97.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+751,CHR,"Cheer Holding, Inc.",US,Communication Services,nano_cap,low_upside_signal,41.25,37.5,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+752,CYN,Cyngn Inc.,US,Technology,micro_cap,low_upside_signal,41.24,35.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+753,AIFF,"Firefly Neuroscience, Inc.",US,Technology,micro_cap,low_upside_signal,41.24,37.03,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+754,NZ.V,NEW ZEALAND ENERGY CORP,CA,Energy,micro_cap,low_upside_signal,41.24,37.18,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+755,NBVA.V,NUBEVA TECHNOLOGIES LTD,CA,Technology,micro_cap,low_upside_signal,41.24,37.98,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+756,RVSN,Rail Vision Ltd.,US,Industrials,micro_cap,low_upside_signal,41.24,39.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+757,FOBI.V,FOBI AI INC,CA,Technology,micro_cap,low_upside_signal,41.24,40.35,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+758,VTGN,"VistaGen Therapeutics, Inc.",US,Healthcare,micro_cap,low_upside_signal,41.24,44.33,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+759,SINT,"SiNtx Technologies, Inc.",US,Healthcare,micro_cap,low_upside_signal,41.24,45.33,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+760,NMTC,NeuroOne Medical Technologies C,US,Healthcare,micro_cap,low_upside_signal,41.24,46.88,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+761,ICU,SeaStar Medical Holding Corpora,US,Healthcare,micro_cap,low_upside_signal,41.24,48.83,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+762,KDA.V,KDA GROUP INC,CA,Healthcare,micro_cap,low_upside_signal,41.24,62.68,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+763,MDX.V,MEDX HEALTH CORP,CA,Healthcare,micro_cap,low_upside_signal,41.24,66.07,85.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+764,CNVI.V,CONAVI MEDICAL CORP,CA,Healthcare,micro_cap,low_upside_signal,41.24,67.03,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+765,BU.TO,BURCON NUTRASCIENCE CORPORATION,CA,Consumer Defensive,micro_cap,low_upside_signal,41.24,69.19,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+766,CETY,"Clean Energy Technologies, Inc.",US,Industrials,micro_cap,low_upside_signal,41.24,72.23,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+767,FFAI,Faraday Future Intelligent Elec,US,Consumer Cyclical,micro_cap,low_upside_signal,41.24,74.23,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+768,DKI,DarkIris Inc.,US,Communication Services,nano_cap,low_upside_signal,41.18,34.87,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+769,INTJ,Intelligent Group Limited,US,Industrials,nano_cap,low_upside_signal,41.18,40.58,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+770,JYD,Jayud Global Logistics Limited,US,Industrials,nano_cap,low_upside_signal,41.18,40.83,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+771,ACON,"Aclarion, Inc.",US,Healthcare,nano_cap,low_upside_signal,41.18,41.19,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+772,BYAH,Park Ha Biological Technology C,US,Consumer Defensive,nano_cap,low_upside_signal,41.18,41.43,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+773,GCDT,Green Circle Decarbonize Techno,US,Industrials,nano_cap,low_upside_signal,41.18,42.23,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+774,CCTG,CCSC Technology International H,US,Industrials,nano_cap,low_upside_signal,41.18,45.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+775,SPHL,SPRINGVIEW HOLDINGS LTD,US,Consumer Cyclical,nano_cap,low_upside_signal,41.18,50.24,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+776,BKYI,"BIO-key International, Inc.",US,Industrials,nano_cap,low_upside_signal,41.18,53.53,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+777,CSAI,"Cloudastructure, Inc.",US,Technology,nano_cap,low_upside_signal,41.18,57.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+778,NUWE,"Nuwellis, Inc.",US,Healthcare,nano_cap,low_upside_signal,41.18,64.14,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+779,GELS,Gelteq Limited,US,Healthcare,nano_cap,low_upside_signal,41.18,69.63,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+780,XAIR,"Beyond Air, Inc.",US,Healthcare,nano_cap,low_upside_signal,41.18,74.33,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+781,POAS,Phaos Technology Holdings (Caym,US,Healthcare,nano_cap,low_upside_signal,41.18,74.56,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+782,VSME,VS Media Holdings Limited,US,Communication Services,nano_cap,low_upside_signal,41.18,77.13,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+783,NIVF,NewGenIvf Group Limited,US,Healthcare,nano_cap,low_upside_signal,41.18,78.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+784,CCHH,CCH Holdings Ltd,US,Consumer Cyclical,nano_cap,low_upside_signal,41.18,79.18,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+785,EDBL,Edible Garden AG Incorporated,US,Consumer Defensive,nano_cap,low_upside_signal,41.18,81.43,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+786,GMHS,Gamehaus Holdings Inc.,US,Communication Services,micro_cap,low_upside_signal,41.12,26.47,80.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+787,SNAL,"Snail, Inc.",US,Communication Services,micro_cap,low_upside_signal,41.12,30.4,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+788,AEP.V,ATLAS ENGINEERED PRODUCTS LTD,CA,Industrials,micro_cap,low_upside_signal,41.12,51.43,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+789,TGE,The Generation Essentials Group,US,Financial Services,micro_cap,low_upside_signal,41.12,69.04,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+790,SNES,"SenesTech, Inc.",US,Basic Materials,nano_cap,low_upside_signal,40.88,44.23,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+791,ROMJ.V,RUBICON ORGANICS INC,CA,Healthcare,micro_cap,low_upside_signal,40.45,38.7,100.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+792,GVC.TO,GLACIER MEDIA INC,CA,Communication Services,micro_cap,low_upside_signal,40.24,24.03,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+793,SNWV,"SANUWAVE Health, Inc.",US,Healthcare,micro_cap,low_upside_signal,40.24,35.53,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+794,DXLG,"Destination XL Group, Inc.",US,Consumer Cyclical,micro_cap,low_upside_signal,40.24,46.53,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+795,IRIX,IRIDEX Corporation,US,Healthcare,micro_cap,low_upside_signal,40.07,35.51,70.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+796,ACCS,ACCESS Newswire Inc.,US,Communication Services,micro_cap,low_upside_signal,40.06,21.48,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+797,JCTC,Jewett-Cameron Trading Company,US,Basic Materials,micro_cap,low_upside_signal,40.06,27.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+798,BR.TO,BIG ROCK BREWERY INC.,CA,Consumer Defensive,micro_cap,low_upside_signal,40.06,51.93,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+799,RAVE,"Rave Restaurant Group, Inc.",US,Consumer Cyclical,micro_cap,low_upside_signal,39.95,13.2,97.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+800,CTZ.V,NAMSYS INC,CA,Technology,micro_cap,low_upside_signal,39.95,13.47,95.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+801,VCI.V,VITREOUS GLASS INC.,CA,Industrials,micro_cap,low_upside_signal,39.95,13.97,97.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+802,RMTI,"Rockwell Medical, Inc.",US,Healthcare,micro_cap,low_upside_signal,39.94,24.68,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+803,HBIO,"Harvard Bioscience, Inc.",US,Healthcare,micro_cap,low_upside_signal,39.94,41.33,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+804,KMRK,K-Tech Solutions Company Limite,US,Consumer Cyclical,micro_cap,low_upside_signal,39.35,26.01,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+805,LHAI,Linkhome Holdings Inc.,US,Real Estate,micro_cap,low_upside_signal,38.88,23.03,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+806,PMEC,Primech Holdings Ltd.,US,Industrials,micro_cap,low_upside_signal,38.88,40.53,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+807,YXT,YXT.COM GROUP HOLDING LIMITED -,US,Technology,micro_cap,low_upside_signal,38.88,44.98,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+808,ORIO,Orion Digital Corp.,US,Technology,micro_cap,low_upside_signal,38.88,54.26,80.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+809,TRBE.V,TRIBE PROPERTY TECHNOLOGIES INC,CA,Technology,micro_cap,low_upside_signal,38.88,64.62,85.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+810,PPR.TO,PRAIRIE PROVIDENT RESOURCES INC,CA,Energy,micro_cap,low_upside_signal,38.88,73.19,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+811,BQ,Boqii Holding Limited,US,Consumer Cyclical,nano_cap,low_upside_signal,38.82,29.43,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+812,EJH,E-Home Household Service Holdin,US,Consumer Cyclical,nano_cap,low_upside_signal,38.82,31.23,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+813,MITQ,"Moving iMage Technologies, Inc.",US,Technology,nano_cap,low_upside_signal,38.82,43.28,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+814,RAYA,Erayak Power Solution Group Inc,US,Industrials,nano_cap,low_upside_signal,38.82,72.13,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+815,HKIT,Hitek Global Inc.,US,Technology,micro_cap,low_upside_signal,38.76,35.13,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+816,JOB,GEE Group Inc.,US,Industrials,micro_cap,low_upside_signal,38.47,14.48,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+817,ATY.V,ATICO MINING CORPORATION,CA,Basic Materials,micro_cap,low_upside_signal,38.47,32.03,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+818,SJ,Scienjoy Holding Corporation,US,Communication Services,micro_cap,low_upside_signal,38.14,28.64,70.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+819,NWX.V,NEWPORT EXLORATION LTD,CA,Basic Materials,micro_cap,low_upside_signal,38.0,24.96,60.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+820,KDOZ.V,KIDOZ INC,CA,Communication Services,micro_cap,low_upside_signal,38.0,37.42,85.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+821,SF.V,SAFI SILVER CORP,CA,Basic Materials,micro_cap,low_upside_signal,38.0,52.74,60.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+822,NSYS,Nortech Systems Incorporated,US,Healthcare,micro_cap,low_upside_signal,37.7,22.8,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+823,GP,GreenPower Motor Company Inc.,US,Industrials,micro_cap,low_upside_signal,37.41,43.98,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+824,GFP.TO,GREENFIRST FOREST PRODUCTS INC,CA,Basic Materials,micro_cap,low_upside_signal,37.29,56.73,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+825,SGLY,Singularity Future Technology L,US,Industrials,nano_cap,low_upside_signal,36.76,75.43,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+826,TOON,"Kartoon Studios, Inc.",US,Communication Services,micro_cap,low_upside_signal,36.71,28.88,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+827,WVVI,"Willamette Valley Vineyards, In",US,Consumer Defensive,micro_cap,low_upside_signal,36.53,43.88,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+828,SPOT.V,EARTHLABS INC,CA,Technology,micro_cap,low_upside_signal,36.41,28.18,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+829,PYR.TO,PYROGENESIS INC,CA,Industrials,micro_cap,low_upside_signal,36.41,60.45,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+830,NTWK,NETSOL Technologies Inc.,US,Technology,micro_cap,low_upside_signal,36.2,14.8,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+831,YJ,Yunji Inc. - American Depositor,US,Consumer Cyclical,micro_cap,low_upside_signal,35.79,38.19,70.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+832,OST,"Ostin Technology Group Co., Ltd",US,Technology,micro_cap,low_upside_signal,35.79,55.66,70.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+833,XX.V,AVANTE CORP,CA,Industrials,micro_cap,low_upside_signal,35.53,18.28,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+834,PTN,"Palatin Technologies, Inc.",US,Healthcare,micro_cap,low_upside_signal,35.5,47.06,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+835,NGC.V,NORTHERN GRAPHITE CORPORATION,CA,Basic Materials,micro_cap,low_upside_signal,35.5,78.54,60.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+836,IPM,Intelligent Protection Manageme,US,Technology,micro_cap,low_upside_signal,35.35,26.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+837,BLIN,"Bridgeline Digital, Inc.",US,Technology,micro_cap,low_upside_signal,35.35,28.23,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+838,MPH.V,MEDICURE INC,CA,Healthcare,micro_cap,low_upside_signal,35.35,31.16,85.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+839,OAM.V,OVERACTIVE MEDIA CORP,CA,Communication Services,micro_cap,low_upside_signal,35.35,37.73,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+840,GDTC,CytoMed Therapeutics Limited,US,Healthcare,micro_cap,low_upside_signal,35.35,48.63,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+841,CTSO,Cytosorbents Corporation,US,Healthcare,micro_cap,low_upside_signal,35.35,48.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+842,PVIS.V,PARVIS INVEST INC,CA,Financial Services,micro_cap,low_upside_signal,35.35,50.16,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+843,AMSS,AMASS Brands Inc.,US,Consumer Defensive,micro_cap,low_upside_signal,35.35,61.9,77.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+844,LOCL,Local Bounti Corporation,US,Consumer Defensive,micro_cap,low_upside_signal,35.35,73.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+845,RCT,RedCloud Holdings plc,US,Technology,micro_cap,low_upside_signal,35.35,75.77,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+846,GLE,Global Engine Group Holding Lim,US,Technology,nano_cap,low_upside_signal,35.29,33.13,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+847,TANH,Tantech Holdings Ltd.,US,Consumer Defensive,nano_cap,low_upside_signal,35.29,33.13,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+848,MTR,Mesa Royalty Trust,US,Energy,nano_cap,low_upside_signal,35.29,33.84,75.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+849,VRME,"VerifyMe, Inc.",US,Industrials,nano_cap,low_upside_signal,35.29,34.03,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+850,OMH,Ohmyhome Limited,US,Real Estate,nano_cap,low_upside_signal,35.29,36.13,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+851,SBFM,Sunshine Biopharma Inc.,US,Healthcare,nano_cap,low_upside_signal,35.29,37.63,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+852,VEEE,Twin Vee PowerCats Co.,US,Consumer Cyclical,nano_cap,low_upside_signal,35.29,37.63,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+853,CVR,Chicago Rivet & Machine Co.,US,Industrials,nano_cap,low_upside_signal,35.29,38.68,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+854,IVDA,"Iveda Solutions, Inc.",US,Industrials,nano_cap,low_upside_signal,35.29,39.43,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+855,INLF,INLIF LIMITED,US,Industrials,nano_cap,low_upside_signal,35.29,39.63,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+856,UPC,Universe Pharmaceuticals Inc,US,Healthcare,nano_cap,low_upside_signal,35.29,40.18,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+857,NCRA,"Nocera, Inc.",US,Consumer Defensive,nano_cap,low_upside_signal,35.29,40.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+858,SUGP,SU Group Holdings Limited,US,Industrials,nano_cap,low_upside_signal,35.29,40.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+859,JEM,707 Cayman Holdings Limited,US,Consumer Cyclical,nano_cap,low_upside_signal,35.29,41.43,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+860,TDIC,Dreamland Limited,US,Communication Services,nano_cap,low_upside_signal,35.29,45.63,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+861,SUNE,"SUNation Energy, Inc.",US,Technology,nano_cap,low_upside_signal,35.29,46.63,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+862,ATER,"Aterian, Inc.",US,Consumer Cyclical,nano_cap,low_upside_signal,35.29,46.78,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+863,XWEL,"XWELL, Inc.",US,Healthcare,nano_cap,low_upside_signal,35.29,48.13,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+864,GNLN,"Greenlane Holdings, Inc.",US,Consumer Defensive,nano_cap,low_upside_signal,35.29,48.35,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+865,EZRA,"Reliance Global Group, Inc.",US,Financial Services,nano_cap,low_upside_signal,35.29,49.26,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+866,DSS,"DSS, Inc.",US,Consumer Cyclical,nano_cap,low_upside_signal,35.29,51.58,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+867,HCWC,Healthy Choice Wellness Corp.,US,Consumer Defensive,nano_cap,low_upside_signal,35.29,52.33,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+868,SCKT,"Socket Mobile, Inc.",US,Technology,nano_cap,low_upside_signal,35.29,53.13,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+869,HYFM,"Hydrofarm Holdings Group, Inc.",US,Industrials,nano_cap,low_upside_signal,35.29,54.14,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+870,KUST,"Kustom Entertainment, Inc.",US,Communication Services,nano_cap,low_upside_signal,35.29,57.53,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+871,RITR,Reitar Logtech Holdings Limited,US,Industrials,nano_cap,low_upside_signal,35.29,59.52,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+872,CENN,Cenntro Inc.,US,Consumer Cyclical,nano_cap,low_upside_signal,35.29,59.63,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+873,MEDS,"DataMeds AI, Inc.",US,Healthcare,nano_cap,low_upside_signal,35.29,60.25,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+874,XPON,Expion360 Inc.,US,Industrials,nano_cap,low_upside_signal,35.29,60.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+875,XXII,"22nd Century Group, Inc",US,Consumer Defensive,nano_cap,low_upside_signal,35.29,64.43,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+876,LHSW,Lianhe Sowell International Gro,US,Technology,nano_cap,low_upside_signal,35.29,64.53,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+877,TAOP,Taoping Inc.,US,Technology,nano_cap,low_upside_signal,35.29,66.53,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+878,CNEY,CN Energy Group Inc.,US,Basic Materials,nano_cap,low_upside_signal,35.29,70.83,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+879,JAGX,"Jaguar Health, Inc.",US,Healthcare,nano_cap,low_upside_signal,35.29,72.53,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+880,GAUZ,Gauzy Ltd.,US,Technology,nano_cap,low_upside_signal,35.29,74.33,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+881,CDTG,CDT Environmental Technology In,US,Industrials,nano_cap,low_upside_signal,35.29,75.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+882,CWD,CaliberCos Inc.,US,Financial Services,nano_cap,low_upside_signal,35.29,76.41,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+883,DBGI,"Digital Brands Group, Inc.",US,Consumer Cyclical,nano_cap,low_upside_signal,35.29,77.63,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+884,PARA,"Banzai International, Inc.",US,Technology,nano_cap,low_upside_signal,35.29,79.31,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+885,EZGO,EZGO Technologies Ltd.,US,Consumer Cyclical,nano_cap,low_upside_signal,35.29,85.43,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+886,PHUN,"Phunware, Inc.",US,Technology,micro_cap,low_upside_signal,35.24,21.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+887,FTEK,"Fuel Tech, Inc.",US,Industrials,micro_cap,low_upside_signal,35.24,22.88,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+888,ASTI,"Ascent Solar Technologies, Inc",US,Technology,micro_cap,low_upside_signal,35.24,28.98,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+889,BEEM,Beam Global,US,Technology,micro_cap,low_upside_signal,35.24,30.68,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+890,BCHT,Birchtech Corp.,US,Industrials,micro_cap,low_upside_signal,35.24,33.13,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+891,CLIR,ClearSign Technologies Corporat,US,Industrials,micro_cap,low_upside_signal,35.24,33.43,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+892,CCDS.V,CARRIER CONNECT DATA SOLUTIONS ,CA,Technology,micro_cap,low_upside_signal,35.24,34.18,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+893,IBAT.V,INTERNATIONAL BATTERY METALS LT,CA,Basic Materials,micro_cap,low_upside_signal,35.24,36.93,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+894,ONE.V,01 QUANTUM INC,CA,Technology,micro_cap,low_upside_signal,35.24,38.18,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+895,SLMT,Brera Holdings PLC,US,Technology,micro_cap,low_upside_signal,35.24,39.19,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+896,CTRL.V,EDGE TOTAL INTELLIGENCE INC,CA,Technology,micro_cap,low_upside_signal,35.24,40.19,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+897,VIDA,VIDA Global Inc.,US,Technology,micro_cap,low_upside_signal,35.24,41.54,72.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+898,MCRP,Micropolis AI Robotics,US,Technology,micro_cap,low_upside_signal,35.24,43.63,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+899,GMA.V,GEOMEGA RESOURCES INC,CA,Basic Materials,micro_cap,low_upside_signal,35.24,46.53,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+900,VZZ.V,VAL DOR MINING CORPORATION,CA,Basic Materials,micro_cap,low_upside_signal,35.24,46.77,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+901,RYET,Ruanyun Edai Technology Inc.,US,Consumer Defensive,micro_cap,low_upside_signal,35.24,47.08,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+902,CH.V,CHARBONE CORPORATION,CA,Basic Materials,micro_cap,low_upside_signal,35.24,49.33,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+903,NOMA,NOMADAR Corp.,US,Consumer Cyclical,micro_cap,low_upside_signal,35.24,51.18,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+904,SCAI.V,SALESCLOSER TECHNOLOGIES LTD,CA,Technology,micro_cap,low_upside_signal,35.24,51.26,72.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+905,AGIG,Abundia Global Impact Group Inc,US,Utilities,micro_cap,low_upside_signal,35.24,51.83,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+906,MIR.V,MEDMIRA INC,CA,Healthcare,micro_cap,low_upside_signal,35.24,54.93,60.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+907,ONMD,OneMedNet Corp,US,Healthcare,micro_cap,low_upside_signal,35.24,55.45,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+908,SCWO,374Water Inc.,US,Industrials,micro_cap,low_upside_signal,35.24,61.43,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+909,TAOX,Tao Synergies Inc.,US,Financial Services,micro_cap,low_upside_signal,35.24,61.85,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+910,EUDA,Euda Health Holdings Limited,US,Real Estate,micro_cap,low_upside_signal,35.24,63.4,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+911,BTAI,"BioXcel Therapeutics, Inc.",US,Healthcare,micro_cap,low_upside_signal,35.24,69.19,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+912,PAVM,PAVmed Inc.,US,Healthcare,micro_cap,low_upside_signal,35.24,69.23,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+913,MSAI,"MultiSensor AI Holdings, Inc.",US,Technology,micro_cap,low_upside_signal,35.06,41.29,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+914,CKX,"CKX Lands, Inc.",US,Energy,micro_cap,low_upside_signal,35.05,13.74,95.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+915,ELAB,PMGC Holdings Inc.,US,Healthcare,nano_cap,low_upside_signal,35.0,45.06,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+916,BGMS,"Bio Green Med Solution, Inc.",US,Industrials,nano_cap,low_upside_signal,35.0,57.01,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+917,PRHI,"Presurance Holdings, Inc.",US,Financial Services,micro_cap,low_upside_signal,34.95,40.5,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+918,TRSG,Tungray Technologies Inc,US,Industrials,micro_cap,low_upside_signal,34.47,24.77,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+919,IB.V,IBC ADVANCED ALLOYS CORP,CA,Industrials,micro_cap,low_upside_signal,34.47,40.83,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+920,BRIA,BrilliA Inc,US,Consumer Cyclical,micro_cap,low_upside_signal,34.06,25.24,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+921,LVLU,"Lulu's Fashion Lounge Holdings,",US,Consumer Cyclical,micro_cap,low_upside_signal,34.06,34.24,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+922,ABLV,Able View Global Inc.,US,Consumer Cyclical,micro_cap,low_upside_signal,34.06,34.57,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+923,SDOT,Sadot Group Inc.,US,Consumer Defensive,micro_cap,low_upside_signal,33.4,46.03,75.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+924,KYNB,"Kyntra Bio, Inc.",US,Healthcare,micro_cap,low_upside_signal,33.25,15.96,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+925,AIOS,AIOS Tech Inc.,US,Technology,micro_cap,low_upside_signal,33.25,25.17,60.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+926,VIO.V,VIOR GOLD CORPORATION INC,CA,Basic Materials,micro_cap,low_upside_signal,33.25,25.2,60.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+927,MDBH,"MDB Capital Holdings, LLC",US,Financial Services,micro_cap,low_upside_signal,33.25,35.98,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+928,VITA.V,VITALIST INC,CA,Technology,micro_cap,low_upside_signal,33.25,58.54,60.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+929,NXPL,NextPlat Corp,US,Technology,micro_cap,low_upside_signal,33.0,23.28,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+930,NHTC,Natural Health Trends Corp.,US,Consumer Cyclical,micro_cap,low_upside_signal,33.0,23.98,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+931,KRN.TO,KARNALYTE RESOURCES INC,CA,Basic Materials,micro_cap,low_upside_signal,33.0,28.38,60.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+932,SLGB,Smart Logistics Global Limited,US,Industrials,micro_cap,low_upside_signal,33.0,33.98,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+933,BTCW.V,BITCOIN WELL INC,CA,Financial Services,micro_cap,low_upside_signal,33.0,41.6,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+934,ARKR,Ark Restaurants Corp.,US,Consumer Cyclical,micro_cap,low_upside_signal,33.0,46.13,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+935,PRPL,"Purple Innovation, Inc.",US,Consumer Cyclical,micro_cap,low_upside_signal,33.0,48.77,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+936,FTHM,Fathom Holdings Inc.,US,Real Estate,micro_cap,low_upside_signal,33.0,49.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+937,HUDI,"Huadi International Group Co., ",US,Basic Materials,micro_cap,low_upside_signal,33.0,52.98,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+938,CMCT,Creative Media,US,Real Estate,micro_cap,low_upside_signal,33.0,53.03,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+939,AIRI,Air Industries Group,US,Industrials,micro_cap,low_upside_signal,33.0,59.53,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+940,IHT,InnSuites Hospitality Trust Sha,US,Real Estate,micro_cap,low_upside_signal,33.0,62.03,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+941,GIFT,"Giftify, Inc.",US,Communication Services,micro_cap,low_upside_signal,32.88,23.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+942,CULP,"Culp, Inc.",US,Consumer Cyclical,micro_cap,low_upside_signal,32.88,28.03,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+943,RMCO,Royalty Management Holding Corp,US,Financial Services,micro_cap,low_upside_signal,32.88,47.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+944,XBP,"XBP Global Holdings, Inc.",US,Technology,micro_cap,low_upside_signal,32.88,48.03,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+945,ORIO.TO,ORION DIGITAL CORP,CA,Technology,micro_cap,low_upside_signal,32.88,51.76,80.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+946,DLPN,"Dolphin Entertainment, Inc.",US,Communication Services,micro_cap,low_upside_signal,32.82,59.17,55.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+947,MATH,Metalpha Technology Holding Lim,US,Financial Services,micro_cap,low_upside_signal,32.45,27.81,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+948,CLWT,Euro Tech Holdings Company Limi,US,Industrials,micro_cap,low_upside_signal,31.8,16.8,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+949,SWAG,"Stran & Company, Inc.",US,Communication Services,micro_cap,low_upside_signal,31.7,17.25,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+950,NCI.V,NTG Clarity Networks Inc.,CA,Technology,micro_cap,low_upside_signal,31.7,19.0,100.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+951,AHMA,Ambitions Enterprise Management,US,Consumer Cyclical,micro_cap,low_upside_signal,31.7,24.54,97.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+952,YSXT,"YSX Tech. Co., Ltd",US,Industrials,micro_cap,low_upside_signal,31.7,34.85,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+953,LABS.TO,MEDIPHARM LABS CORP,CA,Healthcare,micro_cap,low_upside_signal,31.41,19.78,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+954,CCG,Cheche Group Inc.,US,Communication Services,micro_cap,low_upside_signal,31.41,25.48,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+955,PSIG,PS International Group Ltd.,US,Industrials,micro_cap,low_upside_signal,31.41,26.03,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+956,ARAY,Accuray Incorporated,US,Healthcare,micro_cap,low_upside_signal,31.41,38.68,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+957,BBGI,"Beasley Broadcast Group, Inc.",US,Communication Services,micro_cap,low_upside_signal,31.41,57.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+958,LOAN,"Manhattan Bridge Capital, Inc",US,Real Estate,micro_cap,low_upside_signal,31.2,24.1,80.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+959,BRN,"Barnwell Industries, Inc.",US,Energy,micro_cap,low_upside_signal,30.94,26.13,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+960,VNTG,Vantage Corp,US,Industrials,micro_cap,low_upside_signal,30.94,37.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+961,BTCT,BTC Digital Ltd.,US,Technology,micro_cap,low_upside_signal,30.94,51.98,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+962,WAFU,Wah Fu Education Group Limited,US,Consumer Defensive,nano_cap,low_upside_signal,30.88,20.83,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+963,MSN,Emerson Radio Corporation,US,Technology,nano_cap,low_upside_signal,30.88,35.44,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+964,SYNX,Silynxcom Ltd.,US,Technology,nano_cap,low_upside_signal,30.88,36.88,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+965,PLAG,Planet Green Holdings Corp.,US,Industrials,nano_cap,low_upside_signal,30.88,37.24,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+966,ATPC,Agape ATP Corporation,US,Consumer Defensive,nano_cap,low_upside_signal,30.88,40.43,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+967,SXTC,"China SXT Pharmaceuticals, Inc.",US,Healthcare,nano_cap,low_upside_signal,30.88,41.43,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+968,BGLC,BioNexus Gene Lab Corp,US,Basic Materials,nano_cap,low_upside_signal,30.88,42.83,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+969,YHC,LQR House Inc.,US,Consumer Defensive,nano_cap,low_upside_signal,30.88,45.72,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+970,POLA,"Polar Power, Inc.",US,Industrials,nano_cap,low_upside_signal,30.88,47.38,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+971,BMRA,"Biomerica, Inc.",US,Healthcare,nano_cap,low_upside_signal,30.88,48.03,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+972,OLB,"The OLB Group, Inc.",US,Technology,nano_cap,low_upside_signal,30.88,54.53,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+973,ENSC,"Ensysce Biosciences, Inc.",US,Healthcare,nano_cap,low_upside_signal,30.88,59.08,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+974,BOLT,"Bolt Biotherapeutics, Inc.",US,Healthcare,nano_cap,low_upside_signal,30.88,61.48,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+975,NWTG,"Newton Golf Company, Inc.",US,Consumer Cyclical,nano_cap,low_upside_signal,30.88,64.29,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+976,UZX,Linkage Global Inc,US,Consumer Cyclical,nano_cap,low_upside_signal,30.88,66.63,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+977,ILAG,Intelligent Living Application ,US,Industrials,nano_cap,low_upside_signal,30.88,69.88,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+978,XELB,"Xcel Brands, Inc",US,Consumer Cyclical,nano_cap,low_upside_signal,30.88,77.83,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+979,KITT,"Nauticus Robotics, Inc.",US,Industrials,nano_cap,low_upside_signal,30.88,78.83,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+980,TWAV,"TaoWeave, Inc.",US,Financial Services,nano_cap,low_upside_signal,30.88,78.91,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+981,XBIO,"Xenetic Biosciences, Inc.",US,Healthcare,nano_cap,low_upside_signal,30.59,42.51,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+982,HGBL,Heritage Global Inc.,US,Financial Services,micro_cap,low_upside_signal,30.53,19.91,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+983,XTNT,"Xtant Medical Holdings, Inc.",US,Healthcare,micro_cap,low_upside_signal,30.53,28.38,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+984,AYTU,"Aytu BioPharma, Inc.",US,Healthcare,micro_cap,low_upside_signal,30.53,28.59,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+985,HHS,"Harte Hanks, Inc.",US,Industrials,micro_cap,low_upside_signal,30.53,29.43,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+986,CDLX,"Cardlytics, Inc. Common Stock",US,Communication Services,micro_cap,low_upside_signal,30.53,48.82,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+987,GIP.V,GREEN IMPACT PARTNERS INC,CA,Industrials,micro_cap,low_upside_signal,30.53,55.6,85.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+988,SVRN,OceanPal Inc.,US,Industrials,micro_cap,low_upside_signal,30.43,48.48,70.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+989,EBON,Ebang International Holdings In,US,Technology,micro_cap,low_upside_signal,30.07,46.76,70.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+990,PETZ,"TDH Holdings, Inc.",US,Real Estate,micro_cap,low_upside_signal,30.05,22.1,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+991,VS,Versus Systems Inc.,US,Technology,nano_cap,low_upside_signal,30.0,34.68,95.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+992,AGMH,AGM Group Holdings Inc.,US,Technology,nano_cap,low_upside_signal,30.0,71.2,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+993,TVI.V,TVI PACIFIC INC,CA,Basic Materials,micro_cap,low_upside_signal,29.5,29.55,60.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+994,RVP,"Retractable Technologies, Inc.",US,Healthcare,micro_cap,low_upside_signal,29.47,28.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+995,BIRD,"Smartbird, Inc.",US,Technology,micro_cap,low_upside_signal,29.47,31.68,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+996,SPN.V,SNIPP INTERACTIVE INC,CA,Communication Services,micro_cap,low_upside_signal,29.47,32.71,85.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+997,MGIH,Millennium Group International ,US,Consumer Cyclical,micro_cap,low_upside_signal,29.47,36.16,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+998,XCH,XCHG Limited,US,Industrials,micro_cap,low_upside_signal,29.47,36.43,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+999,PLUR.V,PLURILOCK SECURITYINC,CA,Technology,micro_cap,low_upside_signal,29.47,36.98,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1000,FNGR,"FingerMotion, Inc.",US,Communication Services,micro_cap,low_upside_signal,29.47,39.03,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1001,MPU,Mega Matrix Inc.,US,Communication Services,micro_cap,low_upside_signal,29.47,39.66,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1002,LICN,Lichen International Limited,US,Industrials,micro_cap,low_upside_signal,29.47,40.23,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1003,SEED,Origin Agritech Limited,US,Basic Materials,micro_cap,low_upside_signal,29.47,41.72,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1004,SST,"System1, Inc.",US,Industrials,micro_cap,low_upside_signal,29.47,43.61,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1005,NYC,American Strategic Investment C,US,Real Estate,micro_cap,low_upside_signal,29.47,43.68,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1006,CELU,Celularity Inc.,US,Healthcare,micro_cap,low_upside_signal,29.47,47.56,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1007,SMSI,"Smith Micro Software, Inc.",US,Technology,micro_cap,low_upside_signal,29.47,48.03,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1008,CHOW,ChowChow Cloud International Ho,US,Technology,micro_cap,low_upside_signal,29.47,49.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1009,AVCN.TO,AVICANNA INC,CA,Healthcare,micro_cap,low_upside_signal,29.47,50.33,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1010,UCAR,U Power Limited,US,Consumer Cyclical,micro_cap,low_upside_signal,29.47,53.88,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1011,FOXX,Foxx Development Holdings Inc.,US,Technology,micro_cap,low_upside_signal,29.47,54.98,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1012,EPOW,E-Power Inc.,US,Industrials,micro_cap,low_upside_signal,29.47,56.01,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1013,ELOG,Eastern International Ltd.,US,Industrials,micro_cap,low_upside_signal,29.47,58.78,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1014,PASW,"Ping An Biomedical Co., Ltd.",US,Consumer Cyclical,micro_cap,low_upside_signal,29.47,60.55,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1015,RMCF,Rocky Mountain Chocolate Factor,US,Consumer Defensive,micro_cap,low_upside_signal,29.47,61.63,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1016,CISO,"CISO Global, Inc.",US,Technology,micro_cap,low_upside_signal,29.47,63.63,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1017,FLUX,"Flux Power Holdings, Inc.",US,Industrials,micro_cap,low_upside_signal,29.47,64.68,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1018,ILLR,Triller Group Inc.,US,Technology,micro_cap,low_upside_signal,29.47,68.48,75.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1019,SOS,SOS Limited,US,Financial Services,micro_cap,low_upside_signal,29.47,69.97,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1020,WETO,Wetour Robotics Limited,US,Technology,micro_cap,low_upside_signal,29.47,70.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1021,INUV,"Inuvo, Inc.",US,Technology,micro_cap,low_upside_signal,29.47,71.18,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1022,DFLI,Dragonfly Energy Holdings Corp,US,Industrials,micro_cap,low_upside_signal,29.47,71.43,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1023,REED,"Reed's, Inc.",US,Consumer Defensive,micro_cap,low_upside_signal,29.47,72.56,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1024,PN,PN Smart Energy Limited,US,Technology,micro_cap,low_upside_signal,29.35,28.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1025,ANGH,Anghami Inc.,US,Communication Services,micro_cap,low_upside_signal,29.35,30.18,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1026,OPTT,"Ocean Power Technologies, Inc.",US,Industrials,micro_cap,low_upside_signal,29.35,42.78,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1027,MERC,Mercer International Inc.,US,Basic Materials,micro_cap,low_upside_signal,29.35,46.35,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1028,DDC,DDC Enterprise Limited,US,Consumer Defensive,micro_cap,low_upside_signal,29.35,64.63,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1029,KAZR,Skyline Builders Group Holding ,US,Industrials,micro_cap,low_upside_signal,29.35,64.93,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1030,MBX.TO,MICROBIX J,CA,Healthcare,micro_cap,low_upside_signal,29.06,25.18,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1031,BCHT.TO,BIRCHTECH CORP,CA,Industrials,micro_cap,low_upside_signal,29.06,40.44,85.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1032,ENW.V,ENWAVE CORP,CA,Industrials,micro_cap,low_upside_signal,29.06,44.08,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1033,SRR.V,SOURCE ROCK ROYALTIES LTD,CA,Energy,micro_cap,low_upside_signal,28.95,9.57,92.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1034,JBDI,JBDI Holdings Limited,US,Consumer Cyclical,micro_cap,low_upside_signal,28.59,33.53,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1035,RW.V,RENOWORKS SOFTWARE INC.,CA,Technology,micro_cap,low_upside_signal,28.59,37.77,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1036,BIOX,Bioceres Crop Solutions Corp.,US,Basic Materials,micro_cap,low_upside_signal,28.5,61.08,70.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1037,STUD.V,STALLION URANIUM CORP,CA,Basic Materials,micro_cap,low_upside_signal,28.0,31.66,60.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1038,MIM.V,MIMEDIA HOLDINGS INC,CA,Technology,micro_cap,low_upside_signal,28.0,52.98,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1039,ETS,Elite Express Holding Inc.,US,Industrials,micro_cap,low_upside_signal,28.0,59.45,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1040,CNO.V,CALIFORNIA NANOTECHNOLOGIES COR,CA,Basic Materials,micro_cap,low_upside_signal,28.0,61.68,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1041,SEGN.V,SEEGNAL INC,CA,Healthcare,micro_cap,low_upside_signal,28.0,66.82,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1042,MDRR,"Medalist Diversified, Inc.",US,Real Estate,micro_cap,low_upside_signal,27.88,16.68,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1043,SNT,Senstar Technologies Corporatio,US,Industrials,micro_cap,low_upside_signal,27.43,33.65,70.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1044,GRN.TO,GREENLANE RENEWABLES INC,CA,Industrials,micro_cap,low_upside_signal,27.0,22.03,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1045,GROV,"Grove Collaborative Holdings, I",US,Consumer Defensive,micro_cap,low_upside_signal,27.0,33.53,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1046,SYPR,"Sypris Solutions, Inc.",US,Consumer Cyclical,micro_cap,low_upside_signal,27.0,38.78,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1047,PTLE,PTL LTD,US,Consumer Cyclical,micro_cap,low_upside_signal,27.0,50.53,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1048,DFNS,T3 Defense Inc.,US,Industrials,micro_cap,low_upside_signal,26.75,42.95,60.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1049,CTXR,"Citius Pharmaceuticals, Inc.",US,Healthcare,micro_cap,low_upside_signal,26.75,53.91,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1050,INLX,"Intellinetics, Inc.",US,Technology,micro_cap,low_upside_signal,26.12,27.88,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1051,GDHG,Golden Heaven Group Holdings Lt,US,Consumer Cyclical,micro_cap,low_upside_signal,26.12,36.23,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1052,XOS,"Xos, Inc.",US,Industrials,micro_cap,low_upside_signal,26.12,36.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1053,UUU,"Universal Safety Products, Inc.",US,Industrials,micro_cap,low_upside_signal,25.94,32.18,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1054,WXM,WF International Limited,US,Industrials,micro_cap,low_upside_signal,25.06,35.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1055,LIQT,"LiqTech International, Inc.",US,Industrials,micro_cap,low_upside_signal,25.06,39.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1056,HC.V,HYPERCHARGE NETWORKS CORP,CA,Consumer Cyclical,micro_cap,low_upside_signal,25.06,41.33,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1057,DOGZ,Dogness (International) Corpora,US,Consumer Cyclical,micro_cap,low_upside_signal,25.06,45.33,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1058,PRSO,Peraso Inc.,US,Technology,micro_cap,low_upside_signal,25.06,51.13,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1059,HKPD,"Cellyan Biotechnology Co., Ltd",US,Healthcare,micro_cap,low_upside_signal,25.06,53.68,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1060,SKK,SKK Holdings Limited,US,Industrials,micro_cap,low_upside_signal,25.06,61.63,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1061,CYCU,"Cycurion, Inc.",US,Technology,micro_cap,low_upside_signal,25.06,65.23,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1062,ZDAI,"DirectBooking Technology Co., L",US,Industrials,micro_cap,low_upside_signal,25.06,72.23,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1063,HWH,HWH International Inc.,US,Consumer Cyclical,micro_cap,low_upside_signal,25.05,35.85,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1064,CELZ,Creative Medical Technology Hol,US,Healthcare,nano_cap,low_upside_signal,25.0,37.56,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1065,APRE,"Aprea Therapeutics, Inc.",US,Healthcare,nano_cap,low_upside_signal,25.0,38.22,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1066,AUUD,Auddia Inc.,US,Technology,nano_cap,low_upside_signal,25.0,39.06,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1067,KXIN,Kaixin Holdings,US,Consumer Cyclical,nano_cap,low_upside_signal,25.0,43.31,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1068,PRFX,PRF Technologies Ltd.,US,Healthcare,nano_cap,low_upside_signal,25.0,44.86,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1069,SILO,"Silo Pharma, Inc.",US,Healthcare,nano_cap,low_upside_signal,25.0,45.12,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1070,DCOY,Decoy Therapeutics Inc.,US,Healthcare,nano_cap,low_upside_signal,25.0,47.96,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1071,GITS,Global Interactive Technologies,US,Communication Services,nano_cap,low_upside_signal,25.0,54.21,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1072,LNAI,Lunai Bioworks Inc.,US,Healthcare,nano_cap,low_upside_signal,25.0,64.54,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1073,JUNS,"Jupiter Neurosciences, Inc.",US,Healthcare,nano_cap,low_upside_signal,25.0,67.48,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1074,TCRT,"Alaunos Therapeutics, Inc.",US,Healthcare,nano_cap,low_upside_signal,25.0,67.96,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1075,BRNX,Brenmiller Energy Ltd,US,Utilities,nano_cap,low_upside_signal,25.0,69.34,60.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1076,SSM,Sono Group N.V.,US,Consumer Cyclical,nano_cap,low_upside_signal,25.0,74.59,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1077,ALP,Alpha Compute Corp,US,Financial Services,nano_cap,low_upside_signal,25.0,75.14,60.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1078,RAIN,Rain Enhancement Technologies H,US,Industrials,nano_cap,low_upside_signal,25.0,75.59,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1079,BTOG,Bit Origin Limited,US,Financial Services,nano_cap,low_upside_signal,25.0,78.57,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1080,AKAN,Akanda Corp.,US,Healthcare,nano_cap,low_upside_signal,25.0,81.96,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1081,BHST,BioHarvest Sciences Inc.,US,Consumer Defensive,micro_cap,low_upside_signal,24.94,35.43,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1082,BRLS,Borealis Foods Inc.,US,Consumer Defensive,micro_cap,low_upside_signal,24.94,42.86,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1083,TLA.V,TITAN LOGIX CORP,CA,Industrials,micro_cap,low_upside_signal,24.76,25.68,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1084,SPPL,SIMPPLE LTD.,US,Industrials,micro_cap,low_upside_signal,24.76,53.38,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1085,CHS.V,COMPREHENSIVE HEALTHCARE SYSTEM,CA,Healthcare,micro_cap,low_upside_signal,24.76,61.19,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1086,SMTK,"SmartKem, Inc.",US,Technology,nano_cap,low_upside_signal,24.71,40.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1087,ONCO,"Onconetix, Inc.",US,Healthcare,nano_cap,low_upside_signal,24.71,50.53,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1088,AIRE,reAlpha Tech Corp.,US,Real Estate,nano_cap,low_upside_signal,24.71,59.38,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1089,WCT,Wellchange Holdings Company Lim,US,Technology,nano_cap,low_upside_signal,24.71,60.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1090,SXTP,"60 Degrees Pharmaceuticals, Inc",US,Healthcare,nano_cap,low_upside_signal,24.71,65.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1091,FEED,"ENvue Medical, Inc.",US,Healthcare,nano_cap,low_upside_signal,24.71,67.18,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1092,VNRX,VolitionRX Limited,US,Healthcare,nano_cap,low_upside_signal,24.71,74.35,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1093,DTST,Data Storage Corporation,US,Technology,nano_cap,low_upside_signal,23.53,31.19,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1094,GBR,"New Concept Energy, Inc",US,Real Estate,nano_cap,low_upside_signal,23.53,40.68,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1095,AIM,AIM ImmunoTech Inc.,US,Healthcare,nano_cap,low_upside_signal,23.53,51.03,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1096,CODX,"Co-Diagnostics, Inc.",US,Healthcare,nano_cap,low_upside_signal,23.53,60.13,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1097,FKWL,Franklin Wireless Corp.,US,Technology,micro_cap,low_upside_signal,23.47,27.51,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1098,GAIA,"Gaia, Inc.",US,Communication Services,micro_cap,low_upside_signal,23.47,28.38,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1099,DCGO,DocGo Inc.,US,Healthcare,micro_cap,low_upside_signal,23.47,30.18,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1100,DUO,Fangdd Network Group Ltd.,US,Real Estate,micro_cap,low_upside_signal,23.47,33.33,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1101,EHTH,"eHealth, Inc.",US,Financial Services,micro_cap,low_upside_signal,23.47,35.29,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1102,PETS,"PetMed Express, Inc.",US,Healthcare,micro_cap,low_upside_signal,23.47,39.08,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1103,FLD,"Fold Holdings, Inc.",US,Financial Services,micro_cap,low_upside_signal,23.47,44.1,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1104,ZEO,Zeo Energy Corporation,US,Technology,micro_cap,low_upside_signal,23.47,44.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1105,KPTI,Karyopharm Therapeutics Inc.,US,Healthcare,micro_cap,low_upside_signal,23.47,46.03,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1106,LPSN,"LivePerson, Inc.",US,Technology,micro_cap,low_upside_signal,23.47,49.45,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1107,VIP,Vulcan Infrastructure and Power,US,Financial Services,micro_cap,low_upside_signal,23.47,51.79,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1108,THCH,TH International Limited,US,Consumer Cyclical,micro_cap,low_upside_signal,23.47,52.08,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1109,TELA,"TELA Bio, Inc.",US,Healthcare,micro_cap,low_upside_signal,23.47,53.72,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1110,SLND,"Southland Holdings, Inc.",US,Industrials,micro_cap,low_upside_signal,23.47,71.29,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1111,RE.V,RE ROYALTIES LTD,CA,Utilities,micro_cap,low_upside_signal,22.93,62.88,70.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1112,ACCL,Acco Group Holdings Limited,US,Industrials,micro_cap,low_upside_signal,22.7,22.47,97.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1113,ACFN,"Acorn Energy, Inc.",US,Technology,micro_cap,low_upside_signal,22.2,12.55,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1114,MLSS,"Milestone Scientific, Inc.",US,Healthcare,micro_cap,low_upside_signal,22.0,31.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1115,MAPS.V,PROSTAR HOLDINGS INC,CA,Technology,micro_cap,low_upside_signal,22.0,38.35,85.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1116,ROOF.V,NORTHSTAR CLEAN TECHNOLOGIES IN,CA,Industrials,micro_cap,low_upside_signal,22.0,49.08,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1117,CHER.V,CHEELCARE INC,CA,Healthcare,micro_cap,low_upside_signal,22.0,57.48,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1118,FGNX,FG Nexus Inc.,US,Financial Services,micro_cap,low_upside_signal,22.0,65.91,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1119,TXMD,"TherapeuticsMD, Inc.",US,Healthcare,micro_cap,low_upside_signal,21.3,26.8,100.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1120,EONR,EON Resources Inc.,US,Energy,micro_cap,low_upside_signal,21.3,56.24,97.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1121,SORA,AsiaStrategy,US,Consumer Cyclical,micro_cap,low_upside_signal,19.95,27.84,97.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1122,CGD.V,CARLIN GOLD CORP,CA,Basic Materials,micro_cap,low_upside_signal,19.5,28.59,60.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1123,DAIO,Data I/O Corporation,US,Technology,micro_cap,low_upside_signal,19.06,22.38,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1124,AWRE,"Aware, Inc.",US,Technology,micro_cap,low_upside_signal,19.06,28.68,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1125,PPSI,"Pioneer Power Solutions, Inc.",US,Industrials,micro_cap,low_upside_signal,19.06,30.28,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1126,MF,MindForge Inc.,US,Communication Services,micro_cap,low_upside_signal,19.06,38.95,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1127,BDMD,Baird Medical Investment Holdin,US,Healthcare,micro_cap,low_upside_signal,19.06,43.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1128,MLCI,Mount Logan Capital Inc.,US,Financial Services,micro_cap,low_upside_signal,19.06,50.68,75.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1129,NCT,Intercont (Cayman) Limited,US,Industrials,micro_cap,low_upside_signal,19.06,52.83,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1130,BGDE,"Big Digital Energy, Inc.",US,Financial Services,micro_cap,low_upside_signal,19.06,58.61,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1131,TJGC,TJGC Group Limited,US,Communication Services,micro_cap,low_upside_signal,19.06,65.48,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1132,SCLX,Scilex Holding Company,US,Healthcare,micro_cap,low_upside_signal,19.06,66.56,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1133,UTSI,UTStarcom Holdings Corp,US,Technology,micro_cap,low_upside_signal,18.88,30.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1134,AIFA,"All In FutureTech Alliance, Inc",US,Technology,micro_cap,low_upside_signal,18.88,33.74,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1135,EXYN,"Exyn Technologies, Inc.",US,Technology,micro_cap,low_upside_signal,18.88,42.42,77.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1136,MOBX,"Mobix Labs, Inc.",US,Technology,micro_cap,low_upside_signal,18.88,46.08,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1137,FUSE,Fusemachines Inc.,US,Technology,micro_cap,low_upside_signal,18.88,47.15,75.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1138,ANY,Sphere 3D Corp.,US,Financial Services,micro_cap,low_upside_signal,18.88,51.04,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1139,EPSM,Epsium Enterprise Limited,US,Consumer Defensive,micro_cap,low_upside_signal,18.88,53.13,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1140,CJMB,Callan JMB Inc.,US,Industrials,micro_cap,low_upside_signal,18.88,57.68,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1141,DAIC,"CID HoldCo, Inc.",US,Technology,micro_cap,low_upside_signal,18.88,58.35,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1142,CCMI.V,CANADIAN CRITICAL MINERALS INC,CA,Basic Materials,micro_cap,low_upside_signal,18.88,61.23,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1143,KNRX,KNOREX LTD.,US,Technology,micro_cap,low_upside_signal,18.88,61.82,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1144,FTRC.V,THE FUTR CORPORATION,CA,Technology,micro_cap,low_upside_signal,18.88,63.35,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1145,GSIW,Garden Stage Limited,US,Financial Services,micro_cap,low_upside_signal,18.88,63.6,75.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1146,INTZ,Intrusion Inc.,US,Technology,micro_cap,low_upside_signal,18.88,65.18,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1147,EQS,"Equus Total Return, Inc.",US,Financial Services,micro_cap,low_upside_signal,18.88,66.47,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1148,EMN.V,EURO MANGANESE INC,CA,Basic Materials,micro_cap,low_upside_signal,18.88,71.72,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1149,KOSS,Koss Corporation,US,Technology,micro_cap,low_upside_signal,18.76,46.06,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1150,DUKR,DUKE Robotics Corp.,US,Industrials,micro_cap,low_upside_signal,17.71,35.48,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1151,PRZO,ParaZero Technologies Ltd.,US,Industrials,micro_cap,low_upside_signal,17.71,36.58,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1152,IDAI,T Stamp Inc.,US,Technology,micro_cap,low_upside_signal,17.71,45.33,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1153,DME.V,DESERT MOUNTAIN ENERGY CORP,CA,Energy,micro_cap,low_upside_signal,17.71,61.51,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1154,MGRX,"Mangoceuticals, Inc.",US,Healthcare,nano_cap,low_upside_signal,17.65,39.88,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1155,SPRC,SciSparc Ltd.,US,Healthcare,nano_cap,low_upside_signal,17.65,40.93,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1156,EVGN,Evogene Ltd.,US,Healthcare,nano_cap,low_upside_signal,17.65,41.18,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1157,CLGN,CollPlant Biotechnologies Ltd.,US,Healthcare,nano_cap,low_upside_signal,17.65,46.03,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1158,CDIO,Cardio Diagnostics Holdings Inc,US,Healthcare,nano_cap,low_upside_signal,17.65,49.48,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1159,SEGG,Sports Entertainment Gaming Glo,US,Consumer Cyclical,nano_cap,low_upside_signal,17.65,50.63,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1160,OSRH,"OSR Health, Inc.",US,Healthcare,nano_cap,low_upside_signal,17.65,57.78,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1161,ISPC,iSpecimen Inc.,US,Healthcare,nano_cap,low_upside_signal,17.65,62.43,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1162,VIVS,"VivoSim Labs, Inc.",US,Healthcare,nano_cap,low_upside_signal,17.65,62.56,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1163,BRTX,"BioRestorative Therapies, Inc.",US,Healthcare,nano_cap,low_upside_signal,17.65,63.63,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1164,SNTG,Sentage Holdings Inc.,US,Financial Services,nano_cap,low_upside_signal,17.65,65.62,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1165,NXL,"Nexalin Technology, Inc.",US,Healthcare,nano_cap,low_upside_signal,17.65,66.66,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1166,SOBR,"SOBR Safe, Inc.",US,Technology,nano_cap,low_upside_signal,17.65,67.82,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1167,AUID,authID Inc.,US,Technology,nano_cap,low_upside_signal,17.65,72.58,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1168,MMA,MIXED MARTIAL ARTS GROUP LIMITE,US,Consumer Cyclical,micro_cap,low_upside_signal,16.75,32.12,60.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1169,CABR,"Caring Brands, Inc.",US,Healthcare,micro_cap,low_upside_signal,16.75,36.22,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1170,ASBP,"Aspire Biopharma Holdings, Inc.",US,Healthcare,micro_cap,low_upside_signal,16.75,40.12,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1171,NIO.V,NIO STRATEGIC METALS INC,CA,Basic Materials,micro_cap,low_upside_signal,16.75,40.64,60.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1172,DARE,"Dare Bioscience, Inc.",US,Healthcare,micro_cap,low_upside_signal,16.75,41.54,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1173,LSTA,"Lisata Therapeutics, Inc.",US,Healthcare,micro_cap,low_upside_signal,16.75,42.38,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1174,MRKR,"Marker Therapeutics, Inc.",US,Healthcare,micro_cap,low_upside_signal,16.75,42.46,60.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1175,SCNX,"Scienture Holdings, Inc.",US,Healthcare,micro_cap,low_upside_signal,16.75,44.51,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1176,MIVO.V,MIIVO AI INC,CA,Financial Services,micro_cap,low_upside_signal,16.75,45.2,60.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1177,TOVX,"Theriva Biologics, Inc.",US,Healthcare,micro_cap,low_upside_signal,16.75,47.26,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1178,BFRG,"Bullfrog AI Holdings, Inc.",US,Healthcare,micro_cap,low_upside_signal,16.75,47.51,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1179,LEXX,Lexaria Bioscience Corp.,US,Healthcare,micro_cap,low_upside_signal,16.75,47.76,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1180,COCP,"Cocrystal Pharma, Inc.",US,Healthcare,micro_cap,low_upside_signal,16.75,48.31,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1181,SKYQ,Sky Quarry Inc.,US,Energy,micro_cap,low_upside_signal,16.75,49.01,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1182,CYCN,"Cyclerion Therapeutics, Inc.",US,Healthcare,micro_cap,low_upside_signal,16.75,51.59,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1183,ALLR,"Allarity Therapeutics, Inc.",US,Healthcare,micro_cap,low_upside_signal,16.75,52.21,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1184,AUME.V,AURIGINAL MINING CORP,CA,Basic Materials,micro_cap,low_upside_signal,16.75,56.05,60.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1185,VPT.V,VENTRIPOINT DIAGNOSTICS LTD,CA,Healthcare,micro_cap,low_upside_signal,16.75,62.27,60.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1186,AVAT,Avalanche Treasury Corporation,US,Financial Services,micro_cap,low_upside_signal,16.75,62.44,60.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1187,AMOD,"Alpha Modus Holdings, Inc.",US,Technology,micro_cap,low_upside_signal,16.75,63.06,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1188,VCT.V,VOLT CARBON TECHNOLOGIES INC,CA,Basic Materials,micro_cap,low_upside_signal,16.75,65.86,60.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1189,SNTI,"Senti Biosciences Holdings, Inc",US,Healthcare,micro_cap,low_upside_signal,16.75,75.91,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1190,PCLO.V,PHARMACIELO LTD,CA,Healthcare,micro_cap,low_upside_signal,16.75,80.64,60.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1191,VTSI,"VirTra, Inc.",US,Technology,micro_cap,low_upside_signal,16.41,20.98,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1192,GWH,"ESS Tech, Inc.",US,Industrials,micro_cap,low_upside_signal,14.36,67.61,70.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1193,CMI.V,C-Com Satellite Systems Inc.,CA,Technology,micro_cap,low_upside_signal,12.88,24.41,85.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1194,ELUT,"Elutia, Inc.",US,Healthcare,micro_cap,low_upside_signal,12.88,45.33,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1195,ELWT,"Elauwit Connection, Inc.",US,Communication Services,micro_cap,low_upside_signal,12.88,57.37,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1196,NPK.TO,VERDE AGRITECH LTD,CA,Basic Materials,micro_cap,low_upside_signal,12.88,62.28,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1197,BLIV,BeLive Holdings,US,Technology,micro_cap,low_upside_signal,11.82,31.68,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1198,BMR,Beamr Imaging Ltd.,US,Technology,micro_cap,low_upside_signal,11.82,32.29,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1199,NEON,Neonode Inc.,US,Technology,micro_cap,low_upside_signal,11.82,32.43,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1200,FTFT,Future FinTech Group Inc.,US,Technology,micro_cap,low_upside_signal,11.82,32.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1201,NEXE.V,NEXE INNOVATIONS INC,CA,Consumer Cyclical,micro_cap,low_upside_signal,11.82,34.21,85.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1202,LPCN,Lipocine Inc.,US,Healthcare,micro_cap,low_upside_signal,11.82,37.48,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1203,HIND,"Vyome Holdings, Inc.",US,Healthcare,micro_cap,low_upside_signal,11.82,37.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1204,PER.V,PERUVIAN METALS CORP,CA,Basic Materials,micro_cap,low_upside_signal,11.82,37.82,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1205,MYSE,"Myseum.AI, Inc.",US,Technology,micro_cap,low_upside_signal,11.82,40.78,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1206,ARAI,Arrive AI Inc.,US,Technology,micro_cap,low_upside_signal,11.82,43.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1207,FOFO,Hang Feng Technology Innovation,US,Industrials,micro_cap,low_upside_signal,11.82,44.28,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1208,ASTC,Astrotech Corporation,US,Technology,micro_cap,low_upside_signal,11.82,44.33,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1209,FREQ.V,FREQUENCY EXCHANGE CORP,CA,Healthcare,micro_cap,low_upside_signal,11.82,46.33,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1210,CNSY,"Cerenome, Inc.",US,Healthcare,micro_cap,low_upside_signal,11.82,46.53,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1211,ALTU.V,ALTURA ENERGY CORP,CA,Energy,micro_cap,low_upside_signal,11.82,46.83,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1212,DETX,"Liberty Defense Holdings, Ltd.",US,Industrials,micro_cap,low_upside_signal,11.82,48.33,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1213,REFR,Research Frontiers Incorporated,US,Technology,micro_cap,low_upside_signal,11.82,48.58,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1214,EDTK,Skillful Craftsman Education Te,US,Consumer Defensive,micro_cap,low_upside_signal,11.82,50.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1215,MTEK,Maris-Tech Ltd.,US,Technology,micro_cap,low_upside_signal,11.82,51.78,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1216,GRNQ,Greenpro Capital Corp.,US,Industrials,micro_cap,low_upside_signal,11.82,51.88,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1217,HSCS,HeartSciences Inc.,US,Healthcare,micro_cap,low_upside_signal,11.82,52.88,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1218,WIL.V,WILTON RESOURCES INC,CA,Energy,micro_cap,low_upside_signal,11.82,54.56,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1219,ZTG,Zenta Group Company Limited,US,Industrials,micro_cap,low_upside_signal,11.82,55.13,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1220,AIMD,"Ainos, Inc.",US,Technology,micro_cap,low_upside_signal,11.82,55.23,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1221,MRZL.V,MONT ROYAL RESOURCES LIMITED,CA,Basic Materials,micro_cap,low_upside_signal,11.82,56.32,85.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1222,YNV.V,YNVISIBLE INTERACTIVE INC,CA,Technology,micro_cap,low_upside_signal,11.82,57.93,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1223,TGHL,The GrowHub Limited,US,Technology,micro_cap,low_upside_signal,11.82,58.13,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1224,CNRI.V,CANADIAN NORTH RESOURCES INC,CA,Basic Materials,micro_cap,low_upside_signal,11.82,60.77,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1225,FEMY,Femasys Inc.,US,Healthcare,micro_cap,low_upside_signal,11.82,60.98,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1226,VVTM.V,VVT MED INC,CA,Healthcare,micro_cap,low_upside_signal,11.82,65.45,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1227,PLUR,Pluri Inc.,US,Healthcare,micro_cap,low_upside_signal,11.82,66.4,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1228,AXE.V,ACCELEWARE LTD,CA,Technology,micro_cap,low_upside_signal,11.82,67.08,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1229,CYM.V,CYMAT TECHNOLOGIES LTD,CA,Industrials,micro_cap,low_upside_signal,11.82,69.66,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1230,JJ.V,JACKPOT DIGITAL INC,CA,Consumer Cyclical,micro_cap,low_upside_signal,11.82,69.66,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1231,VRY.V,PETRO VICTORY ENERGY CORP,CA,Energy,micro_cap,low_upside_signal,11.82,74.51,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1232,SRC.V,STAKEHOLDER GOLD CORP,CA,Basic Materials,micro_cap,low_upside_signal,11.71,26.68,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1233,LPS.V,LEGEND POWER SYSTEMS INC.,CA,Industrials,micro_cap,low_upside_signal,11.71,37.18,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1234,DGNX,Diginex Limited,US,Industrials,micro_cap,low_upside_signal,11.71,43.08,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1235,ZYUS.V,ZYUS LIFE SCIENCES CORPORATION,CA,Healthcare,micro_cap,low_upside_signal,11.71,60.77,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1236,GRAN,Grande Group Limited,US,Financial Services,micro_cap,low_upside_signal,9.35,40.3,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1237,AVL.TO,AVALON ADVANCED MATERIALS INC,CA,Basic Materials,micro_cap,low_upside_signal,8.25,33.61,60.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1238,ATYR,"aTyr Pharma, Inc.",US,Healthcare,micro_cap,low_upside_signal,8.25,38.26,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1239,SFD.TO,NXT ENERGY SOLUTIONS INC,CA,Energy,micro_cap,low_upside_signal,8.25,39.61,60.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1240,CRVO,CervoMed Inc.,US,Healthcare,micro_cap,low_upside_signal,8.25,40.54,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1241,NBM.V,NEO BATTERY MATERIALS LTD,CA,Basic Materials,micro_cap,low_upside_signal,8.25,42.46,60.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1242,GNS,Genius Group Limited,US,Consumer Defensive,micro_cap,low_upside_signal,8.25,43.16,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1243,VM.V,VOYAGEUR PHARMACEUTICALS LTD,CA,Healthcare,micro_cap,low_upside_signal,8.25,43.21,60.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1244,HYPD,"Hyperion DeFi, Inc.",US,Healthcare,micro_cap,low_upside_signal,8.25,45.56,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1245,UVC.V,ILLUMISOFT LIGHTING CORP,CA,Industrials,micro_cap,low_upside_signal,8.25,47.07,60.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1246,BTCT.V,BITCOIN TREASURY CORPORATION,CA,Financial Services,micro_cap,low_upside_signal,8.25,52.57,60.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1247,VWAV,"VisionWave Holdings, Inc.",US,Industrials,micro_cap,low_upside_signal,8.25,53.24,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1248,DDD.V,METAVISTA3D INC,CA,Technology,micro_cap,low_upside_signal,8.25,53.82,60.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1249,HEVI.V,HELIUM EVOLUTION INCORPORATED,CA,Energy,micro_cap,low_upside_signal,8.25,55.96,60.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1250,MRZ.V,MIRASOL RESOURCES LTD.,CA,Basic Materials,micro_cap,low_upside_signal,8.25,61.81,60.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1251,MCRB,"Seres Therapeutics, Inc.",US,Healthcare,micro_cap,low_upside_signal,8.25,70.11,60.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1252,DEX.V,ALMADEX MINERALS LTD,CA,Basic Materials,micro_cap,low_upside_signal,7.95,31.32,95.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1253,PC,Premium Catering (Holdings) Lim,US,Industrials,micro_cap,low_upside_signal,7.07,47.85,70.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1254,WPRT,Westport Fuel Systems Inc,US,Consumer Cyclical,micro_cap,low_upside_signal,5.82,23.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1255,OPTH,Optimi Health Corp.,US,Healthcare,micro_cap,low_upside_signal,5.82,28.9,85.0,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1256,WPRT.TO,WESTPORT FUEL SYSTEMS INC,CA,Consumer Cyclical,micro_cap,low_upside_signal,5.82,29.18,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1257,PXLW,"Pixelworks, Inc.",US,Technology,micro_cap,low_upside_signal,5.82,29.43,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1258,TAO.V,TAG OIL LTD,CA,Energy,micro_cap,low_upside_signal,5.82,31.28,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1259,YAAS,Youxin Technology Ltd,US,Technology,micro_cap,low_upside_signal,5.82,32.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1260,INDO,Indonesia Energy Corporation Li,US,Energy,micro_cap,low_upside_signal,5.82,33.53,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1261,MD.V,MIDLAND EXPLORATION INC.,CA,Basic Materials,micro_cap,low_upside_signal,5.82,33.78,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1262,SAIH,SAIHEAT Limited,US,Technology,micro_cap,low_upside_signal,5.82,36.33,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1263,CPHI,"China Pharma Holdings, Inc.",US,Healthcare,micro_cap,low_upside_signal,5.82,36.98,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1264,MIMI,Mint Incorporation Limited,US,Industrials,micro_cap,low_upside_signal,5.82,37.48,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1265,VTIX,Virtuix Holdings Inc.,US,Technology,micro_cap,low_upside_signal,5.82,40.56,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1266,NTLX.V,NEUROTHERA LABS INC,CA,Healthcare,micro_cap,low_upside_signal,5.82,41.03,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1267,LGVN,Longeveron Inc.,US,Healthcare,micro_cap,low_upside_signal,5.82,41.18,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1268,ADK.V,DIAGNOS INC.,CA,Healthcare,micro_cap,low_upside_signal,5.82,42.58,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1269,NXH.V,NEXT HYDROGEN SOLUTIONS INC,CA,Industrials,micro_cap,low_upside_signal,5.82,44.13,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1270,IGC,"IGC Pharma, Inc.",US,Healthcare,micro_cap,low_upside_signal,5.82,45.43,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1271,CDA.V,CANUC RESOURCES CORPORATION,CA,Energy,micro_cap,low_upside_signal,5.82,46.55,75.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1272,YES.V,CHAR TECHNOLOGIES LTD,CA,Industrials,micro_cap,low_upside_signal,5.82,46.68,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1273,DYAI,"Dyadic International, Inc.",US,Healthcare,micro_cap,low_upside_signal,5.82,49.03,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1274,LOOP,"Loop Industries, Inc.",US,Basic Materials,micro_cap,low_upside_signal,5.82,49.14,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1275,ZONE,CleanCore Solutions Inc.,US,Industrials,micro_cap,low_upside_signal,5.82,50.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1276,LQWD.V,LQWD TECHNOLOGIES CORP,CA,Technology,micro_cap,low_upside_signal,5.82,51.5,85.0,90.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1277,FCLI.V,FULL CIRCLE LITHIUM CORP,CA,Basic Materials,micro_cap,low_upside_signal,5.82,52.56,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1278,PLUT,Plutus Financial Group Limited,US,Financial Services,micro_cap,low_upside_signal,5.82,52.91,71.25,90.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1279,ATHR,"Aether Holdings, Inc.",US,Technology,micro_cap,low_upside_signal,5.82,53.63,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1280,SCAN.V,LIBERTY DEFENSE HOLDINGS LTD,CA,Industrials,micro_cap,low_upside_signal,5.82,53.63,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1281,PINK.V,PERIMETER MEDICAL IMAGING AI IN,CA,Healthcare,micro_cap,low_upside_signal,5.82,54.68,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1282,ZOOZ,ZOOZ Strategy Ltd.,US,Industrials,micro_cap,low_upside_signal,5.82,55.23,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1283,SACH,Sachem Capital Corp.,US,Real Estate,micro_cap,low_upside_signal,5.82,56.45,80.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1284,MGRO.V,MUSTGROW BIOLOGICS CORP,CA,Basic Materials,micro_cap,low_upside_signal,5.82,57.63,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1285,PFAI,Pinnacle Food Group Limited,US,Consumer Defensive,micro_cap,low_upside_signal,5.82,58.73,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending
+1286,GSD.V,DEVONIAN HEALTH GROUP INC,CA,Healthcare,micro_cap,low_upside_signal,5.82,59.68,85.0,100.0,XIU.TO,2026-09-05T17:47:48.669736+00:00,pending
+1287,PAPL,Pineapple Financial Inc.,US,Financial Services,micro_cap,low_upside_signal,5.82,72.79,85.0,100.0,SPY,2026-09-05T17:47:48.669736+00:00,pending

@@ -17,7 +17,11 @@ env/
 # Data outputs
 data/raw/
 data/processed/
-data/exports/
+data/exports/*
+# Keep immutable Moonshot forward-test baselines and their validation
+# rows: small, auditable records of what the model claimed on a date.
+!data/exports/moonshot_forward_baseline_*.csv
+!data/exports/moonshot_validation_*.csv
 data/outputs/
 data/cache/
 data/runs/
