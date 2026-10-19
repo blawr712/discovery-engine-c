@@ -436,7 +436,27 @@ def record_baseline_resolution(
     """Record forward-baseline resolution provenance; the baseline is unchanged."""
     manifest = load_saved_manifest(root_directory, run_id)
     clock = clock or (lambda: datetime.now(timezone.utc))
-    manifest["baseline_resolution_artifacts"] = {
+    resolutions = dict(manifest.get("baseline_resolution_artifacts") or {})
+    resolutions[str(artifacts.get("kind", "moonshot"))] = {
+        "completed_at": _utc_iso(clock()),
+        **artifacts,
+    }
+    manifest["baseline_resolution_artifacts"] = resolutions
+    manifest_path = Path(root_directory) / run_id / "manifest.json"
+    _atomic_write_json(manifest_path, manifest)
+    return str(manifest_path)
+
+
+def record_research_baseline(
+    root_directory: Path,
+    run_id: str,
+    artifacts: dict,
+    clock: Callable[[], datetime] | None = None,
+) -> str:
+    """Record a frozen research-queue baseline; the queue itself is unchanged."""
+    manifest = load_saved_manifest(root_directory, run_id)
+    clock = clock or (lambda: datetime.now(timezone.utc))
+    manifest["research_baseline_artifacts"] = {
         "completed_at": _utc_iso(clock()),
         **artifacts,
     }

@@ -54,16 +54,36 @@ LIMITATIONS = (
 )
 
 
-def load_forward_baseline(output_directory: Path, run_id: str) -> dict:
-    """Load the frozen forward baseline exported for a run."""
+BASELINE_KINDS = {
+    "moonshot": ("moonshot_forward_baseline", "--calibrate-moonshot"),
+    "research": ("research_forward_baseline", "--freeze-research-baseline"),
+}
+
+
+def available_baseline_kinds(output_directory: Path, run_id: str) -> list[str]:
+    """Kinds of frozen baseline exported for a run, in a stable order."""
     output_directory = Path(output_directory)
-    matches = sorted(
-        output_directory.glob(f"moonshot_forward_baseline_{run_id}_*.json")
-    )
+    return [
+        kind for kind, (prefix, _) in sorted(BASELINE_KINDS.items())
+        if any(output_directory.glob(f"{prefix}_{run_id}_*.json"))
+    ]
+
+
+def load_forward_baseline(
+    output_directory: Path,
+    run_id: str,
+    kind: str = "moonshot",
+) -> dict:
+    """Load one kind of frozen forward baseline exported for a run."""
+    if kind not in BASELINE_KINDS:
+        raise ValueError(f"Unknown baseline kind: {kind}")
+    prefix, command = BASELINE_KINDS[kind]
+    output_directory = Path(output_directory)
+    matches = sorted(output_directory.glob(f"{prefix}_{run_id}_*.json"))
     if not matches:
         raise FileNotFoundError(
-            f"No forward baseline is exported for run {run_id}. "
-            "Run --calibrate-moonshot first."
+            f"No {kind} forward baseline is exported for run {run_id}. "
+            f"Run {command} first."
         )
     with matches[-1].open("r", encoding="utf-8") as file:
         baseline = json.load(file)
@@ -111,7 +131,7 @@ def resolve_baseline(
     config: dict | None = None,
 ) -> dict:
     """Measure every eligible horizon of a frozen baseline."""
-    config = validated_config(config)
+    config = validated_config(_cohorts_from(baseline, config))
     as_of_date = _as_date(as_of or datetime.now(timezone.utc))
     baseline_date = _as_date(_parse_time(baseline["baseline_as_of"]))
     tolerance = int(config["maximum_price_staleness_days"])
@@ -159,6 +179,7 @@ def resolve_baseline(
     })
     return {
         "run_id": baseline.get("run_id"),
+        "kind": baseline.get("kind", "moonshot"),
         "baseline_id": baseline.get("baseline_id"),
         "baseline_as_of": baseline.get("baseline_as_of"),
         "model_version": baseline.get("model_version"),
@@ -190,8 +211,9 @@ def export_baseline_resolution(
     output_directory = Path(output_directory)
     output_directory.mkdir(parents=True, exist_ok=True)
     run_id = resolution["run_id"]
-    json_path = output_directory / f"baseline_resolution_{run_id}.json"
-    csv_path = output_directory / f"baseline_resolution_{run_id}.csv"
+    stem = f"baseline_resolution_{resolution.get('kind', 'moonshot')}_{run_id}"
+    json_path = output_directory / f"{stem}.json"
+    csv_path = output_directory / f"{stem}.csv"
     _atomic_json(json_path, resolution)
     _atomic_csv(csv_path, _flatten(resolution))
     return {
@@ -282,6 +304,16 @@ def _resolve_horizon(
     result["benchmark_return_percent"] = round(benchmark_return, 4)
     result["excess_return_percent"] = round(ticker_return - benchmark_return, 4)
     return result
+
+
+def _cohorts_from(baseline: dict, config: dict | None) -> dict:
+    """Prefer the cohort split a baseline declares over the global default."""
+    merged = dict(config or {})
+    for field in ("selected_classifications", "control_classifications"):
+        declared = baseline.get(field)
+        if declared:
+            merged[field] = list(declared)
+    return merged
 
 
 def tickers_needing_prices(
@@ -467,6 +499,7 @@ def _flatten(resolution: dict) -> list[dict]:
                 continue
             rows.append({
                 "run_id": resolution["run_id"],
+                "kind": resolution.get("kind", "moonshot"),
                 "baseline_as_of": resolution["baseline_as_of"],
                 "resolved_at": resolution["resolved_at"],
                 "horizon": label,

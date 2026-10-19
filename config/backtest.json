@@ -41,5 +41,16 @@
             "low_upside_signal",
             "insufficient_evidence"
         ]
+    },
+    "research_baseline": {
+        "model_version": "v3.0-shadow-composite",
+        "horizon_days": {
+            "1M": 30,
+            "3M": 91,
+            "6M": 182,
+            "1Y": 365
+        },
+        "top_n": 25,
+        "quantiles": 5
     }
 }

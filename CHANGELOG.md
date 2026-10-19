@@ -31,6 +31,16 @@
 - Added median, win-rate, and 2%-trimmed-mean statistics per score quantile
   and median excess for top-N selections, because mean excess returns in
   this universe are dominated by a few extreme rebounds
+- Added `--freeze-research-baseline` to freeze a completed run's research
+  queue as an immutable forward-test cohort for Score v3, labelled into
+  cohorts carved from the v3-scored population: the top of the queue and
+  the top quintile against the bottom quintile and the names v3's filters
+  excluded, anchored on the run's completion date
+- Refused to overwrite an existing research baseline, since a baseline
+  that can be rewritten proves nothing
+- Taught the resolver about baseline kinds, reading each baseline's own
+  cohort split so Moonshot and research cohorts stay separate; added
+  `--baseline moonshot|research|all`
 - Added `--resolve-baselines` to measure a frozen Moonshot forward
   baseline against realized prices: every eligible horizon per candidate,
   benchmark-relative, with selected-versus-control cohort reports

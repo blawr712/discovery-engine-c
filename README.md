@@ -157,14 +157,33 @@ rows in live runs when `SEC_USER_AGENT` is set, labeled with an
 with a lag. `ins_*` signals can be weighted or used as exclusions in
 `scoring_v2` and `scoring_v3`.
 
-Measure a frozen Moonshot forward baseline against what actually happened:
+Freeze a completed run's research queue so Score v3 starts accumulating
+out-of-sample evidence:
+
+```powershell
+python main.py --freeze-research-baseline RUN_ID
+```
+
+v3's weights were chosen from a backtest, so every in-sample result is
+suspect. Freezing labels the queue into cohorts carved from the v3-scored
+population: the top 25 and the top quintile on the selected side, the
+bottom quintile and the names v3's exclusion filters removed on the
+control side. Horizons are fixed at 1M, 3M, 6M and 1Y from the run's
+completion date, which means freezing an older run can be resolvable
+immediately. Baselines are immutable: re-freezing the same run and model
+is refused rather than overwritten.
+
+Measure a frozen forward baseline against what actually happened:
 
 ```powershell
 python main.py --resolve-baselines RUN_ID
 python main.py --resolve-baselines RUN_ID --collect-prices
+python main.py --resolve-baselines RUN_ID --baseline research
 ```
 
-Resolution reads the baseline exported by `--calibrate-moonshot`, measures
+Resolution measures every frozen baseline for the run, Moonshot and
+research alike, taking each one's cohort split from the baseline itself.
+It measures
 every horizon that has become eligible, and compares the selected cohorts
 with the control cohorts by median, trimmed mean, and win rate. It works
 from cached prices alone; `--collect-prices` refreshes only the series that

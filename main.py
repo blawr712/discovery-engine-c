@@ -49,6 +49,7 @@ from src.run_state import (
     record_recalibration,
     record_backtest,
     record_baseline_resolution,
+    record_research_baseline,
     record_rescore,
     record_moonshot_analysis,
     record_moonshot_calibration,
@@ -75,11 +76,16 @@ from src.openai_research import OpenAIResearchProvider
 from src.research_audit import export_research_audit, finalize_research_review
 from src.research_ranking import build_research_queue, export_research_queue
 from src.baseline_resolution import (
+    available_baseline_kinds,
     export_baseline_resolution,
     load_forward_baseline,
     load_price_series,
     resolve_baseline,
     tickers_needing_prices,
+)
+from src.research_baseline import (
+    build_research_baseline,
+    export_research_baseline,
 )
 from src.rescore import rescore_results
 from src.sec_mapping import resolve_sec_ticker
@@ -206,9 +212,14 @@ def main(arguments=None):
             with_insiders=args.with_insiders,
         )
         return
+    if args.freeze_research_baseline:
+        freeze_saved_research_baseline(args.freeze_research_baseline)
+        return
     if args.resolve_baselines:
         resolve_saved_baseline(
-            args.resolve_baselines, collect_prices=args.collect_prices,
+            args.resolve_baselines,
+            collect_prices=args.collect_prices,
+            kind=args.baseline,
         )
         return
     if args.rescore_run:
@@ -459,11 +470,89 @@ def main(arguments=None):
     print(f"Manifest saved to: {run_state.manifest_path}")
 
 
-def resolve_saved_baseline(run_id: str, collect_prices: bool = False) -> None:
-    """Measure a frozen forward baseline against realized prices."""
-    settings = BACKTEST_CONFIG.get("baseline_resolution", {})
+def freeze_saved_research_baseline(run_id: str) -> None:
+    """Freeze a completed run's research queue as a forward-test cohort."""
     try:
-        baseline = load_forward_baseline(OUTPUT_DIR, run_id)
+        manifest, results = load_saved_run(RUN_DIR, run_id)
+        baseline_as_of = str(manifest["completed_at"])
+        queue, summary = build_research_queue(results)
+        if not any(
+            str(row.get("ranking_basis")) == "score_v3" for row in queue
+        ):
+            raise SystemExit(
+                f"Run {run_id} has no Score v3 rankings to freeze. "
+                "Rescore it first with --rescore-run."
+            )
+        baseline = build_research_baseline(queue, run_id, baseline_as_of)
+        artifacts = export_research_baseline(baseline, OUTPUT_DIR)
+        manifest_path = record_research_baseline(
+            RUN_DIR,
+            run_id,
+            {
+                "baseline_id": baseline["baseline_id"],
+                "baseline_as_of": baseline["baseline_as_of"],
+                "model_version": baseline["model_version"],
+                "candidate_count": baseline["candidate_count"],
+                "cohort_counts": baseline["cohort_counts"],
+                "queue_unchanged": True,
+                "official_scores_and_ranks_unchanged": True,
+                **artifacts,
+            },
+        )
+    except FileExistsError as error:
+        raise SystemExit(str(error)) from error
+    except (FileNotFoundError, OSError, TypeError, ValueError, KeyError) as error:
+        raise SystemExit(f"Unable to freeze research baseline: {error}") from error
+
+    print(f"Research baseline frozen for run: {run_id}")
+    print(f"Model: {baseline['model_version']} · anchored {baseline['baseline_as_of']}")
+    print(f"Baseline ID: {baseline['baseline_id'][:16]}")
+    print(f"Candidates: {baseline['candidate_count']}")
+    for name, count in baseline["cohort_counts"].items():
+        role = (
+            "selected" if name in baseline["selected_classifications"]
+            else "control" if name in baseline["control_classifications"]
+            else "observed"
+        )
+        print(f"  {name}: {count} ({role})")
+    horizons = baseline["config"]["horizon_days"]
+    first = baseline["candidates"][0]["horizons"] if baseline["candidates"] else {}
+    for label in sorted(horizons):
+        print(f"  {label} eligible {first.get(label, {}).get('eligible_at', '—')[:10]}")
+    print("Research queue and official scores: unchanged")
+    print(f"Baseline JSON saved to: {artifacts['research_baseline_json_path']}")
+    print(f"Baseline CSV saved to: {artifacts['research_baseline_csv_path']}")
+    print(f"Manifest updated: {manifest_path}")
+
+
+def resolve_saved_baseline(
+    run_id: str,
+    collect_prices: bool = False,
+    kind: str = "all",
+) -> None:
+    """Measure every requested frozen forward baseline against realized prices."""
+    settings = BACKTEST_CONFIG.get("baseline_resolution", {})
+    available = available_baseline_kinds(OUTPUT_DIR, run_id)
+    wanted_kinds = available if kind == "all" else [kind]
+    if not wanted_kinds or (kind == "all" and not available):
+        raise SystemExit(
+            f"No frozen baseline is exported for run {run_id}. Run "
+            "--calibrate-moonshot or --freeze-research-baseline first."
+        )
+    for index, baseline_kind in enumerate(wanted_kinds):
+        if index:
+            print()
+        _resolve_one_baseline(run_id, baseline_kind, collect_prices, settings)
+
+
+def _resolve_one_baseline(
+    run_id: str,
+    kind: str,
+    collect_prices: bool,
+    settings: dict,
+) -> None:
+    try:
+        baseline = load_forward_baseline(OUTPUT_DIR, run_id, kind=kind)
         tickers = [str(row["ticker"]) for row in baseline["candidates"]]
         benchmarks = sorted({
             str(row.get("benchmark") or "") for row in baseline["candidates"]
@@ -509,7 +598,7 @@ def resolve_saved_baseline(run_id: str, collect_prices: bool = False) -> None:
     except (FileNotFoundError, OSError, TypeError, ValueError, KeyError) as error:
         raise SystemExit(f"Unable to resolve forward baseline: {error}") from error
 
-    print(f"Forward baseline resolved for run: {run_id}")
+    print(f"Forward baseline resolved for run: {run_id} ({kind})")
     print(f"Baseline frozen {resolution['baseline_as_of']} · model {resolution['model_version']}")
     print(f"Candidates: {resolution['candidate_count']}")
     print(

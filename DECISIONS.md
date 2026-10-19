@@ -139,6 +139,43 @@ and the Sep 18 baseline adds a second cohort from 2026-10-07.
 **Where.** `--resolve-baselines`, artifacts under
 `baseline_resolution_20260823T133945Z-4e30d9d9.*`.
 
+## 2026-10-19: First out-of-sample month for Score v3 is encouraging but confounded
+
+**Decision.** Record it; promote nothing. Keep collecting horizons.
+
+**Evidence.** The Sep 18 run's research queue was frozen as a forward
+baseline anchored on 2026-09-18, and its one-month horizon (2026-10-18)
+resolved against realized prices. v3's weights were chosen from a backtest
+ending Aug 2026, so this month is genuinely unseen data. Benchmark-relative:
+
+| Cohort | n | Median excess | Win rate |
+|---|---|---|---|
+| Queue top 25 | 25 | -8.65% | 28.0% |
+| v3 quintile 5 | 131 | -2.04% | 40.8% |
+| v3 quintile 4 | 156 | -4.70% | 34.0% |
+| v3 quintile 3 | 156 | -8.34% | 22.4% |
+| v3 quintile 2 | 156 | -9.98% | 21.8% |
+| v3 quintile 1 | 155 | -19.36% | 13.7% |
+| v3 excluded | 572 | -19.76% | 11.8% |
+
+The quintile ladder is monotone on both median and win rate, a 17-point
+median spread from Q1 to Q5. The exclusion filters also held: excluded names
+landed with the worst quintile rather than in the middle.
+
+**Why it is not proof.** One month, one cohort. Micro caps fell roughly 8%
+against their benchmarks over the same window (see the Moonshot resolution),
+and v3 carries a low-volatility tilt, which outperforms in a falling market
+almost mechanically. A monotone ladder in one down month is consistent with
+both real skill and a defensive tilt paying off once. The 3M, 6M and 1Y
+horizons and future baselines will start to separate those.
+
+Note also that the top 25 underperformed quintile 5 as a whole (-8.65% vs
+-2.04%), which is the same thin-tail concentration the backtest showed: the
+very top of the queue is noisier than the band beneath it.
+
+**Where.** `--freeze-research-baseline`, `--resolve-baselines --baseline
+research`, artifacts under `baseline_resolution_research_*`.
+
 ## Standing caveats that gate any promotion to "official"
 
 - **Survivorship.** The universe is companies alive at the source run; the

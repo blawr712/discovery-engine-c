@@ -66,6 +66,11 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
         help="replay technical scoring point-in-time for a completed run's universe",
     )
     selection.add_argument(
+        "--freeze-research-baseline",
+        metavar="RUN_ID",
+        help="freeze a completed run's research queue as a forward-test cohort",
+    )
+    selection.add_argument(
         "--resolve-baselines",
         metavar="RUN_ID",
         help="measure a frozen Moonshot forward baseline against realized prices",
@@ -142,6 +147,12 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
         help="add point-in-time SEC XBRL fundamentals to --backtest-run (U.S. filers)",
     )
     parser.add_argument(
+        "--baseline",
+        choices=["moonshot", "research", "all"],
+        default="all",
+        help="which frozen baseline --resolve-baselines should measure",
+    )
+    parser.add_argument(
         "--collect-prices",
         action="store_true",
         help="refresh price history for --resolve-baselines instead of using cache only",
@@ -194,6 +205,8 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
         parser.error("--with-insiders requires --backtest-run")
     if args.collect_prices and args.resolve_baselines is None:
         parser.error("--collect-prices requires --resolve-baselines")
+    if args.baseline != "all" and args.resolve_baselines is None:
+        parser.error("--baseline requires --resolve-baselines")
     if args.balanced_research is not None and args.research_run is None:
         parser.error("--balanced-research requires --research-run")
     if args.top is not None and args.balanced_research is not None:

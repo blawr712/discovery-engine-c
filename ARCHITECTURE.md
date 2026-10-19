@@ -83,8 +83,15 @@ and caches the compact extract; `src/insider_signals.py` answers windowed
 "what was filed by this date" queries per issuer. The Backtest Engine and the
 live orchestration engine both consume these histories for U.S. filers.
 
+Forward Baselines (`src/research_baseline.py`, `--freeze-research-baseline`):
+freeze a completed run's research queue into labelled cohorts with fixed
+horizons anchored on the run's completion date, so Score v3 accumulates
+evidence on data its weights never saw. Cohorts are carved from the
+v3-scored population; names the filters excluded are kept as a control.
+Exports refuse to overwrite an existing baseline.
+
 Baseline Resolution (`src/baseline_resolution.py`, `--resolve-baselines`):
-read a frozen Moonshot forward baseline back and measure each eligible
+read a frozen forward baseline of either kind back and measure each eligible
 horizon against realized prices, comparing selected cohorts with control
 cohorts. Both prices for a return come from one provider series, and
 candidates whose prices stop before a horizon stay visible as unresolved
