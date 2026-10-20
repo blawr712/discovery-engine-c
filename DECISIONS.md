@@ -231,6 +231,16 @@ names as control, anchored 2026-10-20 with the 1M horizon eligible
 **Where.** `research_forward_baseline_20261019T223433Z-f13f71e5_v3.0-shadow-composite.*`,
 baseline ID `e954186803e40841`.
 
+**Amended 2026-10-20, after the split correction landed.** This baseline was
+frozen hours before share counts were split-adjusted, so it records a queue the
+corrected code would not reproduce exactly. Measured rather than assumed: the
+top 25 overlaps the corrected queue 24 of 25 names (OPAD out, KMDA in) and
+95.5% of all 3,023 candidates keep their cohort, with nearly every mover going
+one quintile. The selected and control sides are therefore materially intact,
+and the baseline is kept rather than re-frozen; discarding an immutable record
+for a 4.5% adjacent-bucket reshuffle would cost more than it is worth. The next
+baseline will be the first frozen on fully corrected scores.
+
 ## 2026-10-20: Split-adjusted share counts; a third of v3's measured edge was the bug
 
 **Decision.** Restate every reported share count into the price series'
