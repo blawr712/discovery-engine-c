@@ -468,3 +468,41 @@ class ExportTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class SplitAdjustmentSwitchTests(unittest.TestCase):
+    """The adjustment is on by default and can be turned off for a control."""
+
+    def test_default_config_enables_adjustment(self):
+        from src.backtest import _validated_config
+
+        self.assertTrue(_validated_config(None)["split_adjust_shares"])
+        self.assertFalse(
+            _validated_config({"split_adjust_shares": False})["split_adjust_shares"]
+        )
+
+    def test_unadjusted_control_gets_its_own_artifact_names(self):
+        universe, histories, benchmarks = _synthetic_universe(ticker_count=25)
+        analysis = build_backtest(
+            universe, histories, benchmarks, {"US": "SPY"}, "RUN1",
+            config={**CONFIG, "split_adjust_shares": False},
+        )
+        self.assertFalse(analysis["split_adjust_shares"])
+        with tempfile.TemporaryDirectory() as directory:
+            paths = export_backtest(analysis, Path(directory))
+
+        self.assertTrue(
+            paths["backtest_json_path"].endswith("backtest_RUN1_unadjusted.json")
+        )
+        self.assertIn("_unadjusted", paths["backtest_observations_csv_path"])
+
+    def test_adjusted_run_keeps_the_plain_name(self):
+        universe, histories, benchmarks = _synthetic_universe(ticker_count=25)
+        analysis = build_backtest(
+            universe, histories, benchmarks, {"US": "SPY"}, "RUN1", config=CONFIG,
+        )
+        self.assertTrue(analysis["split_adjust_shares"])
+        with tempfile.TemporaryDirectory() as directory:
+            paths = export_backtest(analysis, Path(directory))
+
+        self.assertTrue(paths["backtest_json_path"].endswith("backtest_RUN1.json"))

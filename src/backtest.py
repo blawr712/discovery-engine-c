@@ -343,7 +343,10 @@ def build_backtest(
         # Read from the raw frame: normalization keeps only Close and Volume,
         # and the closes here are adjusted to the frame's download date, so
         # every share count has to be restated into that same basis.
-        splits = SplitHistory.from_price_history(raw)
+        splits = (
+            SplitHistory.from_price_history(raw)
+            if config["split_adjust_shares"] else SplitHistory()
+        )
 
         for period_label, period_dates in periods:
             date = period_dates.get(benchmark_ticker)
@@ -465,6 +468,7 @@ def build_backtest(
         "model_version": config["model_version"],
         "source_run_id": run_id,
         "limit": limit,
+        "split_adjust_shares": bool(config["split_adjust_shares"]),
         "config": config,
         "limitations": list(LIMITATIONS)
         + (list(FUNDAMENTAL_LIMITATIONS) if with_fundamentals else [])
@@ -509,6 +513,9 @@ def export_backtest(
     # overwrites the full-universe result for the same source run.
     limit = analysis.get("limit")
     stem = f"{run_id}_limit{int(limit)}" if limit else run_id
+    # An unadjusted control must never overwrite the real result.
+    if analysis.get("split_adjust_shares") is False:
+        stem = f"{stem}_unadjusted"
 
     json_path = output_directory / f"backtest_{stem}.json"
     periods_path = output_directory / f"backtest_periods_{stem}.csv"
@@ -1110,6 +1117,9 @@ def _validated_config(config: dict | None) -> dict:
         {"1M": 21, "3M": 63, "6M": 126, "1Y": 252},
     )
     merged.setdefault("compounding_horizon", "1M")
+    # Measuring the split correction needs a control on the same universe,
+    # so the adjustment can be turned off deliberately. On is correct.
+    merged.setdefault("split_adjust_shares", True)
     merged.setdefault("top_n", [10, 25, 50, 100])
     merged.setdefault("quantiles", 5)
     merged.setdefault("minimum_cross_section", 50)
