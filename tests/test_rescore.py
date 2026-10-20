@@ -37,8 +37,10 @@ def _insider_history():
 class RescoreResultsTests(unittest.TestCase):
     def setUp(self):
         self.results = [
+            # 100 shares at 20.0 reconciles with the 2,000 market cap.
             {"ticker": "AAA", "status": "OK", "country": "US", "sector": "Tech",
              "discovery_score": 70, "score_confidence": 100, "market_cap": 2000.0,
+             "latest_close": 20.0,
              "v2_momentum_long": 0.5, "v2_high_proximity": 0.9, "v2_volatility": 0.3,
              "v2_momentum_medium": 0.2, "v2_volume_trend": 1.0, "v2_short_term_reversal": 0.0},
             {"ticker": "BBB", "status": "OK", "country": "US", "sector": "Tech",
@@ -62,8 +64,8 @@ class RescoreResultsTests(unittest.TestCase):
         )
         by = {row["ticker"]: row for row in rescored}
 
-        # AAA had no fundamentals: filled from cache, using the row's market cap
-        # for valuation ratios because it has no stored close.
+        # AAA had no fundamentals: filled from cache, with the share count
+        # and the stored close agreeing on the market cap.
         self.assertEqual(by["AAA"]["fundamentals_status"], "rescored")
         self.assertEqual(by["AAA"]["pit_revenue_ttm"], 1000.0)
         self.assertAlmostEqual(by["AAA"]["pit_sales_yield"], 1000.0 / 2000.0, places=6)

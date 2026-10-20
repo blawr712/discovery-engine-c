@@ -316,14 +316,19 @@ class MarketCapReconciliationTests(unittest.TestCase):
         self.assertEqual(signals["pit_market_cap"], self.consistent)
         self.assertEqual(signals["pit_market_cap_basis"], "reported_shares")
 
-    def test_missing_price_uses_the_supplied_market_cap(self):
+    def test_missing_price_yields_no_market_cap_or_ratios(self):
+        """A supplied cap is a cross-check, never a substitute for a price."""
         signals = self.history.signals_as_of(
             date(2026, 3, 1), price=None, market_cap=5000.0,
         )
 
-        self.assertEqual(signals["pit_market_cap"], 5000.0)
-        self.assertEqual(signals["pit_market_cap_basis"], "supplied")
-        self.assertAlmostEqual(signals["pit_sales_yield"], 640 / 5000, places=6)
+        self.assertIsNone(signals["pit_market_cap"])
+        self.assertIsNone(signals["pit_market_cap_basis"])
+        self.assertIsNone(signals["pit_sales_yield"])
+        self.assertIsNone(signals["pit_net_cash_to_market_cap"])
+        # Statement signals that need no market cap survive.
+        self.assertEqual(signals["pit_revenue_ttm"], 640.0)
+        self.assertEqual(signals["pit_net_cash"], 550.0)
 
     def test_boundary_factor_is_treated_as_a_unit_mismatch(self):
         """A one-for-two reverse split lands exactly on the tolerance."""

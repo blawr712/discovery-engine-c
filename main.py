@@ -665,8 +665,14 @@ def rescore_saved_run(run_id: str, refresh_fundamentals: bool = False) -> None:
                 sec_ticker, _ = resolver(row)
                 if sec_ticker is not None:
                     extract = sec_source.get_cached_company_facts(sec_ticker)
+                    # An extract can exist and still hold no usable facts;
+                    # the live run falls back to statements in that case, so
+                    # rescoring has to fall back too rather than return an
+                    # empty history and lose the fundamentals entirely.
                     if extract:
-                        return FundamentalHistory(extract)
+                        history = FundamentalHistory(extract)
+                        if history.has_data:
+                            return history
             statements = market_source.get_cached_financial_statements(ticker)
             if statements:
                 return FundamentalHistory(extract_from_statements(ticker, statements))

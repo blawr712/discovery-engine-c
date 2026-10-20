@@ -345,11 +345,14 @@ class FundamentalHistory:
     ) -> tuple[float | None, str | None]:
         """Pick a market cap and say where it came from.
 
-        ``shares * price`` is preferred, because it is contemporaneous with
-        the price and available in historical replay. It is only trusted when
-        nothing contradicts it: given an independently sourced market cap that
-        disagrees by more than the configured factor, the share count is on a
-        different basis from the price and the supplied figure wins.
+        ``shares * price`` is the only construction that produces a market
+        cap, because it is contemporaneous with the price and available in
+        historical replay. The supplied figure is a cross-check, not a
+        substitute: when the two disagree by more than the configured factor
+        the share count is on a different basis from the price and the
+        supplied figure replaces it, but with no price there is no market cap
+        and no valuation ratios. A name nobody can price is a name this model
+        was never fitted on and nobody can trade.
         """
         derived = (
             shares * price
@@ -363,7 +366,7 @@ class FundamentalHistory:
             else None
         )
         if derived is None:
-            return (supplied, "supplied" if supplied is not None else None)
+            return None, None
         if supplied is None:
             return derived, "reported_shares"
         tolerance = float(self.config["market_cap_reconciliation_tolerance"])
