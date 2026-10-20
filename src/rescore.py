@@ -6,6 +6,12 @@ locally cached data as of the run's completion date (SEC fundamentals and
 Form 4 insider activity for U.S. filers), then reapplies the configured
 shadow models so weight changes never require a new provider run. Official
 Discovery Scores, statuses, and ranks are never modified.
+
+Refreshing goes further and recomputes signals a run already has. A fix to
+how a signal is derived is worth no less than a fix to its weight, and both
+read the same cached extracts, so neither should need fresh provider calls.
+Rows whose source no longer resolves are cleared rather than kept, because a
+value that cannot be reproduced from any cached source cannot be checked.
 """
 
 from __future__ import annotations
@@ -29,13 +35,15 @@ def rescore_results(
     insider_lookup: Callable[[str], InsiderHistory | None] | None = None,
     countries: tuple[str, ...] = ("US",),
     fx_rates: dict[tuple[str, str], float] | None = None,
+    refresh_fundamentals: bool = False,
 ) -> tuple[list[dict], dict]:
     """Fill cached point-in-time signals and reapply shadow models.
 
-    Fundamentals are only filled where a row has none; insider signals are
-    always refreshed because they were absent from earlier runs and their
-    data set grows each quarter. Rows are copied and official fields are
-    asserted unchanged.
+    Fundamentals are only filled where a row has none, unless
+    ``refresh_fundamentals`` recomputes them everywhere a cached extract
+    exists. Insider signals are always refreshed because they were absent
+    from earlier runs and their data set grows each quarter. Rows are copied
+    and official fields are asserted unchanged.
     """
     as_of_date = as_of.date() if isinstance(as_of, datetime) else as_of
     countries = tuple(str(country).upper() for country in countries)
@@ -44,6 +52,7 @@ def rescore_results(
     stats = {
         "successful_rows": 0,
         "fundamentals_filled": 0,
+        "fundamentals_cleared": 0,
         "fundamentals_unavailable": 0,
         "insiders_filled": 0,
         "insiders_unavailable": 0,
@@ -59,7 +68,9 @@ def rescore_results(
             stats["not_applicable"] += 1
             continue
 
-        if fundamentals_lookup is not None and not _has_fundamentals(row):
+        if fundamentals_lookup is not None and (
+            refresh_fundamentals or not _has_fundamentals(row)
+        ):
             history = _safe(fundamentals_lookup, ticker)
             if history is not None and history.has_data:
                 multiplier, note = _fx_multiplier(row, history, fx_rates)
@@ -75,6 +86,15 @@ def rescore_results(
                 ))
                 row["fundamentals_status"] = "rescored" + note
                 stats["fundamentals_filled"] += 1
+            elif refresh_fundamentals and _has_fundamentals(row):
+                # These values came from a source that no longer resolves to
+                # this issuer, or is no longer cached. Either way they cannot
+                # be reproduced or checked, so keeping them would publish a
+                # number with no source. A later run can re-collect them.
+                for name in FUNDAMENTAL_SIGNAL_NAMES:
+                    row[name] = None
+                row["fundamentals_status"] = "cleared: source no longer resolves"
+                stats["fundamentals_cleared"] += 1
             else:
                 for name in FUNDAMENTAL_SIGNAL_NAMES:
                     row.setdefault(name, None)
@@ -107,6 +127,7 @@ def rescore_results(
         model["output_prefix"]: model["model_version"] for model in model_configs()
     }
     stats["as_of"] = as_of_date.isoformat()
+    stats["refresh_fundamentals"] = bool(refresh_fundamentals)
     return rescored, stats
 
 

@@ -142,3 +142,94 @@ class RunStateRescoreTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class RefreshFundamentalsTests(unittest.TestCase):
+    """Recomputing signals a run already has, for derivation fixes."""
+
+    def _row(self, **overrides):
+        row = {
+            "ticker": "AAA", "status": "OK", "country": "US", "sector": "Tech",
+            "discovery_score": 70, "score_confidence": 100,
+            "market_cap": 1000.0, "latest_close": 10.0,
+            "v2_momentum_long": 0.5, "v2_high_proximity": 0.9,
+            "v2_volatility": 0.3, "v2_momentum_medium": 0.2,
+            "v2_volume_trend": 1.0, "v2_short_term_reversal": 0.0,
+            # Stale values a bug produced: a 10x-low market cap and the
+            # inflated sales yield that follows from it.
+            "pit_revenue_ttm": 1000.0,
+            "pit_shares_outstanding": 10.0,
+            "pit_market_cap": 100.0,
+            "pit_sales_yield": 10.0,
+            "fundamentals_status": "collected",
+        }
+        row.update(overrides)
+        return row
+
+    def test_without_refresh_existing_values_are_left_alone(self):
+        rescored, stats = rescore_results(
+            [self._row()], date(2026, 6, 30),
+            fundamentals_lookup=lambda t: FundamentalHistory(_fundamental_extract()),
+        )
+
+        self.assertEqual(rescored[0]["pit_sales_yield"], 10.0)
+        self.assertEqual(rescored[0]["fundamentals_status"], "collected")
+        self.assertEqual(stats["fundamentals_filled"], 0)
+        self.assertFalse(stats["refresh_fundamentals"])
+
+    def test_refresh_recomputes_from_the_cached_extract(self):
+        rescored, stats = rescore_results(
+            [self._row()], date(2026, 6, 30),
+            fundamentals_lookup=lambda t: FundamentalHistory(_fundamental_extract()),
+            refresh_fundamentals=True,
+        )
+
+        # 100 shares at 10.0 is 1,000, reconciling with the supplied cap, so
+        # revenue of 1,000 gives a sales yield of 1.0 rather than the stale 10.
+        self.assertEqual(rescored[0]["pit_shares_outstanding"], 100.0)
+        self.assertEqual(rescored[0]["pit_market_cap"], 1000.0)
+        self.assertAlmostEqual(rescored[0]["pit_sales_yield"], 1.0, places=6)
+        self.assertEqual(rescored[0]["fundamentals_status"], "rescored")
+        self.assertEqual(stats["fundamentals_filled"], 1)
+        self.assertTrue(stats["refresh_fundamentals"])
+
+    def test_refresh_clears_rows_whose_source_no_longer_resolves(self):
+        """A value with no reproducible source is cleared, not kept."""
+        rescored, stats = rescore_results(
+            [self._row()], date(2026, 6, 30),
+            fundamentals_lookup=lambda t: None,
+            refresh_fundamentals=True,
+        )
+
+        self.assertIsNone(rescored[0]["pit_sales_yield"])
+        self.assertIsNone(rescored[0]["pit_revenue_ttm"])
+        self.assertIsNone(rescored[0]["pit_market_cap"])
+        self.assertEqual(
+            rescored[0]["fundamentals_status"], "cleared: source no longer resolves",
+        )
+        self.assertEqual(stats["fundamentals_cleared"], 1)
+        self.assertEqual(stats["fundamentals_filled"], 0)
+
+    def test_refresh_leaves_official_fields_untouched(self):
+        rows = [self._row(), self._row(ticker="BBB", discovery_score=40)]
+        rescored, _ = rescore_results(
+            rows, date(2026, 6, 30),
+            fundamentals_lookup=lambda t: FundamentalHistory(_fundamental_extract()),
+            refresh_fundamentals=True,
+        )
+
+        for before, after in zip(rows, rescored):
+            self.assertEqual(before["discovery_score"], after["discovery_score"])
+            self.assertEqual(before["status"], after["status"])
+
+    def test_refresh_respects_country_scope(self):
+        rescored, stats = rescore_results(
+            [self._row(ticker="CCC.TO", country="CA")], date(2026, 6, 30),
+            fundamentals_lookup=lambda t: None,
+            refresh_fundamentals=True,
+            countries=("US",),
+        )
+
+        self.assertEqual(rescored[0]["pit_sales_yield"], 10.0)
+        self.assertEqual(stats["not_applicable"], 1)
+        self.assertEqual(stats["fundamentals_cleared"], 0)

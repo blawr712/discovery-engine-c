@@ -223,7 +223,9 @@ def main(arguments=None):
         )
         return
     if args.rescore_run:
-        rescore_saved_run(args.rescore_run)
+        rescore_saved_run(
+            args.rescore_run, refresh_fundamentals=args.refresh_fundamentals,
+        )
         return
     if args.index_run:
         index_history_run(args.index_run)
@@ -643,7 +645,7 @@ def _resolve_one_baseline(
     print(f"Manifest updated: {manifest_path}")
 
 
-def rescore_saved_run(run_id: str) -> None:
+def rescore_saved_run(run_id: str, refresh_fundamentals: bool = False) -> None:
     """Reapply shadow models to a completed run using only cached data."""
     try:
         manifest, results = load_saved_run(RUN_DIR, run_id)
@@ -687,6 +689,7 @@ def rescore_saved_run(run_id: str) -> None:
             insider_lookup=insider_lookup,
             countries=tuple(FUNDAMENTALS_CONFIG.get("countries", ["US", "CA"])),
             fx_rates=fx_rates,
+            refresh_fundamentals=refresh_fundamentals,
         )
         run_state = RunState.open(RUN_DIR, run_id)
         for index, row in enumerate(rescored):
@@ -713,9 +716,12 @@ def rescore_saved_run(run_id: str) -> None:
         raise SystemExit(f"Unable to rescore run: {error}") from error
     print(f"Rescored run: {run_id} as of {stats['as_of']}")
     print("Models: " + ", ".join(f"{k} {v}" for k, v in stats["models"].items()))
+    if stats.get("refresh_fundamentals"):
+        print("Fundamentals: recomputed from cached extracts")
     print(
         f"Successful rows: {stats['successful_rows']}; fundamentals filled "
-        f"{stats['fundamentals_filled']}, unavailable {stats['fundamentals_unavailable']}; "
+        f"{stats['fundamentals_filled']}, cleared {stats['fundamentals_cleared']}, "
+        f"unavailable {stats['fundamentals_unavailable']}; "
         f"insiders filled {stats['insiders_filled']}, unavailable "
         f"{stats['insiders_unavailable']}; non-U.S. {stats['not_applicable']}"
     )

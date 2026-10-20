@@ -184,6 +184,15 @@ class CliTests(unittest.TestCase):
         with self.assertRaises(SystemExit):
             parse_args(["--history-summary", "--index-run", "run-123"])
 
+    def test_refresh_fundamentals_requires_a_rescore_run(self):
+        args = parse_args(["--rescore-run", "run-123", "--refresh-fundamentals"])
+
+        self.assertEqual(args.rescore_run, "run-123")
+        self.assertTrue(args.refresh_fundamentals)
+        self.assertFalse(parse_args(["--rescore-run", "run-123"]).refresh_fundamentals)
+        with self.assertRaises(SystemExit):
+            parse_args(["--refresh-fundamentals"])
+
     def test_compare_runs_accepts_two_ids_and_is_exclusive(self):
         args = parse_args(["--compare-runs", "old-run", "new-run"])
 

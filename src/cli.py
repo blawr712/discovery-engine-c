@@ -136,6 +136,11 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
         help="collect market-risk evidence for only the first COUNT Moonshot names",
     )
     parser.add_argument(
+        "--refresh-fundamentals",
+        action="store_true",
+        help="recompute cached point-in-time fundamentals during --rescore-run",
+    )
+    parser.add_argument(
         "--backtest-limit",
         type=_positive_integer,
         metavar="COUNT",
@@ -197,6 +202,8 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
         parser.error("--collect-market-risk requires --moonshot-run")
     if args.moonshot_limit is not None and not args.collect_market_risk:
         parser.error("--moonshot-limit requires --collect-market-risk")
+    if args.refresh_fundamentals and args.rescore_run is None:
+        parser.error("--refresh-fundamentals requires --rescore-run")
     if args.backtest_limit is not None and args.backtest_run is None:
         parser.error("--backtest-limit requires --backtest-run")
     if args.with_fundamentals and args.backtest_run is None:
