@@ -7,6 +7,10 @@ year-to-date and annual figures, and each derived value inherits the latest
 filing date of its inputs. Restated values only become visible from the date
 of the restating filing onward.
 
+Share counts are restated into the price series' basis before use, because a
+split between the filing and the price puts the two in different units; see
+``src/split_adjustment.py``.
+
 Valuation ratios need a market capitalisation, and the obvious construction
 -- the filing's share count times the traded price -- is wrong whenever the
 two are denominated differently. An ADS that bundles 20 ordinary shares, or a
@@ -25,6 +29,7 @@ from datetime import date, datetime, timedelta
 import math
 
 from src.data_sources.sec_xbrl_source import CONCEPTS
+from src.split_adjustment import SplitHistory
 
 # Lower is better: the position of a taxonomy tag in its concept's alias list.
 TAG_PRIORITY = {
@@ -78,6 +83,8 @@ SIGNAL_NAMES = (
     "pit_net_cash",
     "pit_shares_outstanding",
     "pit_share_change_1y",
+    "pit_split_factor",
+    "pit_split_ambiguous",
     "pit_market_cap",
     "pit_market_cap_basis",
     "pit_net_cash_to_market_cap",
@@ -233,11 +240,15 @@ class FundamentalHistory:
         as_of: date | datetime,
         price: float | None = None,
         market_cap: float | None = None,
+        splits: SplitHistory | None = None,
     ) -> dict:
         """Derive every point-in-time signal for a calendar date.
 
         Valuation ratios use ``shares_outstanding * price`` when a price is
         given; otherwise an explicit ``market_cap`` is used when supplied.
+        Share counts are restated into the price's basis when ``splits`` is
+        supplied, since the price series is split-adjusted and the filing's
+        count is not.
         """
         as_of = as_of.date() if isinstance(as_of, datetime) else as_of
         signals: dict[str, object] = {name: None for name in SIGNAL_NAMES}
@@ -304,16 +315,32 @@ class FundamentalHistory:
 
         shares = self.instant_as_of("shares_outstanding", as_of)
         if shares is not None and (as_of - shares.end).days <= maximum_age:
-            signals["pit_shares_outstanding"] = shares.value
+            splits = splits or SplitHistory()
+            # Restate into the price series' basis. The whole series is
+            # adjusted to its download date, not to the as-of date, so every
+            # split after the share count counts -- including ones that fall
+            # after as_of, which the historical closes already reflect.
+            factor = splits.factor_after(shares.end)
+            adjusted_shares = shares.value * factor
+            signals["pit_shares_outstanding"] = adjusted_shares
+            signals["pit_split_factor"] = factor
+            signals["pit_split_ambiguous"] = splits.has_event_between(
+                shares.end, shares.filed,
+            )
             year_ago = self.instant_as_of(
                 "shares_outstanding", as_of, latest_end=shares.end - timedelta(days=350),
             )
             if year_ago is not None and year_ago.value > 0 and (
                 shares.end - year_ago.end
             ).days <= maximum_age + 30:
-                signals["pit_share_change_1y"] = shares.value / year_ago.value - 1.0
+                # Both counts go onto one basis, or a split inside the year
+                # reads as dilution that never happened.
+                prior_factor = splits.factor_after(year_ago.end)
+                signals["pit_share_change_1y"] = (
+                    adjusted_shares / (year_ago.value * prior_factor) - 1.0
+                )
             resolved, basis = self._reconciled_market_cap(
-                shares.value, price, market_cap,
+                adjusted_shares, price, market_cap,
             )
             if resolved is not None:
                 signals["pit_market_cap"] = resolved

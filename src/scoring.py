@@ -18,6 +18,7 @@ from src.insider_signals import (
     SIGNAL_NAMES as INSIDER_SIGNAL_NAMES,
 )
 from src.scoring_v2 import compute_raw_signals
+from src.split_adjustment import SplitHistory
 
 from src.config import (
     SWEET_SPOT_MIN,
@@ -122,6 +123,9 @@ def calculate_scores(
             (as_of or datetime.now(timezone.utc)).date(),
             price=converted_price,
             market_cap=converted_market_cap,
+            # Split events come from the same frame as the closes, so the
+            # share count is restated into exactly that frame's basis.
+            splits=SplitHistory.from_price_history(price_history),
         )
     else:
         pit_signals = {name: None for name in FUNDAMENTAL_SIGNAL_NAMES}

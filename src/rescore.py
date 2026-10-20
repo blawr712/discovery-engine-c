@@ -22,6 +22,7 @@ from typing import Callable
 from src.fundamentals_pit import FundamentalHistory, SIGNAL_NAMES as FUNDAMENTAL_SIGNAL_NAMES
 from src.insider_signals import InsiderHistory, SIGNAL_NAMES as INSIDER_SIGNAL_NAMES
 from src.scoring_v2 import apply_all_models, model_configs
+from src.split_adjustment import SplitHistory
 
 
 OFFICIAL_FIELDS = ("discovery_score", "status", "reason_flags", "score_confidence")
@@ -33,6 +34,7 @@ def rescore_results(
     *,
     fundamentals_lookup: Callable[[str], FundamentalHistory | None] | None = None,
     insider_lookup: Callable[[str], InsiderHistory | None] | None = None,
+    splits_lookup: Callable[[str], SplitHistory | None] | None = None,
     countries: tuple[str, ...] = ("US",),
     fx_rates: dict[tuple[str, str], float] | None = None,
     refresh_fundamentals: bool = False,
@@ -41,7 +43,8 @@ def rescore_results(
 
     Fundamentals are only filled where a row has none, unless
     ``refresh_fundamentals`` recomputes them everywhere a cached extract
-    exists. Insider signals are always refreshed because they were absent
+    exists. ``splits_lookup`` supplies each listing's split events so share
+    counts land in the same basis as the cached closes. Insider signals are always refreshed because they were absent
     from earlier runs and their data set grows each quarter. Rows are copied
     and official fields are asserted unchanged.
     """
@@ -82,6 +85,13 @@ def rescore_results(
                     market_cap=(
                         market_cap * multiplier
                         if market_cap is not None and multiplier is not None else None
+                    ),
+                    # Without this the share count stays in the filing's basis
+                    # while the cached closes are split-adjusted, so a rescore
+                    # would quietly undo the correction a live run applied.
+                    splits=(
+                        _safe(splits_lookup, ticker)
+                        if splits_lookup is not None else None
                     ),
                 ))
                 row["fundamentals_status"] = "rescored" + note

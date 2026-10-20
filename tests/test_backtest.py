@@ -292,8 +292,9 @@ class FundamentalIntegrationTests(unittest.TestCase):
                 self.growth = growth
                 self.calls = []
 
-            def signals_as_of(self, as_of, price=None):
+            def signals_as_of(self, as_of, price=None, splits=None):
                 self.calls.append((as_of, price))
+                assert splits is not None, "backtest must pass split history"
                 return {
                     "pit_revenue_ttm": 1000.0,
                     "pit_revenue_growth_ttm": self.growth,

@@ -2,6 +2,7 @@ from datetime import date
 import unittest
 
 from src.fundamentals_pit import FundamentalHistory, SIGNAL_NAMES
+from src.split_adjustment import SplitEvent, SplitHistory
 
 
 def _fact(start, end, filed, val):
@@ -340,3 +341,103 @@ class MarketCapReconciliationTests(unittest.TestCase):
         self.assertEqual(
             signals["pit_market_cap_basis"], "reported_shares_unreconciled",
         )
+
+
+class SplitAdjustedSharesTests(unittest.TestCase):
+    """Share counts must be restated into the price series' basis.
+
+    The series is adjusted to its download date, so a split that happens
+    *after* the as-of date is already reflected in that date's close. The
+    share count from a filing before it is not, and the gap is the whole bug:
+    a chronic reverse-splitter's historical market cap is overstated by the
+    cumulative ratio, pinning its sales yield to zero on a future event.
+    """
+
+    def setUp(self):
+        self.history = FundamentalHistory(_extract())
+        # 1,100 shares at 2.0, filed 2026-02-15 for period end 2025-12-31.
+        self.unadjusted = 2200.0
+
+    def test_split_after_the_as_of_date_still_adjusts(self):
+        """The case a naive implementation gets wrong."""
+        splits = SplitHistory([SplitEvent(date(2026, 8, 14), 0.05)])
+        signals = self.history.signals_as_of(
+            date(2026, 3, 1), price=2.0, splits=splits,
+        )
+
+        self.assertAlmostEqual(signals["pit_shares_outstanding"], 55.0, places=6)
+        self.assertAlmostEqual(signals["pit_split_factor"], 0.05, places=9)
+        self.assertAlmostEqual(signals["pit_market_cap"], 110.0, places=6)
+        self.assertAlmostEqual(signals["pit_sales_yield"], 640 / 110, places=6)
+
+    def test_split_before_the_share_count_is_already_reflected(self):
+        splits = SplitHistory([SplitEvent(date(2025, 6, 1), 0.05)])
+        signals = self.history.signals_as_of(
+            date(2026, 3, 1), price=2.0, splits=splits,
+        )
+
+        self.assertAlmostEqual(signals["pit_shares_outstanding"], 1100.0, places=6)
+        self.assertAlmostEqual(signals["pit_split_factor"], 1.0, places=9)
+        self.assertAlmostEqual(signals["pit_market_cap"], self.unadjusted, places=6)
+
+    def test_no_splits_leaves_everything_unchanged(self):
+        signals = self.history.signals_as_of(date(2026, 3, 1), price=2.0)
+
+        self.assertAlmostEqual(signals["pit_shares_outstanding"], 1100.0, places=6)
+        self.assertAlmostEqual(signals["pit_split_factor"], 1.0, places=9)
+        self.assertAlmostEqual(signals["pit_market_cap"], self.unadjusted, places=6)
+        self.assertFalse(signals["pit_split_ambiguous"])
+
+    def test_forward_split_raises_the_share_count(self):
+        splits = SplitHistory([SplitEvent(date(2026, 2, 20), 3.0)])
+        signals = self.history.signals_as_of(
+            date(2026, 3, 1), price=2.0, splits=splits,
+        )
+
+        self.assertAlmostEqual(signals["pit_shares_outstanding"], 3300.0, places=6)
+        self.assertAlmostEqual(signals["pit_market_cap"], 6600.0, places=6)
+
+    def test_dilution_is_measured_on_one_basis(self):
+        """Comparing two counts across a split understates dilution badly.
+
+        The extract reports 1,000 shares a year before 1,100, which reads as
+        10% dilution. If a one-for-twenty reverse split fell between them the
+        earlier 1,000 became 50, so reporting 1,100 after it is a 22-fold
+        increase. v3 excludes its top dilution quintile, and chronic
+        reverse-splitters were escaping that filter by this exact arithmetic.
+        """
+        plain = self.history.signals_as_of(date(2026, 3, 1), price=2.0)
+        self.assertAlmostEqual(plain["pit_share_change_1y"], 0.1, places=6)
+
+        splits = SplitHistory([SplitEvent(date(2025, 6, 1), 0.05)])
+        signals = self.history.signals_as_of(
+            date(2026, 3, 1), price=2.0, splits=splits,
+        )
+        self.assertAlmostEqual(signals["pit_share_change_1y"], 21.0, places=6)
+
+    def test_split_outside_the_comparison_window_leaves_dilution_alone(self):
+        """Both counts already share a basis, so nothing should move."""
+        splits = SplitHistory([SplitEvent(date(2026, 8, 14), 0.05)])
+        signals = self.history.signals_as_of(
+            date(2026, 3, 1), price=2.0, splits=splits,
+        )
+
+        self.assertAlmostEqual(signals["pit_share_change_1y"], 0.1, places=6)
+
+    def test_split_between_period_end_and_filing_is_flagged(self):
+        splits = SplitHistory([SplitEvent(date(2026, 1, 15), 0.5)])
+        signals = self.history.signals_as_of(
+            date(2026, 3, 1), price=2.0, splits=splits,
+        )
+
+        self.assertTrue(signals["pit_split_ambiguous"])
+
+    def test_adjusted_shares_feed_the_reconciliation_check(self):
+        """A split-adjusted cap that now agrees must not be overridden."""
+        splits = SplitHistory([SplitEvent(date(2026, 8, 14), 0.05)])
+        signals = self.history.signals_as_of(
+            date(2026, 3, 1), price=2.0, market_cap=110.0, splits=splits,
+        )
+
+        self.assertAlmostEqual(signals["pit_market_cap"], 110.0, places=6)
+        self.assertEqual(signals["pit_market_cap_basis"], "reported_shares")

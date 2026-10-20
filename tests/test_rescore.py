@@ -7,6 +7,7 @@ import unittest
 from src.fundamentals_pit import FundamentalHistory
 from src.insider_signals import InsiderHistory
 from src.rescore import rescore_results
+from src.split_adjustment import SplitEvent, SplitHistory
 from src.run_state import RunState, load_saved_run, record_rescore
 
 
@@ -235,3 +236,53 @@ class RefreshFundamentalsTests(unittest.TestCase):
         self.assertEqual(rescored[0]["pit_sales_yield"], 10.0)
         self.assertEqual(stats["not_applicable"], 1)
         self.assertEqual(stats["fundamentals_cleared"], 0)
+
+
+class SplitAdjustedRescoreTests(unittest.TestCase):
+    """A rescore must not undo the split correction a live run applied."""
+
+    def _row(self):
+        return {
+            "ticker": "AAA", "status": "OK", "country": "US", "sector": "Tech",
+            "discovery_score": 70, "score_confidence": 100,
+            "market_cap": 100.0, "latest_close": 20.0,
+            "v2_momentum_long": 0.5, "v2_high_proximity": 0.9,
+            "v2_volatility": 0.3, "v2_momentum_medium": 0.2,
+            "v2_volume_trend": 1.0, "v2_short_term_reversal": 0.0,
+        }
+
+    def test_split_history_reaches_the_derivation(self):
+        # 100 shares at 20.0 is 2,000 unadjusted; a one-for-twenty reverse
+        # split after the filing restates that to 5 shares and 100.
+        splits = SplitHistory([SplitEvent(date(2026, 7, 1), 0.05)])
+        rescored, _ = rescore_results(
+            [self._row()], date(2026, 6, 30),
+            fundamentals_lookup=lambda t: FundamentalHistory(_fundamental_extract()),
+            splits_lookup=lambda t: splits,
+        )
+
+        self.assertAlmostEqual(rescored[0]["pit_shares_outstanding"], 5.0, places=6)
+        self.assertAlmostEqual(rescored[0]["pit_split_factor"], 0.05, places=9)
+        self.assertAlmostEqual(rescored[0]["pit_market_cap"], 100.0, places=6)
+        self.assertEqual(rescored[0]["pit_market_cap_basis"], "reported_shares")
+
+    def test_no_splits_lookup_leaves_counts_as_reported(self):
+        rescored, _ = rescore_results(
+            [self._row()], date(2026, 6, 30),
+            fundamentals_lookup=lambda t: FundamentalHistory(_fundamental_extract()),
+        )
+
+        self.assertAlmostEqual(rescored[0]["pit_shares_outstanding"], 100.0, places=6)
+        self.assertAlmostEqual(rescored[0]["pit_split_factor"], 1.0, places=9)
+
+    def test_a_failing_splits_lookup_is_isolated(self):
+        def boom(ticker):
+            raise RuntimeError("cache unreadable")
+
+        rescored, _ = rescore_results(
+            [self._row()], date(2026, 6, 30),
+            fundamentals_lookup=lambda t: FundamentalHistory(_fundamental_extract()),
+            splits_lookup=boom,
+        )
+
+        self.assertAlmostEqual(rescored[0]["pit_shares_outstanding"], 100.0, places=6)

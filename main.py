@@ -37,6 +37,7 @@ from src.data_sources.sec_insider_source import (
 )
 from src.data_sources.sec_xbrl_source import SecXbrlSource
 from src.fundamentals_pit import FundamentalHistory
+from src.split_adjustment import SplitHistory
 from src.insider_signals import build_insider_index, quarter_end
 from src.calibration import build_calibration, export_calibration
 from src.scoring_v2 import apply_all_models
@@ -678,6 +679,13 @@ def rescore_saved_run(run_id: str, refresh_fundamentals: bool = False) -> None:
                 return FundamentalHistory(extract_from_statements(ticker, statements))
             return None
 
+        def splits_lookup(ticker: str):
+            """Split events from the same cached frame the run priced from."""
+            frame = market_source.get_cached_price_history(ticker)
+            if frame is None:
+                return None
+            return SplitHistory.from_price_history(frame)
+
         if sec_source is not None:
             insider_source = build_sec_insider_source(required=False)
             if insider_source is not None:
@@ -693,6 +701,7 @@ def rescore_saved_run(run_id: str, refresh_fundamentals: bool = False) -> None:
             results, as_of,
             fundamentals_lookup=fundamentals_lookup,
             insider_lookup=insider_lookup,
+            splits_lookup=splits_lookup,
             countries=tuple(FUNDAMENTALS_CONFIG.get("countries", ["US", "CA"])),
             fx_rates=fx_rates,
             refresh_fundamentals=refresh_fundamentals,

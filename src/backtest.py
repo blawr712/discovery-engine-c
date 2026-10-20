@@ -33,6 +33,7 @@ from src.scoring import (
     score_trend_strength,
     score_volume_acceleration,
 )
+from src.split_adjustment import SplitHistory
 from src.scoring_v2 import (
     PRICE_SIGNALS,
     compute_raw_signals,
@@ -339,6 +340,10 @@ def build_backtest(
         static_sector_score = score_sector_bonus(row["sector"])
         fundamental_history = fundamental_histories.get(ticker)
         insider_history = insider_histories.get(ticker)
+        # Read from the raw frame: normalization keeps only Close and Volume,
+        # and the closes here are adjusted to the frame's download date, so
+        # every share count has to be restated into that same basis.
+        splits = SplitHistory.from_price_history(raw)
 
         for period_label, period_dates in periods:
             date = period_dates.get(benchmark_ticker)
@@ -394,6 +399,7 @@ def build_backtest(
                 observation.update(fundamental_history.signals_as_of(
                     date.date(),
                     price=float(start_close) if _positive(start_close) else None,
+                    splits=splits,
                 ))
             if insider_history is not None:
                 observation.update(insider_history.signals_as_of(
