@@ -231,6 +231,82 @@ names as control, anchored 2026-10-20 with the 1M horizon eligible
 **Where.** `research_forward_baseline_20261019T223433Z-f13f71e5_v3.0-shadow-composite.*`,
 baseline ID `e954186803e40841`.
 
+## 2026-10-20: Split-adjusted share counts; a third of v3's measured edge was the bug
+
+**Decision.** Restate every reported share count into the price series'
+split-adjusted basis before deriving valuation ratios. Treat the corrected
+numbers below as the evidence of record and every earlier in-sample figure in
+this file as superseded.
+
+**Evidence.** A price series is adjusted to the date it was downloaded, so a
+share count from an earlier filing is in different units. 682 of 2,071 filers
+with price history (32.9%) have at least one split, and 39,193 of 177,856
+month-end observations (22.0%) have a split after them. Serial reverse-
+splitters compound absurdly: XTIA to 1.5e12, GPUS to 7.8e8, TNXP to 6.4e8.
+
+This was look-ahead bias, not noise. A market cap overstated a million-fold
+gives a sales yield of essentially zero, ranking the name maximally
+expensive, and chronic reverse-splitters do go on to collapse. "Low sales
+yield predicts bad returns" was partly "will reverse-split soon predicts bad
+returns", which is a future fact.
+
+Measured as a controlled experiment: the same run universe, the same 256,294
+observations, backtested twice with `split_adjust_shares` on and off. 1Y
+information coefficients:
+
+| Signal | Unadjusted | Adjusted | Change |
+|---|---|---|---|
+| Sales yield | 0.251 | 0.133 | -0.119 |
+| Net cash / market cap | 0.088 | **-0.018** | -0.106 |
+| Earnings yield | 0.046 | **0.142** | +0.096 |
+| Free-cash-flow yield | 0.069 | **0.154** | +0.085 |
+| Share dilution, 1Y | -0.110 | **-0.175** | -0.065 |
+| **Score v3** | **0.129** | **0.083** | **-0.046** |
+| Score v2 | 0.039 | 0.039 | 0.000 |
+| Technical score | -0.031 | -0.031 | -0.001 |
+
+Every signal with no market capitalisation in it is unchanged to three
+decimals: free-cash-flow margin 0.137, operating margin 0.122, OCF margin
+0.131, gross margin -0.003, revenue growth -0.041, revenue acceleration
+0.004, cash conversion 0.011. Score v2 and the technical score, which never
+touch a share count, are identical. Only the ratios that divide by market cap
+moved, which is what makes this the fix rather than a different universe.
+
+Score v3's top 25 compounded 993% unadjusted against 496% adjusted, on a 268%
+benchmark. Roughly half the flagship basket's apparent decade of outperformance
+was the bug.
+
+**The asymmetry is the interesting part.** The distortion inflated sales yield
+and net cash while *degrading* earnings yield and free-cash-flow yield. For
+sales yield the error pointed the same way as the outcome, so it masqueraded
+as skill; for earnings and cash-flow yields it was closer to pure noise, so
+removing it recovered signal that was there all along. Corrected, the best
+value signals are free-cash-flow yield (0.154) and earnings yield (0.142), not
+sales yield (0.133).
+
+**Dilution also changes.** Comparing share counts across a reverse split
+understates issuance badly: 1,000 shares becoming 1,100 across a one-for-
+twenty reverse split is a 22-fold increase, not 10%. On one basis, dilution is
+the strongest single signal in the study at -0.175 (t -12.9), negative in 90%
+of months, ahead of every value signal.
+
+**What survives.** Score v3 remains the best model by a wide margin: 1Y IC
+0.083 (t 11.7), positive in 90% of months, a monotone quintile ladder on both
+median and win rate (Q1 -23.8% / 31.1% win to Q5 -14.2% / 35.7% win), top-25
+median -13.3% with a 38.0% hit rate, and top 25 / 50 / 100 compounding to
+496% / 434% / 366% against 268%. The top 10 still underperforms the top 25,
+the same thin-tail concentration seen before.
+
+**What this does not settle.** v3's weights were chosen from the contaminated
+ranking, so they are now demonstrably misaligned with the corrected evidence:
+net cash carries a positive weight while measuring -0.018, and sales yield is
+weighted above free-cash-flow and earnings yield, which now beat it.
+Re-deriving the weights is a separate decision and is not taken here.
+
+**Where.** `src/split_adjustment.py`, `pit_split_factor`,
+`split_adjust_shares` in `config/backtest.json`, artifacts
+`backtest_20261019T223433Z-f13f71e5.json` and its `_unadjusted` control.
+
 ## Standing caveats that gate any promotion to "official"
 
 - **Survivorship.** The universe is companies alive at the source run; the
@@ -249,15 +325,18 @@ baseline ID `e954186803e40841`.
 - **Picks versus baskets.** Even v3's top 25 has a negative median and a
   ~38% hit rate; the edge is a fatter right tail within the top group. It
   works as a basket, not as individual conviction.
-- **The backtest shares the market-cap bug.** Historical replay has no
-  contemporaneous provider market cap to reconcile against, so the guard
-  added on 2026-10-20 cannot run there, and every published v3 result was
-  fitted on sales yields that were wrong for roughly 3% of names. The
-  direction of the distortion is not random: a reverse split between filing
-  and price overstates the market cap and makes a distressed name look
-  expensive, while an ADS understates it and makes a name look cheap. Both
-  correlate with subsequent returns, so sales yield's 1Y IC of 0.24 is to
-  some unknown degree an artifact. Closing this needs split-adjusted share
-  counts in the extract, not a cross-check, and until then every in-sample
-  v3 figure in this file carries that asterisk. The forward baselines are
-  unaffected, since they are scored by the live path.
+- **Splits: fixed.** Share counts are restated into the price basis in every
+  path, measured, and reported above. Superseded figures elsewhere in this
+  file are left in place as a record of what was believed at the time.
+- **Share-class and ADS mismatches: still open in replay.** An ADS that
+  bundles ordinary shares leaves no event to read, and a live run catches it
+  only by reconciling against the provider's market cap, which historical
+  replay does not have. 54 live names are affected, so call it 2% of filers.
+  This residual is far less dangerous than the split bug was, because the
+  factor is constant per filer rather than correlated with future events: it
+  adds cross-sectional noise to those names' levels instead of leaking the
+  future. Closing it needs a per-filer unit factor carried in the extract.
+- **v3's weights predate the corrected evidence.** They were fitted on the
+  contaminated signal ranking. Until they are re-derived, v3 weights net cash
+  positively against a measured -0.018 and ranks sales yield above the two
+  signals that now beat it.
