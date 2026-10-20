@@ -81,12 +81,26 @@ valuation ratios.
 
 Market capitalisation for those ratios is the filing's share count times the
 traded price, which is the only construction available in historical replay.
-The two are denominated differently whenever an ADS bundles ordinary shares
-or a reverse split falls between the filing date and the price date, so a
-live run reconciles the result against the provider's market cap and uses
-that figure instead when they disagree beyond a configured factor;
-`pit_market_cap_basis` records which source won. With no price there is no
-market cap and no valuation ratios.
+The two are denominated differently in two ways, handled separately.
+
+Splits are corrected (`src/split_adjustment.py`). A price series is adjusted
+to the date it was downloaded, so a share count from an earlier filing is in
+a different unit; `SplitHistory` reads the split events out of the same frame
+as the closes, so cached prices and the events that restate them always
+agree, and multiplies each share count by the cumulative ratio of the splits
+after it. `pit_split_factor` records the adjustment, and share-count change
+is measured on one basis so a reverse split cannot read as dilution. A split
+between a share fact's period end and its filing may or may not have been
+retroactively restated, which nothing in the extract says, so those facts
+are flagged `pit_split_ambiguous` rather than guessed.
+
+ADS ratios and multi-class structures are not splits and leave no event to
+read. A live run therefore reconciles the result against the provider's
+market cap and uses that figure instead when the two disagree beyond a
+configured factor; `pit_market_cap_basis` records which source won.
+Historical replay has no contemporaneous provider figure, so this class of
+mismatch is uncorrected there. With no price there is no market cap and no
+valuation ratios.
 
 Insiders (point-in-time): `src/data_sources/sec_insider_source.py` downloads
 the SEC's quarterly insider-transaction data sets once each, keeps only
@@ -117,7 +131,10 @@ benchmark-relative returns. It reuses the scoring functions rather than
 re-implementing them, reads its universe from a completed saved run, collects
 long price histories through the same cached, paced, retried provider stack,
 and never changes official scores or ranks. Its configuration lives in
-`config/backtest.json`, outside the run fingerprint.
+`config/backtest.json`, outside the run fingerprint. `split_adjust_shares`
+defaults to on and exists so the split correction can be measured against a
+control on the same universe; an unadjusted run writes to its own artifact
+names.
 
 Reporting Engine: Export reports and serve the local dashboard. Moonshot
 terminal queries read deterministic analysis, calibration, and immutable

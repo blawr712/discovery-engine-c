@@ -57,6 +57,19 @@
   source no longer resolves rather than keeping a number with no provenance
 - Fell back to cached statements when a cached SEC extract exists but holds
   no usable facts, matching what the live run does
+- Restated reported share counts into the price series' split-adjusted basis,
+  because 22% of month-end observations in the ten-year window have a split
+  after them and a chronic reverse-splitter's historical market cap was
+  overstated by up to twelve orders of magnitude, driving its sales yield to
+  zero on the strength of a future event
+- Read split events from the same price frame as the closes, so cached prices
+  and the events that restate them can never disagree
+- Measured share-count change on a single basis, so a reverse split no longer
+  reads as dilution and chronic diluters stop escaping v3's dilution filter
+- Flagged share facts with a split between their period end and their filing
+  as `pit_split_ambiguous` instead of guessing whether the filing restated
+- Added `split_adjust_shares` to the backtest configuration so the correction
+  can be measured against a control on the same universe
 - Taught the resolver about baseline kinds, reading each baseline's own
   cohort split so Moonshot and research cohorts stay separate; added
   `--baseline moonshot|research|all`
