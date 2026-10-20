@@ -38,6 +38,25 @@
   excluded, anchored on the run's completion date
 - Refused to overwrite an existing research baseline, since a baseline
   that can be rewritten proves nothing
+- Reconciled point-in-time market capitalisation against an independently
+  sourced figure, because a filing's share count and the traded price are
+  denominated differently whenever an ADS bundles ordinary shares or a
+  reverse split falls between the filing and the price, which silently
+  scaled every valuation ratio by that factor for 2.9% of names
+- Recorded which source each market capitalisation came from in
+  `pit_market_cap_basis`, and dropped the year-over-year share ratio when it
+  spans the same unit break
+- Stopped deriving valuation ratios with no price at all, so a name nobody
+  can price cannot reach the top of the queue on fundamentals alone
+- Required registrant names to agree exactly once reduced, or share at least
+  two meaningful tokens, after stopword removal collapsed "Q2 Holdings,
+  Inc." to one token and let a pre-revenue explorer inherit a fintech's
+  revenue and share count
+- Added `--refresh-fundamentals` to `--rescore-run` so a fix to how a signal
+  is derived reaches saved runs from cached extracts, clearing rows whose
+  source no longer resolves rather than keeping a number with no provenance
+- Fell back to cached statements when a cached SEC extract exists but holds
+  no usable facts, matching what the live run does
 - Taught the resolver about baseline kinds, reading each baseline's own
   cohort split so Moonshot and research cohorts stay separate; added
   `--baseline moonshot|research|all`

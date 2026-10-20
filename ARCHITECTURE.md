@@ -51,7 +51,10 @@ models to a completed run using only local caches. Missing SEC fundamentals
 and Form 4 signals are filled as of the run's completion date, checkpoints
 and reports are rewritten, and official scores, statuses, and ranks are
 asserted unchanged. Weight changes therefore never require a new provider
-run.
+run. `--refresh-fundamentals` recomputes signals a run already has, so a fix
+to how a signal is derived costs no provider calls either; rows whose source
+no longer resolves are cleared rather than kept, because a value that cannot
+be reproduced from a cached source cannot be checked.
 
 Research Engine: Generate explainable research summaries. Packet selection
 follows the research queue (`src/research_ranking.py`), which orders
@@ -75,6 +78,15 @@ and annual statements into the same extract shape with estimated filing dates
 and an explicit `estimated_filing_dates` quality label. Reporting currencies
 are tracked per filer and trading-currency prices are converted before
 valuation ratios.
+
+Market capitalisation for those ratios is the filing's share count times the
+traded price, which is the only construction available in historical replay.
+The two are denominated differently whenever an ADS bundles ordinary shares
+or a reverse split falls between the filing date and the price date, so a
+live run reconciles the result against the provider's market cap and uses
+that figure instead when they disagree beyond a configured factor;
+`pit_market_cap_basis` records which source won. With no price there is no
+market cap and no valuation ratios.
 
 Insiders (point-in-time): `src/data_sources/sec_insider_source.py` downloads
 the SEC's quarterly insider-transaction data sets once each, keeps only

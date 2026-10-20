@@ -176,6 +176,61 @@ very top of the queue is noisier than the band beneath it.
 **Where.** `--freeze-research-baseline`, `--resolve-baselines --baseline
 research`, artifacts under `baseline_resolution_research_*`.
 
+## 2026-10-20: Two data bugs put wrong names at the top of the queue
+
+**Decision.** Reconcile point-in-time market capitalisation against an
+independently sourced figure, and never accept a single shared name token as
+evidence of a shared issuer. Both fixes are guards on inputs, not changes to
+v3's weights.
+
+**Evidence.** Reviewing the Oct 19 run's queue before freezing a baseline on
+it, the top two anomalies were both data errors rather than picks.
+
+Valuation ratios divided by the filing's share count times the traded price.
+When the two are denominated differently every yield is scaled by that
+factor, and the multipliers were exact giveaways: BYND and PSNYW 30.000x,
+DDI 0.050x, from reverse splits falling between the filing and the price and
+from ADSs bundling ordinary shares. 78 of 2,663 names with fundamentals
+(2.9%) were affected. DDI held rank 1 on a sales yield of 10.47 that is
+really 0.52; corrected, it sits at 128.
+
+Separately, stopword removal reduces "Q2 Holdings, Inc." to the single token
+`q2`, which overlaps "Q2 METALS CORP" at exactly the 0.5 similarity
+threshold and passed. Q2 Metals, a pre-revenue Quebec lithium explorer,
+inherited Q2 Holdings' $846M revenue and share count and ranked 4th. The
+tighter rule was checked against all 33 interlisted names in the run and
+flips exactly one decision, the wrong one.
+
+After the fixes, the only names moving more than 25 places in the old top
+100 are DDI, QTWO.V, CLPR and ZKIN, the last two the same unit mismatch at
+2.6x and 9.2x. The new top 25 derives every market cap from reported shares.
+
+**Why it matters beyond these four names.** Sales yield is v3's heaviest
+signal and the one with the strongest evidence behind it (1Y IC 0.24). A bug
+in its denominator lands hardest exactly where the model is most confident,
+and both of these names reached the top on fundamentals the queue presented
+without qualification.
+
+**Where.** `src/fundamentals_pit.py` (`pit_market_cap_basis`),
+`src/sec_mapping.py` (`names_match`), `--rescore-run
+--refresh-fundamentals`.
+
+## 2026-10-20: Second Score v3 forward baseline frozen on corrected data
+
+**Decision.** Freeze the Oct 19 run's queue as the second v3 forward
+baseline, after the fixes above and not before.
+
+**Evidence.** Baselines are immutable by design, so freezing one on a queue
+whose top two names were data errors would have put those errors permanently
+into the forward-test record. The run was rescored from cached extracts
+first (2,989 rows recomputed, 1 cleared), then frozen: 3,023 candidates, 25
+top-N and 257 in quintile 5 selected, 281 in quintile 1 and 942 excluded
+names as control, anchored 2026-10-20 with the 1M horizon eligible
+2026-11-19.
+
+**Where.** `research_forward_baseline_20261019T223433Z-f13f71e5_v3.0-shadow-composite.*`,
+baseline ID `e954186803e40841`.
+
 ## Standing caveats that gate any promotion to "official"
 
 - **Survivorship.** The universe is companies alive at the source run; the
@@ -194,3 +249,15 @@ research`, artifacts under `baseline_resolution_research_*`.
 - **Picks versus baskets.** Even v3's top 25 has a negative median and a
   ~38% hit rate; the edge is a fatter right tail within the top group. It
   works as a basket, not as individual conviction.
+- **The backtest shares the market-cap bug.** Historical replay has no
+  contemporaneous provider market cap to reconcile against, so the guard
+  added on 2026-10-20 cannot run there, and every published v3 result was
+  fitted on sales yields that were wrong for roughly 3% of names. The
+  direction of the distortion is not random: a reverse split between filing
+  and price overstates the market cap and makes a distressed name look
+  expensive, while an ADS understates it and makes a name look cheap. Both
+  correlate with subsequent returns, so sales yield's 1Y IC of 0.24 is to
+  some unknown degree an artifact. Closing this needs split-adjusted share
+  counts in the extract, not a cross-check, and until then every in-sample
+  v3 figure in this file carries that asterisk. The forward baselines are
+  unaffected, since they are scored by the live path.

@@ -18,10 +18,13 @@ env/
 data/raw/
 data/processed/
 data/exports/*
-# Keep immutable Moonshot forward-test baselines and their validation
-# rows: small, auditable records of what the model claimed on a date.
+# Keep immutable forward-test baselines and their validation rows:
+# auditable records of what a model claimed on a date. The research
+# baselines are the record Score v3 is judged against, so they are tracked
+# in the same way; the CSV only, since the JSON repeats it at 4x the size.
 !data/exports/moonshot_forward_baseline_*.csv
 !data/exports/moonshot_validation_*.csv
+!data/exports/research_forward_baseline_*.csv
 data/outputs/
 data/cache/
 data/runs/
