@@ -110,9 +110,18 @@ def calculate_scores(
             if latest_close is not None and reporting_fx_multiplier is not None
             else None
         )
+        # The provider's market cap reconciles the traded price with the true
+        # current share count, so it is the cross-check that catches a filing
+        # share count on a different basis (ADS ratio, reverse split).
+        converted_market_cap = (
+            float(market_cap) * reporting_fx_multiplier
+            if market_cap and reporting_fx_multiplier is not None
+            else None
+        )
         pit_signals = fundamental_history.signals_as_of(
             (as_of or datetime.now(timezone.utc)).date(),
             price=converted_price,
+            market_cap=converted_market_cap,
         )
     else:
         pit_signals = {name: None for name in FUNDAMENTAL_SIGNAL_NAMES}

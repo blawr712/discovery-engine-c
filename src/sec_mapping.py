@@ -5,6 +5,13 @@ only be matched when the issuer is interlisted in the United States, and a
 bare root symbol is not enough: ``ACT.TO`` (Aduro Clean Technologies) shares
 its root with ``ACT`` (Enact Holdings). Every Canadian candidate must
 therefore also pass a registrant-name check before its SEC facts are used.
+
+Similarity alone is not enough either. Stopword removal collapses a name like
+"Q2 Holdings, Inc." to the single token ``q2``, which overlaps "Q2 Metals
+Corp" at exactly the 0.5 threshold and let a lithium explorer inherit a
+fintech's revenue. A single shared token is therefore never sufficient
+evidence on its own: names must either agree exactly once reduced, or share
+at least two meaningful tokens.
 """
 
 from __future__ import annotations
@@ -53,13 +60,43 @@ def resolve_sec_ticker(
             continue
         title = title_lookup(candidate) or ""
         similarity = name_similarity(company_name, title)
-        if similarity >= minimum_name_similarity:
+        if names_match(
+            company_name, title, minimum_similarity=minimum_name_similarity,
+        ):
             return candidate, f"interlisted:{candidate} name match {similarity:.2f}"
+        shared = len(_tokens(company_name) & _tokens(title))
+        detail = (
+            f"only {shared} shared name token"
+            if shared == 1
+            else f"name similarity {similarity:.2f} below {minimum_name_similarity}"
+        )
         return None, (
-            f"interlisted root {candidate} maps to {title!r}, "
-            f"name similarity {similarity:.2f} below {minimum_name_similarity}"
+            f"interlisted root {candidate} maps to {title!r}, {detail}"
         )
     return None, "interlisted but no SEC CIK mapping for root symbol"
+
+
+def names_match(
+    left: str,
+    right: str,
+    *,
+    minimum_similarity: float = 0.5,
+) -> bool:
+    """True when two registrant names identify the same issuer.
+
+    Exactly equal token sets match. Otherwise the names must clear the
+    similarity threshold *and* share at least two meaningful tokens, because
+    one shared token survives stopword removal too easily to distinguish
+    "Q2 Metals Corp" from "Q2 Holdings, Inc.".
+    """
+    a, b = _tokens(left), _tokens(right)
+    if not a or not b:
+        return False
+    if a == b:
+        return True
+    if len(a & b) < 2:
+        return False
+    return name_similarity(left, right) >= minimum_similarity
 
 
 def name_similarity(left: str, right: str) -> float:

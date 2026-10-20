@@ -6,6 +6,15 @@ flows are taken directly when reported, or derived by differencing
 year-to-date and annual figures, and each derived value inherits the latest
 filing date of its inputs. Restated values only become visible from the date
 of the restating filing onward.
+
+Valuation ratios need a market capitalisation, and the obvious construction
+-- the filing's share count times the traded price -- is wrong whenever the
+two are denominated differently. An ADS that bundles 20 ordinary shares, or a
+reverse split between the filing date and the price date, leaves the share
+count on a different basis from the price and silently scales every yield by
+that factor. When an independently sourced market capitalisation is supplied
+and the two cannot be reconciled, the ratios are built from the supplied
+figure and the result is labelled, rather than quietly published.
 """
 
 from __future__ import annotations
@@ -29,6 +38,10 @@ DEFAULT_CONFIG = {
     "annual_days": [340, 380],
     "period_tolerance_days": 12,
     "maximum_report_age_days": 400,
+    # A filing's share count and today's price may legitimately disagree by
+    # the issuance or buybacks since the filing. Beyond this factor the
+    # disagreement is a unit mismatch (ADS ratio or split), not a flow.
+    "market_cap_reconciliation_tolerance": 2.0,
 }
 
 DURATION_CONCEPTS = (
@@ -66,6 +79,7 @@ SIGNAL_NAMES = (
     "pit_shares_outstanding",
     "pit_share_change_1y",
     "pit_market_cap",
+    "pit_market_cap_basis",
     "pit_net_cash_to_market_cap",
     "pit_fcf_yield",
     "pit_earnings_yield",
@@ -298,29 +312,65 @@ class FundamentalHistory:
                 shares.end - year_ago.end
             ).days <= maximum_age + 30:
                 signals["pit_share_change_1y"] = shares.value / year_ago.value - 1.0
-            derived_cap = (
-                shares.value * price
-                if price is not None and math.isfinite(price) and price > 0
-                else market_cap
+            resolved, basis = self._reconciled_market_cap(
+                shares.value, price, market_cap,
             )
-            if derived_cap is not None and math.isfinite(derived_cap) and derived_cap > 0:
-                market_cap = derived_cap
-                if market_cap > 0:
-                    signals["pit_market_cap"] = market_cap
-                    for name, source in (
-                        ("pit_net_cash_to_market_cap", "pit_net_cash"),
-                        ("pit_fcf_yield", "pit_free_cash_flow_ttm"),
-                        ("pit_earnings_yield", "pit_net_income_ttm"),
-                        ("pit_sales_yield", "pit_revenue_ttm"),
-                    ):
-                        value = signals[source]
-                        if value is not None:
-                            signals[name] = value / market_cap
+            if resolved is not None:
+                signals["pit_market_cap"] = resolved
+                signals["pit_market_cap_basis"] = basis
+                if basis == "reported_shares_unreconciled":
+                    # The share count is on a different basis from the price,
+                    # so the year-over-year share ratio spans that break too.
+                    signals["pit_share_change_1y"] = None
+                for name, source in (
+                    ("pit_net_cash_to_market_cap", "pit_net_cash"),
+                    ("pit_fcf_yield", "pit_free_cash_flow_ttm"),
+                    ("pit_earnings_yield", "pit_net_income_ttm"),
+                    ("pit_sales_yield", "pit_revenue_ttm"),
+                ):
+                    value = signals[source]
+                    if value is not None:
+                        signals[name] = value / resolved
 
         return {
             name: (round(value, 6) if isinstance(value, float) else value)
             for name, value in signals.items()
         }
+
+    def _reconciled_market_cap(
+        self,
+        shares: float,
+        price: float | None,
+        supplied: float | None,
+    ) -> tuple[float | None, str | None]:
+        """Pick a market cap and say where it came from.
+
+        ``shares * price`` is preferred, because it is contemporaneous with
+        the price and available in historical replay. It is only trusted when
+        nothing contradicts it: given an independently sourced market cap that
+        disagrees by more than the configured factor, the share count is on a
+        different basis from the price and the supplied figure wins.
+        """
+        derived = (
+            shares * price
+            if price is not None and math.isfinite(price) and price > 0
+            and math.isfinite(shares) and shares > 0
+            else None
+        )
+        supplied = (
+            supplied
+            if supplied is not None and math.isfinite(supplied) and supplied > 0
+            else None
+        )
+        if derived is None:
+            return (supplied, "supplied" if supplied is not None else None)
+        if supplied is None:
+            return derived, "reported_shares"
+        tolerance = float(self.config["market_cap_reconciliation_tolerance"])
+        ratio = derived / supplied
+        if ratio >= tolerance or ratio <= 1.0 / tolerance:
+            return supplied, "reported_shares_unreconciled"
+        return derived, "reported_shares"
 
     def _aligned_ttm(self, concept: str, as_of: date, ends: tuple[date, ...]) -> float | None:
         result = self.ttm(concept, as_of)

@@ -256,3 +256,82 @@ class SignalTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class MarketCapReconciliationTests(unittest.TestCase):
+    """The filing's share count and the traded price must agree on units.
+
+    An ADS that bundles ordinary shares, or a reverse split between the
+    filing and the price, puts the two on different bases and scales every
+    valuation ratio by that factor.
+    """
+
+    def setUp(self):
+        self.history = FundamentalHistory(_extract())
+        # 1,100 shares at 2.0 is the self-consistent case.
+        self.consistent = 2200.0
+
+    def test_agreeing_market_cap_prefers_the_contemporaneous_derivation(self):
+        signals = self.history.signals_as_of(
+            date(2026, 3, 1), price=2.0, market_cap=2400.0,
+        )
+
+        self.assertEqual(signals["pit_market_cap"], self.consistent)
+        self.assertEqual(signals["pit_market_cap_basis"], "reported_shares")
+        self.assertAlmostEqual(signals["pit_share_change_1y"], 0.1, places=6)
+
+    def test_ads_ratio_mismatch_falls_back_to_the_supplied_market_cap(self):
+        # The price is per ADS, each bundling 20 ordinary shares, so the
+        # derived cap lands 20x low and every yield would be 20x too high.
+        signals = self.history.signals_as_of(
+            date(2026, 3, 1), price=2.0, market_cap=44000.0,
+        )
+
+        self.assertEqual(signals["pit_market_cap"], 44000.0)
+        self.assertEqual(
+            signals["pit_market_cap_basis"], "reported_shares_unreconciled",
+        )
+        self.assertAlmostEqual(signals["pit_sales_yield"], 640 / 44000, places=6)
+        self.assertAlmostEqual(
+            signals["pit_net_cash_to_market_cap"], 550 / 44000, places=6,
+        )
+        # The share series spans the same unit break, so its ratio is dropped.
+        self.assertIsNone(signals["pit_share_change_1y"])
+
+    def test_reverse_split_mismatch_is_caught_in_the_other_direction(self):
+        signals = self.history.signals_as_of(
+            date(2026, 3, 1), price=2.0, market_cap=110.0,
+        )
+
+        self.assertEqual(signals["pit_market_cap"], 110.0)
+        self.assertEqual(
+            signals["pit_market_cap_basis"], "reported_shares_unreconciled",
+        )
+        self.assertAlmostEqual(signals["pit_sales_yield"], 640 / 110, places=6)
+
+    def test_no_supplied_market_cap_keeps_the_derived_value(self):
+        """Historical replay has no contemporaneous provider cap to check."""
+        signals = self.history.signals_as_of(date(2026, 3, 1), price=2.0)
+
+        self.assertEqual(signals["pit_market_cap"], self.consistent)
+        self.assertEqual(signals["pit_market_cap_basis"], "reported_shares")
+
+    def test_missing_price_uses_the_supplied_market_cap(self):
+        signals = self.history.signals_as_of(
+            date(2026, 3, 1), price=None, market_cap=5000.0,
+        )
+
+        self.assertEqual(signals["pit_market_cap"], 5000.0)
+        self.assertEqual(signals["pit_market_cap_basis"], "supplied")
+        self.assertAlmostEqual(signals["pit_sales_yield"], 640 / 5000, places=6)
+
+    def test_boundary_factor_is_treated_as_a_unit_mismatch(self):
+        """A one-for-two reverse split lands exactly on the tolerance."""
+        signals = self.history.signals_as_of(
+            date(2026, 3, 1), price=2.0, market_cap=1100.0,
+        )
+
+        self.assertEqual(signals["pit_market_cap"], 1100.0)
+        self.assertEqual(
+            signals["pit_market_cap_basis"], "reported_shares_unreconciled",
+        )

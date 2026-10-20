@@ -286,7 +286,10 @@ class CanadianFundamentalsTests(unittest.TestCase):
             "currency": "USD",
             "quarterly": {
                 "income": {q: {"Total Revenue": 100.0, "Operating Income": 10.0} for q in quarters},
-                "balance": {q: {"Cash And Cash Equivalents": 50.0, "Ordinary Shares Number": 10.0}
+                # The share count has to reconcile with the fake source's
+                # market cap, or the reconciliation guard correctly rejects it.
+                "balance": {q: {"Cash And Cash Equivalents": 50.0,
+                                "Ordinary Shares Number": 500_000.0}
                             for q in quarters},
                 "cashflow": {q: {"Operating Cash Flow": 12.0, "Capital Expenditure": -2.0}
                              for q in quarters},
@@ -348,8 +351,10 @@ class CanadianFundamentalsTests(unittest.TestCase):
         self.assertEqual(by["WELL.TO"]["pit_reporting_currency"], "USD")
         self.assertEqual(by["WELL.TO"]["pit_data_quality"], "estimated_filing_dates")
         self.assertEqual(by["WELL.TO"]["pit_revenue_ttm"], 400.0)
-        # Price 229 CAD * 0.5 = 114.5 USD * 10 shares = market cap 1145 USD.
-        self.assertAlmostEqual(by["WELL.TO"]["pit_market_cap"], 1145.0, places=6)
+        # Price 229 CAD * 0.5 = 114.5 USD * 500,000 shares = 57,250,000 USD,
+        # within the reconciliation tolerance of the 100M CAD (50M USD) cap.
+        self.assertAlmostEqual(by["WELL.TO"]["pit_market_cap"], 57_250_000.0, places=6)
+        self.assertEqual(by["WELL.TO"]["pit_market_cap_basis"], "reported_shares")
         self.assertEqual(by["WELL.TO"]["universe_interlisted"], None)
         # Interlisted name resolved to SEC facts, currencies match.
         self.assertEqual(by["BCHT.TO"]["fundamentals_status"], "collected via BCHT; converted CAD->USD")
