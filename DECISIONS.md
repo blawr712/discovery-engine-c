@@ -308,14 +308,102 @@ median -13.3% with a 38.0% hit rate, and top 25 / 50 / 100 compounding to
 the same thin-tail concentration seen before.
 
 **What this does not settle.** v3's weights were chosen from the contaminated
-ranking, so they are now demonstrably misaligned with the corrected evidence:
-net cash carries a positive weight while measuring -0.018, and sales yield is
-weighted above free-cash-flow and earnings yield, which now beat it.
-Re-deriving the weights is a separate decision and is not taken here.
+ranking. This entry originally called them demonstrably misaligned; the
+re-derivation of 2026-10-21 tested that and found it wrong, because raw-signal
+ICs do not describe a filtered composite. The weights stand.
 
 **Where.** `src/split_adjustment.py`, `pit_split_factor`,
 `split_adjust_shares` in `config/backtest.json`, artifacts
 `backtest_20261019T223433Z-f13f71e5.json` and its `_unadjusted` control.
+
+## 2026-10-21: Re-derived v3's weights; the current weights stand
+
+**Decision.** Keep Score v3's weights exactly as they are. Every change the
+corrected evidence appeared to call for made the model significantly worse,
+and the one change that did not hurt failed the significance bar set for it
+in advance.
+
+**Method.** The saved observations from the split-adjusted backtest were
+re-scored offline under candidate configs, using the backtest's own metric
+functions; the harness reproduced the published result exactly (1Y IC
+0.0832, top 25 compounding 495.91%) before being trusted. Periods were split
+into a fitting window (2016-10 to 2021-12) and a holdout (2022-01 to
+2026-09). Each change was measured as the per-period IC difference against
+the current model, so shared market conditions cancel, with Newey-West
+standard errors at eleven lags because monthly 1Y returns overlap by eleven
+months and a naive t-statistic overstates significance roughly 3.5x. The
+acceptance rule was fixed before running: positive in both windows,
+significant (|t| >= 2) in at least one, and significantly negative in
+neither.
+
+**Evidence.** Paired 1Y IC difference against current v3 (Newey-West t):
+
+| Change | Fit 2016-21 | Holdout 2022-26 | Verdict |
+|---|---|---|---|
+| Double dilution weight (10 -> 20) | -0.012 (-2.0) | -0.017 (-6.8) | worse |
+| Double FCF yield weight (10 -> 20) | -0.002 (-0.6) | -0.014 (-3.8) | worse |
+| Add earnings yield (10) | -0.011 (-1.4) | -0.007 (-2.1) | worse |
+| Remove net cash | +0.004 (0.6) | -0.027 (-4.1) | worse |
+| Remove long momentum | +0.004 (0.6) | +0.002 (1.4) | neutral |
+| Remove FCF margin | +0.002 (0.4) | +0.004 (1.7) | neutral |
+| Remove operating-margin weight | +0.001 (0.3) | +0.002 (1.3) | neutral |
+| Insiders 10 -> 15 | +0.003 (1.0) | +0.001 (1.0) | neutral |
+| Volatility 5 -> 10 | -0.002 (-0.3) | +0.003 (1.3) | neutral |
+| Remove all three neutral signals | +0.009 (0.7) | +0.009 (1.9) | not significant |
+
+**Why the corrected raw ICs misled.** They are measured across every name,
+but v3 ranks only the roughly 27% of observations that survive its exclusion
+filters and confidence gate. Inside that population the picture changes:
+dilution falls from -0.175 to -0.070 / -0.030 because the filter has already
+removed its worst quintile, and FCF margin (0.000 / 0.021) and operating
+margin (-0.029 / 0.005) carry almost nothing once their own filters have run.
+Net cash flips sign between regimes, -0.063 in 2016-21 and +0.027 in 2022-26,
+plausibly because cash-rich microcaps lagged in the zero-rate years and paid
+once rates rose; it earns its weight in the composite even though its raw IC
+is near zero. The entry of 2026-10-20 called v3's weights "demonstrably
+misaligned" on the strength of the raw table. That was wrong in the way that
+matters: the composite's behaviour is not the sum of its signals' raw ICs.
+
+A rule applied mechanically would also have gone wrong. The "minimal"
+candidate, which dropped net cash and long momentum and moved their points to
+dilution and FCF yield, won the fitting window (IC 0.085 against 0.079) and
+then halved the holdout IC (0.043 against 0.089). Fit-window wins of this
+size are noise.
+
+The three-signal simplification is positive in both windows and would leave a
+seven-signal model performing at least as well. It is deliberately not
+adopted, because t 1.9 is below the bar set before the test and moving the bar
+after seeing the result is the failure the bar exists to prevent. It is the
+natural candidate to run as a forward shadow beside v3.0 if one is added.
+
+**A larger finding than any weight.** Compounded at the 1M rebalance and
+equal-weighted, the names v3 *excludes* beat the names it scores in both
+windows of the backtest: 299% against 183% in 2016-21 and 111% against 42% in
+2022-26, with the full universe at 268% and 90%. v3 improves the median and
+the win rate of what it picks, and it leaves out the thin right tail of
+crashed names that rebound, which is what drives means here. How much of that
+tail is real cannot be known from this data. The universe is companies alive
+at the Oct 2026 run, so the junk that went to zero is missing and the junk
+that rebounded is overrepresented, which inflates exactly the excluded
+bucket's mean. The one survivorship-free observation available contradicts the
+backtest: in the Sep 18 forward baseline's first month the excluded cohort was
+the worst on mean as well as median (-18.61% mean, against -2.84% for
+quintile 5). One month settles nothing, but it is the only unbiased evidence
+there is.
+
+**Consequence.** The question that most affects pick quality is no longer how
+v3 weights its signals but whether its filters are giving up real upside or
+only survivorship-inflated upside, and the in-sample data cannot answer it. A
+delisting-inclusive price vendor, the last item on the original roadmap, is
+now the most valuable data improvement left. Until then v3's claim is about
+typical outcomes, medians and win rates, not means.
+
+**Where.** Scratch harness over
+`backtest_observations_20261019T223433Z-f13f71e5.csv.gz`; not in the repo.
+Forward evidence from `baseline_resolution_research_20260918T144343Z-8ab9f4fc.*`.
+Note in passing that v3's configured weights sum to 105 rather than 100;
+scores divide by available weight, so rankings are unaffected and only the
+explanation points are scaled.
 
 ## Standing caveats that gate any promotion to "official"
 
@@ -346,7 +434,7 @@ Re-deriving the weights is a separate decision and is not taken here.
   factor is constant per filer rather than correlated with future events: it
   adds cross-sectional noise to those names' levels instead of leaking the
   future. Closing it needs a per-filer unit factor carried in the extract.
-- **v3's weights predate the corrected evidence.** They were fitted on the
-  contaminated signal ranking. Until they are re-derived, v3 weights net cash
-  positively against a measured -0.018 and ranks sales yield above the two
-  signals that now beat it.
+- **Means are not trustworthy in-sample.** v3's excluded names out-compound
+  its scored names in the backtest, very likely inflated by survivorship, and
+  the only clean forward month says the opposite. v3's evidence is about
+  medians and win rates until delisting-inclusive prices exist.
