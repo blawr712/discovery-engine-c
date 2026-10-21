@@ -89,6 +89,16 @@
 - Added a model comparison to baseline resolution: each frozen score's rank
   correlation and quintile ladder per horizon, and a head-to-head on the names
   every compared model scored
+- Added `python -m src.monthly_schedule` to register the cycle as a Windows
+  scheduled task: 02:00 on the 16th with daily retries through the 22nd, as
+  the current user with no stored password or elevation, starting next month
+  when registered inside the window
+- Added `scripts/run_monthly.cmd`, which logs each attempt to
+  `data/runs/monthly/logs/` because scheduled tasks discard console output
+- Asked Windows not to idle-sleep while a cycle runs; no power settings change
+- Pointed the stale-TMX warning at the page the workbook is downloaded from;
+  the download itself stays manual because TMX's robots.txt disallows
+  automated fetching of the workbook's path
 - Taught the resolver about baseline kinds, reading each baseline's own
   cohort split so Moonshot and research cohorts stay separate; added
   `--baseline moonshot|research|all`

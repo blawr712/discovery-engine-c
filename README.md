@@ -358,6 +358,37 @@ exits with an error until every step has succeeded. Progress is kept in
   the run and retries the failed rows.
 - The report warns when the TMX workbook's data is more than 45 days old.
 
+### Scheduled runs
+
+A Windows scheduled task runs the cycle automatically:
+
+```powershell
+python -m src.monthly_schedule show        # print the task definition
+python -m src.monthly_schedule register    # create it
+python -m src.monthly_schedule unregister  # remove it
+```
+
+It fires at 02:00 on the 16th of every month and again daily through the
+22nd. A finished cycle makes the later days a no-op, so they only matter when
+an attempt failed or the PC was off. The 16th follows TMX's release of the
+listed-companies workbook, which lands around the 11th to 14th. The task runs
+as you, only while you are logged on, with no stored password and no
+elevation. A missed start runs when the PC is next available, and an attempt
+is stopped after 36 hours. While a cycle runs it asks Windows not to idle-
+sleep; whether the PC wakes from sleep to start depends on your power plan's
+wake-timer setting, which the task does not change.
+
+Each attempt writes a log to `data/runs/monthly/logs/`, and
+`scripts/run_monthly.cmd` runs the same thing by hand.
+
+**The TMX workbook is still downloaded by hand.** TMX's robots.txt disallows
+automated fetching of `/resource/`, the path the workbook is served from, so
+the pipeline does not fetch it. Download "TSX & TSXV Listed Companies" from
+[Current Market Statistics](https://www.tsx.com/en/listings/current-market-statistics)
+to `data/raw/canada/tsx-and-tsxv-listed-companies.xlsx` before the 16th. If you
+miss it the cycle still runs on the previous workbook, and the cycle report
+warns once the data is more than 45 days old.
+
 Every frozen research baseline also records **Score v3.1**, a challenger that
 drops the three v3 signals that showed no contribution once v3's filters had
 run (long momentum, FCF margin, and the operating-margin weight). It never

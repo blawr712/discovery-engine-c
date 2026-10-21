@@ -142,7 +142,9 @@ discovery fingerprint so that each month's run is distinct from the last, a
 provider-error rate above 2% keeps a partly collected run from being frozen,
 and a lock prevents two processes running the same cycle. The orchestration
 takes its steps as callables and holds no provider code; `main.py` supplies
-them.
+them. `src/monthly_schedule.py` registers it as a Windows scheduled task that
+retries daily for a week, which the resumability makes safe, and
+`src/keep_awake.py` holds an idle-sleep exemption while a cycle runs.
 
 Backtest Engine: Replay the Scoring Engine's technical factor functions at
 historical month-ends using only price data available on each date, then

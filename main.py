@@ -38,6 +38,7 @@ from src.data_sources.sec_insider_source import (
 from src.data_sources.sec_xbrl_source import SecXbrlSource
 from src.fundamentals_pit import FundamentalHistory
 from src.split_adjustment import SplitHistory
+from src.keep_awake import keep_awake
 from src.monthly import (
     TMX_STALE_AFTER,
     build_cycle_report,
@@ -537,7 +538,9 @@ def run_monthly(cycle: str | None = None, skip_universe: bool = False) -> None:
         elif age > TMX_STALE_AFTER:
             context.warnings.append(
                 f"TMX workbook data is from {source_date}, {age.days} days old; "
-                "download the latest listing from TMX before the next cycle"
+                "download 'TSX & TSXV Listed Companies' from "
+                "https://www.tsx.com/en/listings/current-market-statistics to "
+                "data/raw/canada/tsx-and-tsxv-listed-companies.xlsx before the next cycle"
             )
         return {"detail": f"{detail}; TMX data as of {source_date or 'unknown'}"}
 
@@ -594,19 +597,22 @@ def run_monthly(cycle: str | None = None, skip_universe: bool = False) -> None:
         return {"detail": f"{len(due)} baseline(s) resolved"}
 
     try:
-        state = run_cycle(
-            label,
-            {
-                "universe": universe_step,
-                "discovery": discovery_step,
-                "index": index_step,
-                "moonshot": moonshot_step,
-                "calibrate": calibrate_step,
-                "freeze": freeze_step,
-                "resolve": resolve_step,
-            },
-            state_directory,
-        )
+        with keep_awake() as awake:
+            if awake:
+                print("Keeping this PC from idle-sleeping until the cycle finishes.")
+            state = run_cycle(
+                label,
+                {
+                    "universe": universe_step,
+                    "discovery": discovery_step,
+                    "index": index_step,
+                    "moonshot": moonshot_step,
+                    "calibrate": calibrate_step,
+                    "freeze": freeze_step,
+                    "resolve": resolve_step,
+                },
+                state_directory,
+            )
     except RuntimeError as error:
         raise SystemExit(str(error)) from error
 
