@@ -272,3 +272,90 @@ class NeedsPricesTests(unittest.TestCase):
         selected = resolution["horizons"]["1M"]["selected"]
         self.assertEqual(selected["resolved"], 0)
         self.assertEqual(selected["resolved_without_benchmark"], 1)
+
+
+class ModelComparisonTests(unittest.TestCase):
+    """Frozen scores are compared on outcomes neither could have seen."""
+
+    def setUp(self):
+        self.series = {"SPY": _series("2025-12-01", 200, 100.0, 0.0)}
+        candidates = []
+        # Sixty names whose daily drift rises with their index, so a score
+        # equal to the index ranks the outcomes perfectly.
+        for index in range(60):
+            ticker = f"T{index:02d}"
+            self.series[ticker] = _series("2025-12-01", 200, 10.0, (index - 30) / 10000)
+            row = _candidate(ticker, "v3_quintile_3", index + 1)
+            row["score_v3"] = float(index)        # perfect ranking
+            row["score_v3_1"] = float(-index)     # perfectly backwards
+            row["score_v3_confidence"] = 90.0     # metadata, never compared
+            candidates.append(row)
+        # A name only one model scored must not enter the common comparison.
+        lone = _candidate("LONE", "v3_quintile_3", 61)
+        lone["score_v3"] = 100.0
+        self.series["LONE"] = _series("2025-12-01", 200, 10.0, 0.01)
+        candidates.append(lone)
+        self.baseline = _baseline(candidates)
+        self.config = {
+            "minimum_cohort_size": 1,
+            "selected_classifications": ["v3_quintile_5"],
+            "control_classifications": ["v3_quintile_1"],
+        }
+
+    def _comparison(self, **overrides):
+        resolution = resolve_baseline(
+            self.baseline, self.series, as_of=date(2026, 2, 10),
+            config={**self.config, **overrides},
+        )
+        return resolution["horizons"]["1M"]["model_comparison"]
+
+    def test_each_model_gets_its_own_ic_and_quintile_ladder(self):
+        comparison = self._comparison()
+
+        self.assertEqual(comparison["score_v3"]["resolved"], 61)
+        self.assertEqual(comparison["score_v3_1"]["resolved"], 60)
+        self.assertGreater(comparison["score_v3"]["information_coefficient"], 0.99)
+        self.assertEqual(comparison["score_v3_1"]["information_coefficient"], -1.0)
+        ladder = comparison["score_v3"]["quintiles"]
+        self.assertEqual([q["quintile"] for q in ladder], [1, 2, 3, 4, 5])
+        medians = [q["median_excess_percent"] for q in ladder]
+        self.assertEqual(medians, sorted(medians))
+
+    def test_common_comparison_uses_only_names_every_model_scored(self):
+        common = self._comparison()["common"]
+
+        self.assertEqual(common["resolved"], 60)
+        self.assertEqual(common["information_coefficient"]["score_v3"], 1.0)
+        self.assertEqual(common["information_coefficient"]["score_v3_1"], -1.0)
+
+    def test_metadata_fields_are_not_mistaken_for_scores(self):
+        resolution = resolve_baseline(
+            self.baseline, self.series, as_of=date(2026, 2, 10), config=self.config,
+        )
+        scores = resolution["candidates"][0]["scores"]
+        self.assertEqual(set(scores), {"score_v3", "score_v3_1"})
+
+    def test_too_few_names_reports_counts_without_a_correlation(self):
+        comparison = self._comparison(minimum_comparison_size=100)
+
+        self.assertEqual(comparison["score_v3"]["resolved"], 61)
+        self.assertIsNone(comparison["score_v3"]["information_coefficient"])
+        self.assertEqual(comparison["score_v3"]["quintiles"], [])
+
+    def test_baselines_frozen_before_a_model_existed_compare_what_they_have(self):
+        for row in self.baseline["candidates"]:
+            row.pop("score_v3_1", None)
+        comparison = self._comparison()
+
+        self.assertIn("score_v3", comparison)
+        self.assertNotIn("score_v3_1", comparison)
+        self.assertNotIn("common", comparison)
+
+    def test_moonshot_baselines_without_compared_scores_omit_the_section(self):
+        for row in self.baseline["candidates"]:
+            row.pop("score_v3", None)
+            row.pop("score_v3_1", None)
+        resolution = resolve_baseline(
+            self.baseline, self.series, as_of=date(2026, 2, 10), config=self.config,
+        )
+        self.assertNotIn("model_comparison", resolution["horizons"]["1M"])

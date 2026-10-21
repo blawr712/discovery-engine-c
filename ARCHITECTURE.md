@@ -116,7 +116,9 @@ freeze a completed run's research queue into labelled cohorts with fixed
 horizons anchored on the run's completion date, so Score v3 accumulates
 evidence on data its weights never saw. Cohorts are carved from the
 v3-scored population; names the filters excluded are kept as a control.
-Exports refuse to overwrite an existing baseline.
+Exports refuse to overwrite an existing baseline. Each candidate also carries
+the frozen scores of every shadow model, including the Score v3.1 challenger,
+so models can later be compared on the same outcomes.
 
 Baseline Resolution (`src/baseline_resolution.py`, `--resolve-baselines`):
 read a frozen forward baseline of either kind back and measure each eligible
@@ -124,7 +126,11 @@ horizon against realized prices, comparing selected cohorts with control
 cohorts. Both prices for a return come from one provider series, and
 candidates whose prices stop before a horizon stay visible as unresolved
 rather than being dropped. The baseline file is never modified; each
-resolution is a separate artifact recorded in the run manifest.
+resolution is a separate artifact recorded in the run manifest. For each
+resolved horizon it also measures every frozen score in `compared_scores`:
+its rank correlation with realized excess returns and its quintile ladder on
+the names it scored, and a head-to-head on the names all of them scored, so a
+coverage difference cannot pass for a difference in skill.
 
 Monthly Cycle (`src/monthly.py`, `--monthly`): run the universe rebuild,
 discovery, indexing, Moonshot collection and calibration, research-baseline

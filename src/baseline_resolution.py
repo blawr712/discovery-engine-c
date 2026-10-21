@@ -37,6 +37,11 @@ DEFAULT_CONFIG = {
         "priority_research", "asymmetric_watch", "speculative_watch",
     ],
     "control_classifications": ["low_upside_signal", "insufficient_evidence"],
+    # Frozen scores compared head to head on each resolved horizon. A rank
+    # correlation over a handful of names is noise, so comparisons need more
+    # resolved names than a cohort summary does.
+    "compared_scores": ["score_v3", "score_v3_1"],
+    "minimum_comparison_size": 50,
 }
 
 LIMITATIONS = (
@@ -167,6 +172,7 @@ def resolve_baseline(
             "moonshot_rank": row.get("moonshot_rank"),
             "upside_score": row.get("upside_score"),
             "risk_of_ruin_score": row.get("risk_of_ruin_score"),
+            "scores": _frozen_scores(row),
             "benchmark": benchmark,
             "horizons": horizons,
         })
@@ -225,7 +231,9 @@ def export_baseline_resolution(
 def validated_config(config: dict | None = None) -> dict:
     """Merge resolution settings over defaults and validate them."""
     merged = {**DEFAULT_CONFIG, **(config or {})}
-    for name in ("maximum_price_staleness_days", "minimum_cohort_size"):
+    for name in (
+        "maximum_price_staleness_days", "minimum_cohort_size", "minimum_comparison_size",
+    ):
         value = merged[name]
         if isinstance(value, bool) or not isinstance(value, int) or value < 1:
             raise ValueError(f"Baseline resolution {name} must be a positive integer.")
@@ -234,6 +242,9 @@ def validated_config(config: dict | None = None) -> dict:
         if not isinstance(value, list) or not value:
             raise ValueError(f"Baseline resolution {name} must be a non-empty list.")
         merged[name] = [str(item) for item in value]
+    if not isinstance(merged["compared_scores"], list):
+        raise ValueError("Baseline resolution compared_scores must be a list.")
+    merged["compared_scores"] = [str(item) for item in merged["compared_scores"]]
     overlap = set(merged["selected_classifications"]) & set(
         merged["control_classifications"]
     )
@@ -387,7 +398,7 @@ def _horizon_report(candidates: list[dict], label: str, config: dict) -> dict:
     ]
     selected_summary = _cohort_summary(selected, config)
     control_summary = _cohort_summary(control, config)
-    return {
+    report = {
         "by_classification": by_classification,
         "selected": selected_summary,
         "control": control_summary,
@@ -397,6 +408,123 @@ def _horizon_report(candidates: list[dict], label: str, config: dict) -> dict:
             and control_summary["resolved"] >= config["minimum_cohort_size"]
         ),
     }
+    comparison = _model_comparison(candidates, label, config)
+    if comparison:
+        report["model_comparison"] = comparison
+    return report
+
+
+def _frozen_scores(row: dict) -> dict:
+    """Every numeric model score frozen on a baseline candidate."""
+    scores = {}
+    for name, value in row.items():
+        if not name.startswith("score_") or name.endswith(
+            ("_confidence", "_rank", "_excluded", "_breakdown", "_reasons", "_version")
+        ):
+            continue
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            continue
+        if value == value:
+            scores[name] = float(value)
+    return scores
+
+
+def _model_comparison(candidates: list[dict], label: str, config: dict) -> dict:
+    """How well each frozen score ranked the realized outcomes of one horizon.
+
+    Each model is measured on the names it scored, and the models are also
+    compared on the names every one of them scored, so a difference in
+    coverage cannot pass for a difference in skill. Only scores frozen at the
+    baseline date are used, so nothing here could have seen the outcome.
+    """
+    names = [name for name in config["compared_scores"]]
+    rows = []
+    for candidate in candidates:
+        horizon = candidate["horizons"].get(label) or {}
+        if horizon.get("status") != "resolved" or "excess_return_percent" not in horizon:
+            continue
+        rows.append((candidate.get("scores") or {}, horizon["excess_return_percent"]))
+    present = [name for name in names if any(name in scores for scores, _ in rows)]
+    if not present:
+        return {}
+    minimum = int(config["minimum_comparison_size"])
+    comparison = {}
+    for name in present:
+        pairs = [(scores[name], excess) for scores, excess in rows if name in scores]
+        comparison[name] = {
+            "resolved": len(pairs),
+            "information_coefficient": (
+                _spearman([a for a, _ in pairs], [b for _, b in pairs])
+                if len(pairs) >= minimum else None
+            ),
+            "quintiles": _score_quintiles(pairs, config) if len(pairs) >= minimum else [],
+        }
+    if len(present) > 1:
+        common = [
+            (scores, excess) for scores, excess in rows
+            if all(name in scores for name in present)
+        ]
+        coefficients = {
+            name: (
+                _spearman([scores[name] for scores, _ in common], [e for _, e in common])
+                if len(common) >= minimum else None
+            )
+            for name in present
+        }
+        comparison["common"] = {
+            "resolved": len(common),
+            "information_coefficient": coefficients,
+        }
+    return comparison
+
+
+def _score_quintiles(pairs: list[tuple[float, float]], config: dict) -> list[dict]:
+    """Outcome ladder by score quintile, quintile 5 the highest scores."""
+    ordered = sorted(pairs, key=lambda pair: pair[0])
+    count = len(ordered)
+    buckets: list[list[float]] = [[] for _ in range(5)]
+    for index, (_, excess) in enumerate(ordered):
+        buckets[min(4, index * 5 // count)].append(excess)
+    ladder = []
+    for number, values in enumerate(buckets, start=1):
+        ladder.append({
+            "quintile": number,
+            "resolved": len(values),
+            "median_excess_percent": round(statistics.median(values), 2) if values else None,
+            "win_rate_percent": (
+                round(sum(1 for v in values if v > 0) / len(values) * 100.0, 2)
+                if values else None
+            ),
+        })
+    return ladder
+
+
+def _spearman(left: list[float], right: list[float]) -> float | None:
+    """Rank correlation as the Pearson correlation of average ranks."""
+    if len(left) < 3:
+        return None
+    a, b = _average_ranks(left), _average_ranks(right)
+    mean_a, mean_b = statistics.fmean(a), statistics.fmean(b)
+    covariance = sum((x - mean_a) * (y - mean_b) for x, y in zip(a, b))
+    spread = (
+        sum((x - mean_a) ** 2 for x in a) * sum((y - mean_b) ** 2 for y in b)
+    ) ** 0.5
+    return round(covariance / spread, 4) if spread else None
+
+
+def _average_ranks(values: list[float]) -> list[float]:
+    order = sorted(range(len(values)), key=lambda index: values[index])
+    ranks = [0.0] * len(values)
+    position = 0
+    while position < len(order):
+        end = position
+        while end + 1 < len(order) and values[order[end + 1]] == values[order[position]]:
+            end += 1
+        rank = (position + end) / 2.0 + 1.0
+        for index in order[position:end + 1]:
+            ranks[index] = rank
+        position = end + 1
+    return ranks
 
 
 def _cohort_summary(rows: list[dict], config: dict) -> dict:

@@ -405,6 +405,41 @@ Note in passing that v3's configured weights sum to 105 rather than 100;
 scores divide by available weight, so rankings are unaffected and only the
 explanation points are scaled.
 
+## 2026-10-21: Monthly cycle, and v3.1 as a forward challenger
+
+**Decision.** Run the research cycle as one resumable command,
+`--monthly`, and score a Score v3.1 challenger beside v3.0 on every run so
+the forward baselines can decide between them.
+
+**Why a pipeline.** Forward baselines are the only evidence here that
+survivorship cannot inflate, and they accumulate only if a run is made,
+frozen, and resolved every month without gaps. Building it exposed a latent
+hazard: the run fingerprint holds no date, and compatible runs that finished
+with errors stayed resumable indefinitely, so a plain run in November would
+have resumed the Oct 19 run (one provider error), reused about 3,000 rows of
+October prices, and stamped them with a November completion time. The cycle
+label now enters the fingerprint, runs older than 72 hours are not resumed,
+and a run with more than 2% provider errors is not frozen.
+
+**Why v3.1, and why only as a challenger.** Removing long momentum, FCF
+margin, and the operating-margin weight was positive in both backtest windows
+(+0.009 each) but reached only Newey-West t 1.9 in the holdout, below the bar
+set before testing it. It is not adopted, and it never orders the research
+queue. Freezing its scores into every baseline lets unseen data settle what
+the backtest could not. Expect that to take a long time: on the Oct 19 run the
+two scores have a rank correlation of 0.965 and share 20 of their top 25
+names, and the backtest gap between them is small.
+
+**First forward rank correlation for v3.0.** Re-resolving the Sep 18 cohort
+with the new comparison gives a 1M rank IC of 0.32 over 776 names, with a
+clean ladder from quintile 1 (-19.1% median) to quintile 5 (-3.3%). That is
+far above the backtest's typical 1M IC of about 0.05, and it is one cross-
+section in a month when micro caps fell and v3's low-volatility tilt would
+have helped almost mechanically. It is encouraging and settles nothing.
+
+**Where.** `src/monthly.py`, `scoring_v3_1` in `config/strategy.json`,
+`compared_scores` in `src/baseline_resolution.py`.
+
 ## Standing caveats that gate any promotion to "official"
 
 - **Survivorship.** The universe is companies alive at the source run; the

@@ -646,6 +646,12 @@ def _resolution_headline(entry: dict) -> dict:
             }
             for side in ("selected", "control")
         }
+        common = (measured.get("model_comparison") or {}).get("common")
+        if common:
+            headline[horizon]["head_to_head"] = {
+                "resolved": common["resolved"],
+                **common["information_coefficient"],
+            }
     return headline
 
 
@@ -814,6 +820,24 @@ def _resolve_one_baseline(
             f"{difference['median_excess_percent']} pts, win rate "
             f"{difference['win_rate_percent']} pts"
         )
+        comparison = report.get("model_comparison") or {}
+        common = comparison.get("common")
+        for name, measured in comparison.items():
+            if name == "common":
+                continue
+            ladder = ", ".join(
+                f"Q{q['quintile']} {q['median_excess_percent']}%"
+                for q in measured.get("quintiles", [])
+            )
+            print(
+                f"  {name}: rank IC {measured['information_coefficient']} over "
+                f"{measured['resolved']} names" + (f"; medians {ladder}" if ladder else "")
+            )
+        if common:
+            coefficients = ", ".join(
+                f"{name} {value}" for name, value in common["information_coefficient"].items()
+            )
+            print(f"  Head to head on {common['resolved']} names both scored: {coefficients}")
     if resolution["pending_horizons"]:
         print(f"\nStill pending: {', '.join(resolution['pending_horizons'])}")
     print("Forward baseline file: unchanged")

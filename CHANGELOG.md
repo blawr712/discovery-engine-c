@@ -83,6 +83,12 @@
   errors, so a rate-limit episode cannot make a gap permanent
 - Warned when the TMX workbook behind the Canadian universe is more than 45
   days old
+- Added Score v3.1 as a forward-test challenger: v3.0 without long momentum,
+  FCF margin, and the operating-margin weight, scored beside v3.0 on every run
+  and frozen into every research baseline, without ever ordering the queue
+- Added a model comparison to baseline resolution: each frozen score's rank
+  correlation and quintile ladder per horizon, and a head-to-head on the names
+  every compared model scored
 - Taught the resolver about baseline kinds, reading each baseline's own
   cohort split so Moonshot and research cohorts stay separate; added
   `--baseline moonshot|research|all`

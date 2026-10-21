@@ -106,6 +106,9 @@ def build_research_queue(
             "score_v3_exclusion_reasons": row.get("score_v3_exclusion_reasons"),
             "score_v2": row.get("score_v2"),
             "score_v2_rank": row.get("score_v2_rank"),
+            # Carried for the forward comparison only; never used to order.
+            "score_v3_1": row.get("score_v3_1"),
+            "score_v3_1_rank": row.get("score_v3_1_rank"),
             "fundamentals_status": row.get("fundamentals_status"),
             **{name: row.get(name) for name in KEY_RATIOS},
             "strongest_drivers": _drivers(row, f"{field}_breakdown", best=True),

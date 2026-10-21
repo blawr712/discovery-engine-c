@@ -328,6 +328,29 @@ def build_cycle_report(state: dict, resolutions: list[dict] | None = None) -> st
                     f"{_pct(selected.get('win_rate_percent'))} | "
                     f"{_pct(control.get('win_rate_percent'))} |"
                 )
+        head_to_head = [
+            (entry, horizon, (entry.get("summary") or {}).get(horizon, {}).get("head_to_head"))
+            for entry in resolutions for horizon in entry.get("horizons", [])
+        ]
+        head_to_head = [item for item in head_to_head if item[2]]
+        if head_to_head:
+            lines += [
+                "",
+                "## Model head to head",
+                "",
+                "Rank correlation between each frozen score and the realized "
+                "outcome, on the names every compared model scored.",
+                "",
+            ]
+            for entry, horizon, measured in head_to_head:
+                models = ", ".join(
+                    f"{name} {value:.3f}" if isinstance(value, (int, float)) else f"{name} -"
+                    for name, value in measured.items() if name != "resolved"
+                )
+                lines.append(
+                    f"- {entry['kind']} `{entry['run_id']}` {horizon}, "
+                    f"{measured.get('resolved')} names: {models}"
+                )
     lines += [
         "",
         "This records what was run and measured. It is not a forecast or an "

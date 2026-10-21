@@ -358,6 +358,15 @@ exits with an error until every step has succeeded. Progress is kept in
   the run and retries the failed rows.
 - The report warns when the TMX workbook's data is more than 45 days old.
 
+Every frozen research baseline also records **Score v3.1**, a challenger that
+drops the three v3 signals that showed no contribution once v3's filters had
+run (long momentum, FCF margin, and the operating-margin weight). It never
+orders the research queue. When a horizon matures, resolution reports each
+frozen score's rank correlation with the realized outcome and its quintile
+ladder, plus a head-to-head on the names both models scored, and the cycle
+report lists it. The two models agree closely (rank correlation 0.965 on the
+Oct 19 run), so separating them will take many monthly cohorts.
+
 ### Individual commands
 
 Run the complete configured universe:

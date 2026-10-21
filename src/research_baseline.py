@@ -80,6 +80,9 @@ def build_research_baseline(
             "score_v3_confidence": _number(row.get("score_v3_confidence")),
             "score_v3_excluded": bool(row.get("score_v3_excluded")),
             "score_v2": _number(row.get("score_v2")),
+            # The challenger's score, frozen beside v3.0's so resolution can
+            # compare the two rankings on the same unseen outcomes.
+            "score_v3_1": _number(row.get("score_v3_1")),
             "discovery_rank": row.get("discovery_rank"),
             "benchmark": BENCHMARKS.get(str(row.get("country") or ""), "SPY"),
             "baseline_as_of": baseline_as_of,

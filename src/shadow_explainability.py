@@ -34,6 +34,16 @@ SHADOW_GLOSSARY = {
         ),
         "not": "Not a return forecast. Validated by the backtest; see Evidence.",
     },
+    "score_v3_1": {
+        "label": "Score v3.1 (challenger)",
+        "definition": (
+            "Score v3 without long momentum, FCF margin, and the operating-"
+            "margin weight, which showed no contribution once v3's filters had "
+            "run. Same filters. Scored beside v3 only so forward baselines can "
+            "compare the two; it never orders the research queue."
+        ),
+        "not": "Not a return forecast and not validated: a forward test.",
+    },
 }
 
 FUNDAMENTAL_ROWS = (

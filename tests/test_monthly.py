@@ -322,6 +322,24 @@ class UniverseAndReportTests(unittest.TestCase):
         self.assertIn("| freeze | done | freeze ok |", report)
         self.assertIn("TMX workbook is 50 days old", report)
         self.assertIn("| research `OLD` | 1M | -2.00% | -19.50% | 40.80% | 12.00% |", report)
+        self.assertNotIn("Model head to head", report)
+
+    def test_report_includes_the_model_head_to_head_when_measured(self):
+        state = {
+            "cycle": "2026-12", "status": "completed", "attempts": 1, "run_id": "RUN",
+            "warnings": [],
+            "steps": {name: {"status": "done"} for name in STEP_ORDER},
+        }
+        report = build_cycle_report(state, [{
+            "run_id": "NOV", "kind": "research", "horizons": ["1M"],
+            "summary": {"1M": {
+                "selected": {}, "control": {},
+                "head_to_head": {"resolved": 1180, "score_v3": 0.081, "score_v3_1": 0.094},
+            }},
+        }])
+
+        self.assertIn("## Model head to head", report)
+        self.assertIn("research `NOV` 1M, 1180 names: score_v3 0.081, score_v3_1 0.094", report)
         self.assertIn("not a forecast", report)
 
 
