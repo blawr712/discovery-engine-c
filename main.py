@@ -2,7 +2,7 @@ import os
 import json
 import re
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -38,6 +38,16 @@ from src.data_sources.sec_insider_source import (
 from src.data_sources.sec_xbrl_source import SecXbrlSource
 from src.fundamentals_pit import FundamentalHistory
 from src.split_adjustment import SplitHistory
+from src.monthly import (
+    TMX_STALE_AFTER,
+    build_cycle_report,
+    default_cycle,
+    discovery_quality,
+    due_baselines,
+    run_cycle,
+    universe_source_age,
+    validate_cycle,
+)
 from src.insider_signals import build_insider_index, quarter_end
 from src.calibration import build_calibration, export_calibration
 from src.scoring_v2 import apply_all_models
@@ -140,6 +150,7 @@ from src.config import (
     RETRY_MAX_DELAY_SECONDS,
     RESUME_ENABLED,
     RETRY_ERRORS_ON_RESUME,
+    MAX_RESUME_AGE_HOURS,
     RUN_DIR,
     OUTPUT_DIR,
     SETTINGS,
@@ -287,24 +298,48 @@ def main(arguments=None):
             balanced_per_country=args.balanced_research,
         )
         return
+    if args.monthly:
+        run_monthly(cycle=args.cycle, skip_universe=args.skip_universe)
+        return
+    run_discovery(
+        tickers=args.tickers,
+        limit=args.limit,
+        balanced_sample=args.balanced_sample,
+    )
+
+
+def run_discovery(
+    tickers=None,
+    limit=None,
+    balanced_sample=None,
+    cycle: str | None = None,
+) -> str:
+    """Run (or resume) a full discovery run and return its run ID."""
     source = build_market_data_source()
     universe = UniverseBuilder().build_universe()
     try:
         universe = select_universe(
             universe,
-            tickers=args.tickers,
-            limit=args.limit,
-            balanced_sample=args.balanced_sample,
+            tickers=tickers,
+            limit=limit,
+            balanced_sample=balanced_sample,
         )
     except ValueError as error:
         raise SystemExit(str(error)) from error
-    fingerprint = build_run_fingerprint(universe, STRATEGY, SETTINGS)
+    fingerprint = build_run_fingerprint(universe, STRATEGY, SETTINGS, cycle=cycle)
     run_state = RunState.start_or_resume(
         RUN_DIR,
         fingerprint,
         len(universe),
         resume_enabled=RESUME_ENABLED,
+        max_resume_age_hours=MAX_RESUME_AGE_HOURS,
     )
+    for stale in run_state.skipped_stale_runs:
+        print(
+            f"Not resuming run {stale}: last updated more than "
+            f"{MAX_RESUME_AGE_HOURS:g} hours ago, so its prices are stale. "
+            "Starting a new run."
+        )
     prior_results = run_state.load_results(
         retry_errors=RETRY_ERRORS_ON_RESUME,
     )
@@ -471,6 +506,147 @@ def main(arguments=None):
         f"{intelligence['research_artifacts']['research_queue_csv_path']}"
     )
     print(f"Manifest saved to: {run_state.manifest_path}")
+    return run_state.run_id
+
+
+def run_monthly(cycle: str | None = None, skip_universe: bool = False) -> None:
+    """Run every unfinished step of this month's research cycle."""
+    state_directory = RUN_DIR / "monthly"
+    now = datetime.now(timezone.utc)
+    try:
+        label = validate_cycle(cycle) if cycle else default_cycle(state_directory, now)
+    except ValueError as error:
+        raise SystemExit(str(error)) from error
+    print(f"Monthly cycle: {label}")
+    canadian_universe = BASE_DIR / "data" / "raw" / "universe" / "universe_ca_auto.csv"
+
+    def universe_step(context):
+        if skip_universe:
+            detail = "rebuild skipped (--skip-universe)"
+        else:
+            from src import build_canadian_universe, build_universe
+
+            build_universe.main()
+            build_canadian_universe.main()
+            detail = "U.S. and Canadian universes rebuilt"
+        source_date, age = universe_source_age(canadian_universe, context.now)
+        if age is None:
+            context.warnings.append(
+                "the Canadian universe carries no TMX source date; check the workbook"
+            )
+        elif age > TMX_STALE_AFTER:
+            context.warnings.append(
+                f"TMX workbook data is from {source_date}, {age.days} days old; "
+                "download the latest listing from TMX before the next cycle"
+            )
+        return {"detail": f"{detail}; TMX data as of {source_date or 'unknown'}"}
+
+    def discovery_step(context):
+        run_id = run_discovery(cycle=label)
+        manifest, results = load_saved_run(RUN_DIR, run_id)
+        if manifest.get("status") not in {"completed", "completed_with_errors"}:
+            raise RuntimeError(f"run {run_id} ended with status {manifest.get('status')}")
+        ok, detail = discovery_quality(results)
+        if not ok:
+            raise RuntimeError(f"run {run_id}: {detail}")
+        return {"run_id": run_id, "detail": detail}
+
+    def index_step(context):
+        index_history_run(context.run_id)
+        return {"detail": "indexed"}
+
+    def moonshot_step(context):
+        analyze_moonshot_run(context.run_id, source=build_market_data_source())
+        return {"detail": "analysis and market-risk evidence saved"}
+
+    def calibrate_step(context):
+        calibrate_saved_moonshot(context.run_id)
+        return {"detail": "calibrated; Moonshot baseline frozen"}
+
+    def freeze_step(context):
+        if "research" in available_baseline_kinds(OUTPUT_DIR, context.run_id):
+            return {"detail": "research baseline already frozen"}
+        freeze_saved_research_baseline(context.run_id)
+        return {"detail": "research baseline frozen"}
+
+    def resolve_step(context):
+        due = due_baselines(OUTPUT_DIR, context.now)
+        if not due:
+            return {"detail": "no horizon newly due"}
+        failures = []
+        for entry in due:
+            print(
+                f"\nResolving {entry['kind']} baseline {entry['run_id']} "
+                f"({', '.join(entry['horizons'])} newly due)"
+            )
+            try:
+                resolve_saved_baseline(
+                    entry["run_id"], collect_prices=True, kind=entry["kind"],
+                )
+            except (Exception, SystemExit) as error:  # noqa: BLE001 - one baseline at a time
+                failures.append(f"{entry['kind']} {entry['run_id']}: {error}")
+                continue
+            context.outputs.setdefault("resolved", []).append(
+                {**entry, "summary": _resolution_headline(entry)}
+            )
+        if failures:
+            raise RuntimeError("; ".join(failures))
+        return {"detail": f"{len(due)} baseline(s) resolved"}
+
+    try:
+        state = run_cycle(
+            label,
+            {
+                "universe": universe_step,
+                "discovery": discovery_step,
+                "index": index_step,
+                "moonshot": moonshot_step,
+                "calibrate": calibrate_step,
+                "freeze": freeze_step,
+                "resolve": resolve_step,
+            },
+            state_directory,
+        )
+    except RuntimeError as error:
+        raise SystemExit(str(error)) from error
+
+    resolved = (state["steps"]["resolve"].get("outputs") or {}).get("resolved")
+    report_path = OUTPUT_DIR / f"monthly_cycle_{label}.md"
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(build_cycle_report(state, resolved), encoding="utf-8")
+
+    print(f"\nMonthly cycle {label}: {state['status']}")
+    for name, record in state["steps"].items():
+        print(f"  {name:<10} {record['status']:<8} {record.get('detail') or ''}")
+    for warning in state.get("warnings", []):
+        print(f"  warning: {warning}")
+    print(f"Cycle report: {report_path}")
+    print(f"Cycle state: {state_directory / (label + '.json')}")
+    if state["status"] != "completed":
+        raise SystemExit(
+            f"Monthly cycle {label} finished with failures. Run --monthly again "
+            "to retry the failed and blocked steps; finished steps are not repeated."
+        )
+
+
+def _resolution_headline(entry: dict) -> dict:
+    """Selected and control outcomes for each newly due horizon of a baseline."""
+    path = OUTPUT_DIR / f"baseline_resolution_{entry['kind']}_{entry['run_id']}.json"
+    try:
+        resolution = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    headline = {}
+    for horizon in entry["horizons"]:
+        measured = (resolution.get("horizons") or {}).get(horizon) or {}
+        headline[horizon] = {
+            side: {
+                key: (measured.get(side) or {}).get(key)
+                for key in ("median_excess_percent", "win_rate_percent", "resolved")
+            }
+            for side in ("selected", "control")
+        }
+    return headline
 
 
 def freeze_saved_research_baseline(run_id: str) -> None:

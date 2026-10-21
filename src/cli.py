@@ -81,6 +81,15 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
         help="reapply shadow models to a completed run from cached data, no provider calls",
     )
     selection.add_argument(
+        "--monthly",
+        action="store_true",
+        help=(
+            "run this month's research cycle: universe, discovery, index, "
+            "Moonshot, calibration, baseline freeze, and due resolutions; "
+            "rerun to continue an interrupted cycle"
+        ),
+    )
+    selection.add_argument(
         "--index-run",
         metavar="RUN_ID",
         help="index a completed saved run into the local history database",
@@ -134,6 +143,16 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
         type=_positive_integer,
         metavar="COUNT",
         help="collect market-risk evidence for only the first COUNT Moonshot names",
+    )
+    parser.add_argument(
+        "--cycle",
+        metavar="LABEL",
+        help="monthly cycle label such as 2026-11 (default: the current or unfinished cycle)",
+    )
+    parser.add_argument(
+        "--skip-universe",
+        action="store_true",
+        help="use the existing universe files instead of rebuilding them during --monthly",
     )
     parser.add_argument(
         "--refresh-fundamentals",
@@ -202,6 +221,10 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
         parser.error("--collect-market-risk requires --moonshot-run")
     if args.moonshot_limit is not None and not args.collect_market_risk:
         parser.error("--moonshot-limit requires --collect-market-risk")
+    if args.cycle is not None and not args.monthly:
+        parser.error("--cycle requires --monthly")
+    if args.skip_universe and not args.monthly:
+        parser.error("--skip-universe requires --monthly")
     if args.refresh_fundamentals and args.rescore_run is None:
         parser.error("--refresh-fundamentals requires --rescore-run")
     if args.backtest_limit is not None and args.backtest_run is None:

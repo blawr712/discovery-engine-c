@@ -21,13 +21,23 @@ def build_run_fingerprint(
     universe: list[dict],
     strategy: dict,
     settings: dict,
+    cycle: str | None = None,
 ) -> str:
-    """Fingerprint every input that can materially affect a run."""
+    """Fingerprint every input that can materially affect a run.
+
+    Nothing here is a date, so an unchanged universe and configuration give
+    an unchanged fingerprint month after month. A scheduled cycle passes its
+    label so that each cycle's run is distinct from the last one, while an
+    interrupted run of the same cycle still resumes. Without a cycle the
+    fingerprint is exactly what it has always been.
+    """
     payload = {
         "universe": universe,
         "strategy": strategy,
         "settings": settings,
     }
+    if cycle is not None:
+        payload["cycle"] = str(cycle)
     encoded = json.dumps(
         payload,
         sort_keys=True,
@@ -53,6 +63,7 @@ class RunState:
         self.manifest = manifest
         self.clock = clock
         self.resumed = resumed
+        self.skipped_stale_runs: list[str] = []
 
     @property
     def run_id(self) -> str:
@@ -83,17 +94,29 @@ class RunState:
         universe_size: int,
         resume_enabled: bool = True,
         clock: Callable[[], datetime] | None = None,
+        max_resume_age_hours: float | None = None,
     ) -> "RunState":
-        """Resume the newest compatible incomplete run or create a new one."""
+        """Resume the newest compatible incomplete run or create a new one.
+
+        A compatible run last touched more than ``max_resume_age_hours`` ago
+        is not resumed. Its checkpoints hold prices from that earlier date,
+        and resuming would publish them under a new completion time; a
+        month-old run that finished with one provider error would otherwise
+        come back as this month's results with that one row retried.
+        """
         clock = clock or (lambda: datetime.now(timezone.utc))
         root_directory = Path(root_directory)
         root_directory.mkdir(parents=True, exist_ok=True)
+        skipped_stale: list[str] = []
 
         if resume_enabled:
             match = cls._find_resumable_run(
                 root_directory,
                 fingerprint,
                 universe_size,
+                max_age_hours=max_resume_age_hours,
+                now=clock(),
+                skipped=skipped_stale,
             )
             if match is not None:
                 run_directory, manifest = match
@@ -114,6 +137,7 @@ class RunState:
                 )
                 state.checkpoint_directory.mkdir(parents=True, exist_ok=True)
                 state._refresh_checkpoint_count()
+                state.skipped_stale_runs = skipped_stale
                 return state
 
         now = _utc_iso(clock())
@@ -141,6 +165,7 @@ class RunState:
             "resume_count": 0,
         }
         state = cls(run_directory, manifest, clock)
+        state.skipped_stale_runs = skipped_stale
         state._write_manifest()
         return state
 
@@ -234,6 +259,9 @@ class RunState:
         root_directory: Path,
         fingerprint: str,
         universe_size: int,
+        max_age_hours: float | None = None,
+        now: datetime | None = None,
+        skipped: list[str] | None = None,
     ) -> tuple[Path, dict] | None:
         matches: list[tuple[Path, dict]] = []
 
@@ -250,6 +278,12 @@ class RunState:
                 and manifest.get("fingerprint") == fingerprint
                 and manifest.get("universe_size") == universe_size
             ):
+                if max_age_hours is not None and now is not None and _older_than(
+                    manifest.get("updated_at"), now, max_age_hours,
+                ):
+                    if skipped is not None:
+                        skipped.append(str(manifest.get("run_id") or path.parent.name))
+                    continue
                 matches.append((path.parent, manifest))
 
         if not matches:
@@ -259,6 +293,21 @@ class RunState:
             matches,
             key=lambda match: str(match[1].get("updated_at", "")),
         )
+
+
+def _older_than(value: object, now: datetime, hours: float) -> bool:
+    """True when an ISO timestamp is more than ``hours`` before ``now``.
+
+    An unreadable timestamp counts as old: resuming a run whose age cannot be
+    established is the riskier of the two mistakes.
+    """
+    try:
+        moment = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        return True
+    if moment.tzinfo is None:
+        moment = moment.replace(tzinfo=timezone.utc)
+    return (now - moment).total_seconds() > float(hours) * 3600.0
 
 
 def summarize_results(results: list[dict]) -> dict:

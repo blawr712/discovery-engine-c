@@ -324,11 +324,51 @@ Changing a dashboard filter never makes a market-data or AI request.
 
 ## Running
 
+### The monthly cycle
+
+Once a month, after downloading the latest TMX workbook to
+`data/raw/canada/tsx-and-tsxv-listed-companies.xlsx`, run:
+
+```powershell
+python main.py --monthly
+```
+
+That one command rebuilds both universes, runs discovery over the full
+universe, indexes the run, collects Moonshot market-risk evidence, calibrates
+Moonshot, freezes the Score v3 research queue as a forward baseline, and
+resolves every earlier baseline with a horizon that has matured since it was
+last measured. It writes `data/exports/monthly_cycle_<cycle>.md` with what each
+step did and the selected-versus-control outcome of each newly matured horizon.
+
+A cycle takes most of a day. It can be interrupted at any point: run the same
+command again and finished steps are skipped, so it continues where it stopped.
+A failed step does not stop steps that do not depend on it, and the command
+exits with an error until every step has succeeded. Progress is kept in
+`data/runs/monthly/<cycle>.json`.
+
+- The cycle label defaults to the current month, or to an unfinished cycle
+  touched in the last seven days, so a cycle that starts on the 30th and
+  finishes on the 1st stays one cycle. `--cycle 2026-11` sets it explicitly.
+- `--skip-universe` keeps the existing universe files.
+- The cycle label is part of the discovery run's fingerprint, so a cycle never
+  resumes last month's run, even when the universe and configuration are
+  unchanged.
+- A run with more than 2% provider errors (typically a rate-limit episode) is
+  not frozen. The freeze and Moonshot steps wait, and the next attempt resumes
+  the run and retries the failed rows.
+- The report warns when the TMX workbook's data is more than 45 days old.
+
+### Individual commands
+
 Run the complete configured universe:
 
 ```powershell
 python main.py
 ```
+
+A compatible interrupted run is resumed only if it was updated in the last 72
+hours (`run_state.max_resume_age_hours`). An older run's checkpoints hold
+older prices, so a new run starts instead.
 
 Refresh the Canadian universe by placing the latest TMX workbook at
 `data/raw/canada/tsx-and-tsxv-listed-companies.xlsx` and running:

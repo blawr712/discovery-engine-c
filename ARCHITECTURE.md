@@ -30,7 +30,9 @@ creates a global cooldown so concurrent workers cannot amplify throttling.
 Repeated rate limits open a per-process circuit breaker, preserving unresolved
 rows for a later resume instead of holding thousands of queued requests open.
 Run State stores an input fingerprint, manifest, and atomic per-company
-checkpoints so compatible interrupted runs can resume safely.
+checkpoints so compatible interrupted runs can resume safely. A compatible run
+last updated more than 72 hours ago is not resumed, because its checkpoints
+would publish older prices under a new completion time.
 Completed runs containing provider errors remain resumable; successful and
 analytically rejected rows are reused while only error rows run again.
 
@@ -123,6 +125,18 @@ cohorts. Both prices for a return come from one provider series, and
 candidates whose prices stop before a horizon stay visible as unresolved
 rather than being dropped. The baseline file is never modified; each
 resolution is a separate artifact recorded in the run manifest.
+
+Monthly Cycle (`src/monthly.py`, `--monthly`): run the universe rebuild,
+discovery, indexing, Moonshot collection and calibration, research-baseline
+freeze, and resolution of newly matured baselines as one labelled cycle. Each
+step's outcome is persisted, so a rerun continues an interrupted cycle without
+repeating finished work; steps run only once their dependencies are done, and
+independent steps continue past a failure. The cycle label is mixed into the
+discovery fingerprint so that each month's run is distinct from the last, a
+provider-error rate above 2% keeps a partly collected run from being frozen,
+and a lock prevents two processes running the same cycle. The orchestration
+takes its steps as callables and holds no provider code; `main.py` supplies
+them.
 
 Backtest Engine: Replay the Scoring Engine's technical factor functions at
 historical month-ends using only price data available on each date, then

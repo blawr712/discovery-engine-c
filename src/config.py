@@ -92,6 +92,9 @@ RETRY_ERRORS_ON_RESUME = RUN_STATE_CONFIG.get(
     "retry_errors_on_resume",
     True,
 )
+# A compatible run older than this is started afresh rather than resumed, so
+# last month's checkpoints can never come back as this month's results.
+MAX_RESUME_AGE_HOURS = float(RUN_STATE_CONFIG.get("max_resume_age_hours", 72))
 
 RESEARCH_CONFIG = SETTINGS.get("research", {})
 RESEARCH_AI_ENABLED = RESEARCH_CONFIG.get("ai_synthesis_enabled", False)

@@ -184,6 +184,25 @@ class CliTests(unittest.TestCase):
         with self.assertRaises(SystemExit):
             parse_args(["--history-summary", "--index-run", "run-123"])
 
+    def test_monthly_cycle_options(self):
+        args = parse_args(["--monthly"])
+        self.assertTrue(args.monthly)
+        self.assertIsNone(args.cycle)
+        self.assertFalse(args.skip_universe)
+
+        args = parse_args(["--monthly", "--cycle", "2026-11", "--skip-universe"])
+        self.assertEqual(args.cycle, "2026-11")
+        self.assertTrue(args.skip_universe)
+
+        for invalid in (
+            ["--cycle", "2026-11"],
+            ["--skip-universe"],
+            ["--monthly", "--limit", "10"],
+            ["--monthly", "--index-run", "run-123"],
+        ):
+            with self.assertRaises(SystemExit):
+                parse_args(invalid)
+
     def test_refresh_fundamentals_requires_a_rescore_run(self):
         args = parse_args(["--rescore-run", "run-123", "--refresh-fundamentals"])
 

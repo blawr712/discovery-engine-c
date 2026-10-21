@@ -70,6 +70,19 @@
   as `pit_split_ambiguous` instead of guessing whether the filing restated
 - Added `split_adjust_shares` to the backtest configuration so the correction
   can be measured against a control on the same universe
+- Added `--monthly`, which runs the universe rebuild, discovery, indexing,
+  Moonshot collection and calibration, research-baseline freeze, and
+  resolution of newly matured baselines as one resumable cycle with a
+  per-cycle state file and a Markdown cycle report
+- Mixed the cycle label into the discovery fingerprint, so an unchanged
+  universe and configuration can no longer resume last month's run
+- Stopped resuming compatible runs last updated more than 72 hours ago, which
+  previously let a month-old run that finished with one provider error come
+  back as a new run with that single row retried
+- Withheld the baseline freeze when more than 2% of a run's rows are provider
+  errors, so a rate-limit episode cannot make a gap permanent
+- Warned when the TMX workbook behind the Canadian universe is more than 45
+  days old
 - Taught the resolver about baseline kinds, reading each baseline's own
   cohort split so Moonshot and research cohorts stay separate; added
   `--baseline moonshot|research|all`

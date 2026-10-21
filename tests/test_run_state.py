@@ -392,3 +392,71 @@ class RunStateTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ResumeAgeAndCycleTests(unittest.TestCase):
+    """A month-old run must never come back as this month's results."""
+
+    def setUp(self):
+        self.temporary_directory = tempfile.TemporaryDirectory()
+        self.root = Path(self.temporary_directory.name)
+        self.clock = MutableClock()
+
+    def tearDown(self):
+        self.temporary_directory.cleanup()
+
+    def _completed_with_errors(self):
+        state = RunState.start_or_resume(self.root, "fp", 2, clock=self.clock)
+        state.record_result(0, {"ticker": "GOOD", "status": "OK"})
+        state.record_result(1, {"ticker": "RETRY", "status": "ERROR"})
+        state.complete(
+            [{"ticker": "GOOD", "status": "OK"}, {"ticker": "RETRY", "status": "ERROR"}],
+            "partial.csv",
+        )
+        return state
+
+    def test_recent_run_with_errors_still_resumes(self):
+        state = self._completed_with_errors()
+        self.clock.value += timedelta(hours=10)
+
+        resumed = RunState.start_or_resume(
+            self.root, "fp", 2, clock=self.clock, max_resume_age_hours=72,
+        )
+
+        self.assertTrue(resumed.resumed)
+        self.assertEqual(resumed.run_id, state.run_id)
+        self.assertEqual(resumed.skipped_stale_runs, [])
+
+    def test_month_old_run_with_errors_is_not_resumed(self):
+        state = self._completed_with_errors()
+        self.clock.value += timedelta(days=30)
+
+        fresh = RunState.start_or_resume(
+            self.root, "fp", 2, clock=self.clock, max_resume_age_hours=72,
+        )
+
+        self.assertFalse(fresh.resumed)
+        self.assertNotEqual(fresh.run_id, state.run_id)
+        self.assertEqual(fresh.skipped_stale_runs, [state.run_id])
+        self.assertEqual(fresh.load_results(), {})
+        # The old run's manifest is left exactly as it was.
+        old, _ = load_saved_run(self.root, state.run_id)
+        self.assertEqual(old["status"], "completed_with_errors")
+
+    def test_without_an_age_limit_behaviour_is_unchanged(self):
+        state = self._completed_with_errors()
+        self.clock.value += timedelta(days=30)
+
+        resumed = RunState.start_or_resume(self.root, "fp", 2, clock=self.clock)
+
+        self.assertEqual(resumed.run_id, state.run_id)
+
+    def test_cycle_changes_the_fingerprint_only_when_given(self):
+        universe = [{"ticker": "ONE"}]
+        plain = build_run_fingerprint(universe, {}, {})
+        self.assertEqual(plain, build_run_fingerprint(universe, {}, {}, cycle=None))
+        october = build_run_fingerprint(universe, {}, {}, cycle="2026-10")
+        november = build_run_fingerprint(universe, {}, {}, cycle="2026-11")
+        self.assertNotEqual(plain, october)
+        self.assertNotEqual(october, november)
+        self.assertEqual(october, build_run_fingerprint(universe, {}, {}, cycle="2026-10"))
