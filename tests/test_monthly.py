@@ -334,12 +334,12 @@ class UniverseAndReportTests(unittest.TestCase):
             "run_id": "NOV", "kind": "research", "horizons": ["1M"],
             "summary": {"1M": {
                 "selected": {}, "control": {},
-                "head_to_head": {"resolved": 1180, "score_v3": 0.081, "score_v3_1": 0.094},
+                "head_to_head": {"resolved": 1180, "score_v3": 0.081, "score_v3_challenger": 0.094},
             }},
         }])
 
         self.assertIn("## Model head to head", report)
-        self.assertIn("research `NOV` 1M, 1180 names: score_v3 0.081, score_v3_1 0.094", report)
+        self.assertIn("research `NOV` 1M, 1180 names: score_v3 0.081, score_v3_challenger 0.094", report)
         self.assertIn("not a forecast", report)
 
 

@@ -43,7 +43,6 @@
         ]
     },
     "research_baseline": {
-        "model_version": "v3.0-shadow-composite",
         "horizon_days": {
             "1M": 30,
             "3M": 91,

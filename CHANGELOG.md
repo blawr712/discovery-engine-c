@@ -108,6 +108,12 @@
   company facts by CIK with public float
 - Corrected the excluded-versus-scored mean comparison, which had counted every
   unscored name as excluded
+- Score v3.2: replaced net insider buying over 180 days with insider purchases
+  over 12 months, after a pre-stated paired test on the point-in-time universe
+- Retired the v3.1 challenger and made v3.0 the challenger, in a generic
+  `score_v3_challenger` slot, so forward cohorts test the insider change
+- Labelled research baselines with the version of the model that produced
+  their scores, instead of a separately configured version
 - Taught the resolver about baseline kinds, reading each baseline's own
   cohort split so Moonshot and research cohorts stay separate; added
   `--baseline moonshot|research|all`

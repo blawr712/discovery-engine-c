@@ -136,8 +136,8 @@ WEIGHTS = STRATEGY["weights"]
 SCORING_CONFIG = STRATEGY["scoring"]
 SCORING_V2_CONFIG = STRATEGY.get("scoring_v2", {})
 SCORING_V3_CONFIG = STRATEGY.get("scoring_v3", {})
-# A forward-test challenger to v3.0; it never orders the research queue.
-SCORING_V3_1_CONFIG = STRATEGY.get("scoring_v3_1", {})
+# A forward-test challenger to v3; it never orders the research queue.
+SCORING_V3_CHALLENGER_CONFIG = STRATEGY.get("scoring_v3_challenger", {})
 FUNDAMENTALS_CONFIG = SETTINGS.get("fundamentals", {})
 INSIDERS_CONFIG = SETTINGS.get("insiders", {})
 INSIDER_SIGNALS_CONFIG = STRATEGY.get("insider_signals", {})

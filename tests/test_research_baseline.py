@@ -172,3 +172,31 @@ class ExportAndResolveTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class BaselineVersionTests(unittest.TestCase):
+    """A cohort is labelled with the model that produced its scores."""
+
+    def test_default_version_comes_from_the_scoring_model(self):
+        from src.config import SCORING_V3_CONFIG
+        from src.research_baseline import validated_config
+
+        self.assertEqual(
+            validated_config({})["model_version"], SCORING_V3_CONFIG["model_version"],
+        )
+        self.assertEqual(SCORING_V3_CONFIG["model_version"], "v3.2-shadow-composite")
+
+    def test_an_explicit_version_is_still_honoured(self):
+        from src.research_baseline import validated_config
+
+        self.assertEqual(validated_config({"model_version": "v9-test"})["model_version"], "v9-test")
+
+    def test_the_challenger_is_frozen_beside_v3(self):
+        from src.research_baseline import build_research_baseline
+
+        queue = [{
+            "ticker": "A", "ranking_basis": "score_v3", "score_v3": 80.0,
+            "score_v3_challenger": 75.0, "research_rank": 1,
+        }]
+        baseline = build_research_baseline(queue, "RUN", "2026-11-16T12:00:00+00:00", {})
+        self.assertEqual(baseline["candidates"][0]["score_v3_challenger"], 75.0)

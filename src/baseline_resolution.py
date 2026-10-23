@@ -40,7 +40,7 @@ DEFAULT_CONFIG = {
     # Frozen scores compared head to head on each resolved horizon. A rank
     # correlation over a handful of names is noise, so comparisons need more
     # resolved names than a cohort summary does.
-    "compared_scores": ["score_v3", "score_v3_1"],
+    "compared_scores": ["score_v3", "score_v3_challenger"],
     "minimum_comparison_size": 50,
 }
 

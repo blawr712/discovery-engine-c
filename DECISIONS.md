@@ -456,6 +456,10 @@ have helped almost mechanically. It is encouraging and settles nothing.
 **Where.** `src/monthly.py`, `scoring_v3_1` in `config/strategy.json`,
 `compared_scores` in `src/baseline_resolution.py`.
 
+**Amended 2026-10-23.** v3.1 was retired before any cohort froze its scores:
+measured on the point-in-time universe it is significantly worse than v3.2 in
+the holdout. The challenger slot now holds v3.0; see the entry of that date.
+
 ## 2026-10-23: Survivorship test; the backtest's universe is now point in time
 
 **Decision.** Choose each month's backtest universe by that month's market
@@ -583,6 +587,63 @@ numbers, which is worth having but not urgent.
 `src/survivorship.py`, `src/data_sources/sec_filings_source.py`, artifacts
 `survivorship_20261019T223433Z-f13f71e5.*`. The today's-universe backtest is
 kept as `backtest_*_static_universe.*`.
+
+## 2026-10-23: Score v3.2 counts insider purchases, not net buying
+
+**Decision.** Replace v3's insider input, net purchases minus sales over 180
+days (`ins_net_count_short`), with open-market purchases over 12 months
+(`ins_purchase_count_long`), at the same 10 points. Nothing else changes. The
+model becomes v3.2. Retire the v3.1 challenger and make v3.0 the challenger,
+so the forward cohorts test this change on data it never saw.
+
+**Why it was tested.** On the point-in-time universe net buying fell from
+0.070 to 0.015 (1Y IC): among names that grew past the band it is negatively
+predictive (-0.074), because insiders sell into a rally, while purchases alone
+were positive in every subset (+0.046 overall).
+
+**The test.** The protocol of 2026-10-21, on the point-in-time observations,
+with the harness first reproducing the published result exactly (IC 0.0802,
+top 25 988.54%). Rule fixed before running: positive in both windows, Newey-
+West |t| >= 2 in one, significantly negative in neither, with one decision
+test and anything else diagnostic. Paired 1Y IC difference against v3.0:
+
+| Change | 2016-21 | 2022-26 | Verdict |
+|---|---|---|---|
+| **Net buying 180d -> purchases 12m** | +0.0073 (t 1.8) | +0.0095 (t 5.5) | **accept** |
+| Drop insiders entirely (diagnostic) | -0.0028 (t -0.5) | -0.0029 (t -1.0) | - |
+| Net buying 180d -> purchases 180d (diagnostic) | +0.0054 (t 1.2) | +0.0091 (t 5.5) | - |
+
+The 3M horizon agrees (+0.0058 and +0.0046). Overall 1Y IC rises from 0.080 to
+0.089 and the quintile spread widens (Q1 median -21.7% to -22.1%, Q5 -11.3% to
+-10.7%); top-25 median and hit rate are unchanged (-11.2% / 40.1% to -11.1% /
+40.2%). The diagnostics say insiders still add something, and that purchases
+rather than the window carry it.
+
+**How much to trust it.** Less than a clean out-of-sample result. The idea
+came from analysing these same observations, holdout years included, and the
+2016-21 difference alone (t 1.8) is not significant. What it can lean on is
+independent of this data: insider purchases are widely found to be
+informative, while sales are often driven by diversification, liquidity, or
+pre-arranged plans. That is why the old model now runs beside the new one.
+
+**The challenger.** v3.1, which dropped long momentum, FCF margin, and the
+operating-margin weight, was measured on today's universe. Against v3.2 on
+the point-in-time universe it is significantly worse in the holdout (-0.010,
+t -2.0), since long momentum is informative once the universe is honest. No
+cohort had frozen its scores, so retiring it loses nothing. The challenger
+slot is now `score_v3_challenger`, holding v3.0 exactly; its ranking of the Oct
+19 run reproduces the old v3.0 queue across all 1,417 scored names. v3.2 and
+v3.0 rank that run 0.988 alike, and the queue's top 25 shares 22 names (JCTC,
+AUDC, KMDA out; NTWK, JYNT, ACNT in).
+
+**A labelling bug, fixed.** Research baselines took their version from a fixed
+`"v3.0-shadow-composite"` in `config/backtest.json`, not from the model that
+produced the scores, so cohorts frozen after this change would have been
+labelled v3.0. The version now comes from `scoring_v3`. Already frozen cohorts
+are unchanged; the Oct 19 baseline file is byte-identical.
+
+**Where.** `scoring_v3` and `scoring_v3_challenger` in `config/strategy.json`;
+harness over `backtest_observations_20261019T223433Z-f13f71e5.csv.gz`.
 
 ## Standing caveats that gate any promotion to "official"
 

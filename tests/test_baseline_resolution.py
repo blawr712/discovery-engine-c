@@ -287,7 +287,7 @@ class ModelComparisonTests(unittest.TestCase):
             self.series[ticker] = _series("2025-12-01", 200, 10.0, (index - 30) / 10000)
             row = _candidate(ticker, "v3_quintile_3", index + 1)
             row["score_v3"] = float(index)        # perfect ranking
-            row["score_v3_1"] = float(-index)     # perfectly backwards
+            row["score_v3_challenger"] = float(-index)     # perfectly backwards
             row["score_v3_confidence"] = 90.0     # metadata, never compared
             candidates.append(row)
         # A name only one model scored must not enter the common comparison.
@@ -313,9 +313,9 @@ class ModelComparisonTests(unittest.TestCase):
         comparison = self._comparison()
 
         self.assertEqual(comparison["score_v3"]["resolved"], 61)
-        self.assertEqual(comparison["score_v3_1"]["resolved"], 60)
+        self.assertEqual(comparison["score_v3_challenger"]["resolved"], 60)
         self.assertGreater(comparison["score_v3"]["information_coefficient"], 0.99)
-        self.assertEqual(comparison["score_v3_1"]["information_coefficient"], -1.0)
+        self.assertEqual(comparison["score_v3_challenger"]["information_coefficient"], -1.0)
         ladder = comparison["score_v3"]["quintiles"]
         self.assertEqual([q["quintile"] for q in ladder], [1, 2, 3, 4, 5])
         medians = [q["median_excess_percent"] for q in ladder]
@@ -326,14 +326,14 @@ class ModelComparisonTests(unittest.TestCase):
 
         self.assertEqual(common["resolved"], 60)
         self.assertEqual(common["information_coefficient"]["score_v3"], 1.0)
-        self.assertEqual(common["information_coefficient"]["score_v3_1"], -1.0)
+        self.assertEqual(common["information_coefficient"]["score_v3_challenger"], -1.0)
 
     def test_metadata_fields_are_not_mistaken_for_scores(self):
         resolution = resolve_baseline(
             self.baseline, self.series, as_of=date(2026, 2, 10), config=self.config,
         )
         scores = resolution["candidates"][0]["scores"]
-        self.assertEqual(set(scores), {"score_v3", "score_v3_1"})
+        self.assertEqual(set(scores), {"score_v3", "score_v3_challenger"})
 
     def test_too_few_names_reports_counts_without_a_correlation(self):
         comparison = self._comparison(minimum_comparison_size=100)
@@ -344,17 +344,17 @@ class ModelComparisonTests(unittest.TestCase):
 
     def test_baselines_frozen_before_a_model_existed_compare_what_they_have(self):
         for row in self.baseline["candidates"]:
-            row.pop("score_v3_1", None)
+            row.pop("score_v3_challenger", None)
         comparison = self._comparison()
 
         self.assertIn("score_v3", comparison)
-        self.assertNotIn("score_v3_1", comparison)
+        self.assertNotIn("score_v3_challenger", comparison)
         self.assertNotIn("common", comparison)
 
     def test_moonshot_baselines_without_compared_scores_omit_the_section(self):
         for row in self.baseline["candidates"]:
             row.pop("score_v3", None)
-            row.pop("score_v3_1", None)
+            row.pop("score_v3_challenger", None)
         resolution = resolve_baseline(
             self.baseline, self.series, as_of=date(2026, 2, 10), config=self.config,
         )

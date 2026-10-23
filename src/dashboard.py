@@ -290,7 +290,7 @@ class DashboardStore:
             }
         aggregate = document.get("aggregate", {})
         config = document.get("config", {})
-        composites = [c for c in ("technical_score", "score_v2", "score_v3", "score_v3_1")
+        composites = [c for c in ("technical_score", "score_v2", "score_v3", "score_v3_challenger")
                       if c in aggregate.get("information_coefficient", {})]
         return {
             "available": True,

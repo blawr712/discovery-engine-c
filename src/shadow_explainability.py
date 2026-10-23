@@ -34,15 +34,16 @@ SHADOW_GLOSSARY = {
         ),
         "not": "Not a return forecast. Validated by the backtest; see Evidence.",
     },
-    "score_v3_1": {
-        "label": "Score v3.1 (challenger)",
+    "score_v3_challenger": {
+        "label": "Score v3.0 (challenger)",
         "definition": (
-            "Score v3 without long momentum, FCF margin, and the operating-"
-            "margin weight, which showed no contribution once v3's filters had "
-            "run. Same filters. Scored beside v3 only so forward baselines can "
-            "compare the two; it never orders the research queue."
+            "The previous Score v3, which counted net insider buying (purchases "
+            "minus sales over 180 days) where the current model counts insider "
+            "purchases over 12 months. Scored beside v3 only so forward "
+            "baselines can test that change on unseen data; it never orders "
+            "the research queue."
         ),
-        "not": "Not a return forecast and not validated: a forward test.",
+        "not": "Not a return forecast: a forward test of a model change.",
     },
 }
 

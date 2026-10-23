@@ -23,11 +23,14 @@ import os
 from pathlib import Path
 import tempfile
 
-from src.config import BENCHMARKS, RESEARCH_BASELINE_CONFIG
+from src.config import BENCHMARKS, RESEARCH_BASELINE_CONFIG, SCORING_V3_CONFIG
 
 
 DEFAULT_CONFIG = {
-    "model_version": "v3.0-shadow-composite",
+    # The version of the model whose scores are frozen, taken from the
+    # scoring configuration unless a caller sets one: a version configured
+    # separately would go on labelling new cohorts with an old model's name.
+    "model_version": str(SCORING_V3_CONFIG.get("model_version") or "v3-shadow-composite"),
     "horizon_days": {"1M": 30, "3M": 91, "6M": 182, "1Y": 365},
     "top_n": 25,
     "quantiles": 5,
@@ -82,7 +85,7 @@ def build_research_baseline(
             "score_v2": _number(row.get("score_v2")),
             # The challenger's score, frozen beside v3.0's so resolution can
             # compare the two rankings on the same unseen outcomes.
-            "score_v3_1": _number(row.get("score_v3_1")),
+            "score_v3_challenger": _number(row.get("score_v3_challenger")),
             "discovery_rank": row.get("discovery_rank"),
             "benchmark": BENCHMARKS.get(str(row.get("country") or ""), "SPY"),
             "baseline_as_of": baseline_as_of,

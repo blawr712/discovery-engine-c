@@ -117,8 +117,9 @@ horizons anchored on the run's completion date, so Score v3 accumulates
 evidence on data its weights never saw. Cohorts are carved from the
 v3-scored population; names the filters excluded are kept as a control.
 Exports refuse to overwrite an existing baseline. Each candidate also carries
-the frozen scores of every shadow model, including the Score v3.1 challenger,
-so models can later be compared on the same outcomes.
+the frozen scores of every shadow model, including the v3 challenger, so
+models can later be compared on the same outcomes. A baseline is labelled
+with the version of the model that produced its scores.
 
 Baseline Resolution (`src/baseline_resolution.py`, `--resolve-baselines`):
 read a frozen forward baseline of either kind back and measure each eligible

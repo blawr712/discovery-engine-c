@@ -19,7 +19,7 @@ import math
 import numpy as np
 import pandas as pd
 
-from src.config import SCORING_V2_CONFIG, SCORING_V3_1_CONFIG, SCORING_V3_CONFIG
+from src.config import SCORING_V2_CONFIG, SCORING_V3_CHALLENGER_CONFIG, SCORING_V3_CONFIG
 from src.factors import FactorResult, score_confidence
 from src.fundamentals_pit import SIGNAL_NAMES as FUNDAMENTAL_SIGNAL_NAMES
 from src.insider_signals import SIGNAL_NAMES as INSIDER_SIGNAL_NAMES
@@ -116,8 +116,8 @@ def model_configs() -> list[dict]:
     configs = [validated_config(SCORING_V2_CONFIG)]
     if SCORING_V3_CONFIG:
         configs.append(validated_config(SCORING_V3_CONFIG))
-    if SCORING_V3_1_CONFIG:
-        configs.append(validated_config(SCORING_V3_1_CONFIG))
+    if SCORING_V3_CHALLENGER_CONFIG:
+        configs.append(validated_config(SCORING_V3_CHALLENGER_CONFIG))
     return configs
 
 
