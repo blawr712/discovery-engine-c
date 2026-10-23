@@ -376,27 +376,36 @@ adopted, because t 1.9 is below the bar set before the test and moving the bar
 after seeing the result is the failure the bar exists to prevent. It is the
 natural candidate to run as a forward shadow beside v3.0 if one is added.
 
-**A larger finding than any weight.** Compounded at the 1M rebalance and
-equal-weighted, the names v3 *excludes* beat the names it scores in both
-windows of the backtest: 299% against 183% in 2016-21 and 111% against 42% in
-2022-26, with the full universe at 268% and 90%. v3 improves the median and
-the win rate of what it picks, and it leaves out the thin right tail of
-crashed names that rebound, which is what drives means here. How much of that
-tail is real cannot be known from this data. The universe is companies alive
-at the Oct 2026 run, so the junk that went to zero is missing and the junk
-that rebounded is overrepresented, which inflates exactly the excluded
-bucket's mean. The one survivorship-free observation available contradicts the
-backtest: in the Sep 18 forward baseline's first month the excluded cohort was
-the worst on mean as well as median (-18.61% mean, against -2.84% for
-quintile 5). One month settles nothing, but it is the only unbiased evidence
-there is.
+**Corrected 2026-10-23: the "larger finding" here was a grouping error.** As
+first written, this paragraph said the names v3 *excludes* beat the names it
+scores on compounded equal-weight returns in both windows, 299% against 183%
+in 2016-21 and 111% against 42% in 2022-26. The script behind those numbers
+treated every name without a v3 score as excluded. About 73% of observations
+have no v3 score, and most of them were never rejected by a filter: they are
+Canadian names without SEC data, financials, and names missing fundamentals.
+Split by what v3 actually did, compounded at the 1M rebalance:
 
-**Consequence.** The question that most affects pick quality is no longer how
-v3 weights its signals but whether its filters are giving up real upside or
-only survivorship-inflated upside, and the in-sample data cannot answer it. A
-delisting-inclusive price vendor, the last item on the original roadmap, is
-now the most valuable data improvement left. Until then v3's claim is about
-typical outcomes, medians and win rates, not means.
+| Group | 2016-21 | 2022-26 |
+|---|---|---|
+| Rejected by v3's filters | 205% | **-5%** |
+| Scored by v3 | 183% | 42% |
+| Never scored | **324%** | **178%** |
+| Whole universe | 268% | 90% |
+
+So the filters did their job on means in the holdout, and gave up only modest
+upside in 2016-21. The group that out-compounds everything is the one v3
+cannot score at all. Survivorship still inflates every group's mean, the
+universe being companies alive at the Oct 2026 run, but the specific worry
+drawn from the wrong numbers, that the filters discard real winners, has
+little support. The one survivorship-free observation agrees: in the Sep 18
+forward baseline's first month the excluded cohort was the worst on mean as
+well as median (-18.61%, against -2.84% for quintile 5).
+
+**Consequence, as corrected.** A delisting-inclusive price vendor would still
+make the backtest's means trustworthy, and would test why never-scored names
+compound so strongly, but it is no longer needed to rescue v3's filters. The
+filters' case rests on medians, win rates, the holdout means above, and the
+forward cohort.
 
 **Where.** Scratch harness over
 `backtest_observations_20261019T223433Z-f13f71e5.csv.gz`; not in the repo.
@@ -469,7 +478,8 @@ have helped almost mechanically. It is encouraging and settles nothing.
   factor is constant per filer rather than correlated with future events: it
   adds cross-sectional noise to those names' levels instead of leaking the
   future. Closing it needs a per-filer unit factor carried in the extract.
-- **Means are not trustworthy in-sample.** v3's excluded names out-compound
-  its scored names in the backtest, very likely inflated by survivorship, and
-  the only clean forward month says the opposite. v3's evidence is about
-  medians and win rates until delisting-inclusive prices exist.
+- **Means are not trustworthy in-sample.** The universe is companies alive
+  at the source run, which inflates every group's compounded mean, and most
+  of all the never-scored names that out-compound the rest. v3's filters hold
+  up on holdout means and in the forward cohort; v3's evidence is otherwise
+  about medians and win rates until delisting-inclusive prices exist.
