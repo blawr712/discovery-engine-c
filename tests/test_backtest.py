@@ -506,3 +506,109 @@ class SplitAdjustmentSwitchTests(unittest.TestCase):
             paths = export_backtest(analysis, Path(directory))
 
         self.assertTrue(paths["backtest_json_path"].endswith("backtest_RUN1.json"))
+
+
+class PointInTimeUniverseTests(unittest.TestCase):
+    """Each month's universe is chosen by that month's market cap."""
+
+    def test_universe_adds_size_filtered_rows_only_when_enabled(self):
+        results = [
+            {"ticker": "IN", "status": "OK", "market_cap": 5e8},
+            {"ticker": "BIG", "status": "FILTERED", "market_cap": 3e9,
+             "reason_flags": "Above maximum market cap"},
+            {"ticker": "TINY", "status": "FILTERED", "market_cap": 4e6,
+             "reason_flags": "Below minimum market cap"},
+            {"ticker": "SHELL", "status": "FILTERED", "market_cap": 5e7,
+             "reason_flags": "Excluded industry: Shell Companies"},
+            {"ticker": "FUND", "status": "FILTERED", "market_cap": 5e7,
+             "reason_flags": "Excluded quote type: ETF"},
+        ]
+        static = [row["ticker"] for row in build_backtest_universe(results, CONFIG)]
+        dynamic = [
+            row["ticker"] for row in build_backtest_universe(
+                results, {**CONFIG, "point_in_time_universe": True},
+            )
+        ]
+        self.assertEqual(static, ["IN"])
+        self.assertEqual(dynamic, ["BIG", "IN", "TINY"])
+
+    def test_observations_outside_the_band_are_dropped(self):
+        universe, histories, benchmarks = _synthetic_universe(ticker_count=25)
+        # A stock filtered today for being too big: worth 1.5B at the end of
+        # its series, so the price-scaled cap was inside the band while its
+        # price was below two thirds of the final close.
+        grower = histories["T24"].copy()
+        closes = np.linspace(1.0, 30.0, len(grower))
+        grower["Close"] = closes
+        histories["T24"] = grower
+        universe[24] = {**universe[24], "market_cap": 1.5e9, "source_status": "FILTERED"}
+        analysis = build_backtest(
+            universe, histories, benchmarks, {"US": "SPY"}, "RUN1",
+            config={**CONFIG, "point_in_time_universe": True},
+        )
+        frame = analysis["_observations"]
+        grower_rows = frame[frame["ticker"] == "T24"]
+        self.assertFalse(grower_rows.empty)
+        caps = grower_rows["universe_market_cap"]
+        self.assertTrue((caps <= 1_000_000_000).all())
+        self.assertTrue((caps >= 10_000_000).all())
+        self.assertEqual(set(grower_rows["universe_cap_basis"]), {"price_scaled_approximation"})
+        # Months where it had grown past the cap are gone.
+        last_kept = grower_rows["date"].max()
+        self.assertLess(last_kept, frame["date"].max())
+        self.assertTrue(analysis["point_in_time_universe"])
+        self.assertGreater(analysis["universe_band"]["outside_band"], 0)
+
+    def test_disabled_flag_keeps_every_observation(self):
+        universe, histories, benchmarks = _synthetic_universe(ticker_count=25)
+        analysis = build_backtest(
+            universe, histories, benchmarks, {"US": "SPY"}, "RUN1", config=CONFIG,
+        )
+        self.assertFalse(analysis["point_in_time_universe"])
+        self.assertIsNone(analysis["universe_band"])
+        self.assertNotIn("universe_market_cap", analysis["_observations"])
+
+    def test_point_in_time_artifacts_get_their_own_names(self):
+        universe, histories, benchmarks = _synthetic_universe(ticker_count=25)
+        analysis = build_backtest(
+            universe, histories, benchmarks, {"US": "SPY"}, "RUN1",
+            config={**CONFIG, "point_in_time_universe": True},
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            paths = export_backtest(analysis, Path(directory))
+        self.assertTrue(paths["backtest_json_path"].endswith("backtest_RUN1_pit.json"))
+
+
+class UniverseMarketCapTests(unittest.TestCase):
+    def test_filed_shares_win_and_unit_factor_applies(self):
+        from src.backtest import _universe_market_cap
+
+        cap, basis = _universe_market_cap({"pit_market_cap": 2e7}, 4e8, 5.0, 10.0, 20.0)
+        self.assertEqual((cap, basis), (4e8, "filed_shares_unit_corrected"))
+        cap, basis = _universe_market_cap({"pit_market_cap": 2e7}, 4e8, 5.0, 10.0, 1.0)
+        self.assertEqual((cap, basis), (2e7, "filed_shares"))
+
+    def test_price_scaled_fallback_and_unavailable(self):
+        from src.backtest import _universe_market_cap
+
+        cap, basis = _universe_market_cap({}, 4e8, 5.0, 10.0, 1.0)
+        self.assertEqual((cap, basis), (2e8, "price_scaled_approximation"))
+        self.assertEqual(_universe_market_cap({}, None, 5.0, 10.0, 1.0), (None, "unavailable"))
+
+    def test_unit_factor_detects_a_bundled_ads(self):
+        from src.backtest import _share_unit_factor
+        from src.split_adjustment import SplitHistory
+
+        class History:
+            config = {"market_cap_reconciliation_tolerance": 2.0}
+
+            def __init__(self, cap):
+                self.cap = cap
+
+            def signals_as_of(self, *args, **kwargs):
+                return {"pit_market_cap": self.cap}
+
+        frame = pd.DataFrame({"Close": [10.0]}, index=pd.DatetimeIndex(["2026-09-17"]))
+        self.assertEqual(_share_unit_factor(History(3.4e7), frame, SplitHistory(), 6.88e8), 6.88e8 / 3.4e7)
+        self.assertEqual(_share_unit_factor(History(6.5e8), frame, SplitHistory(), 6.88e8), 1.0)
+        self.assertEqual(_share_unit_factor(None, frame, SplitHistory(), 6.88e8), 1.0)

@@ -9,6 +9,7 @@ limitations so results are not mistaken for a return forecast.
 
 from __future__ import annotations
 
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import csv
 import json
@@ -21,7 +22,7 @@ from typing import Callable
 import numpy as np
 import pandas as pd
 
-from src.config import BACKTEST_CONFIG, SCORING_CONFIG
+from src.config import BACKTEST_CONFIG, MAX_MARKET_CAP, MIN_MARKET_CAP, SCORING_CONFIG
 from src.data_sources.base import MarketDataSource
 from src.fundamentals_pit import FundamentalHistory
 from src.insider_signals import InsiderHistory
@@ -115,16 +116,36 @@ LIMITATIONS = (
 )
 
 
+# Run rows filtered only for size are still-listed operating companies, which
+# a point-in-time universe has to consider at every historical date.
+SIZE_FILTER_REASONS = ("Above maximum market cap", "Below minimum market cap")
+
+
 def build_backtest_universe(
     results: list[dict],
     config: dict | None = None,
 ) -> list[dict]:
-    """Select saved-run rows that passed metadata screening."""
+    """Select saved-run rows to replay.
+
+    By default these are the rows that passed today's metadata screening,
+    which defines a ten-year universe by today's market caps: a company that
+    grew past the cap is missing exactly in the years it was a winner, and
+    one that shrank below the floor is missing in the years it lost. With
+    ``point_in_time_universe`` the rows filtered only for size are added too,
+    and each month's observations are restricted to companies whose market
+    cap was inside the band at that month-end.
+    """
     config = _validated_config(config)
     statuses = set(config["source_statuses"])
+    include_size_filtered = bool(config["point_in_time_universe"])
     universe = {}
     for row in results:
-        if str(row.get("status")) not in statuses:
+        size_filtered = (
+            include_size_filtered
+            and str(row.get("status")) == "FILTERED"
+            and str(row.get("reason_flags") or "").startswith(SIZE_FILTER_REASONS)
+        )
+        if str(row.get("status")) not in statuses and not size_filtered:
             continue
         ticker = str(row.get("ticker") or "").strip().upper()
         if not ticker or ticker in universe:
@@ -281,6 +302,7 @@ def build_backtest(
     config = _validated_config(config)
     collection_errors = dict(collection_errors or {})
     horizons = config["forward_horizons_days"]
+    universe_stats: Counter = Counter()
     fundamental_histories = fundamental_histories or {}
     with_fundamentals = bool(fundamental_histories)
     insider_histories = insider_histories or {}
@@ -347,6 +369,11 @@ def build_backtest(
             SplitHistory.from_price_history(raw)
             if config["split_adjust_shares"] else SplitHistory()
         )
+        point_in_time = bool(config["point_in_time_universe"])
+        unit_factor = (
+            _share_unit_factor(fundamental_history, history, splits, row["market_cap"])
+            if point_in_time else 1.0
+        )
 
         for period_label, period_dates in periods:
             date = period_dates.get(benchmark_ticker)
@@ -409,6 +436,20 @@ def build_backtest(
                     date.date(),
                     market_cap=observation.get("pit_market_cap"),
                 ))
+            if point_in_time:
+                universe_cap, cap_basis = _universe_market_cap(
+                    observation, row["market_cap"], start_close,
+                    history["Close"].iloc[-1], unit_factor,
+                )
+                observation["universe_market_cap"] = universe_cap
+                observation["universe_cap_basis"] = cap_basis
+                if universe_cap is None or not (
+                    MIN_MARKET_CAP <= universe_cap <= MAX_MARKET_CAP
+                ):
+                    universe_stats["outside_band"] += 1
+                    continue
+                universe_stats["inside_band"] += 1
+                universe_stats[f"basis_{cap_basis}"] += 1
             for label, days in horizons.items():
                 end_position = position + days
                 stock_return = None
@@ -469,6 +510,11 @@ def build_backtest(
         "source_run_id": run_id,
         "limit": limit,
         "split_adjust_shares": bool(config["split_adjust_shares"]),
+        "point_in_time_universe": bool(config["point_in_time_universe"]),
+        "universe_band": (
+            dict(sorted(universe_stats.items()))
+            if config["point_in_time_universe"] else None
+        ),
         "config": config,
         "limitations": list(LIMITATIONS)
         + (list(FUNDAMENTAL_LIMITATIONS) if with_fundamentals else [])
@@ -516,6 +562,8 @@ def export_backtest(
     # An unadjusted control must never overwrite the real result.
     if analysis.get("split_adjust_shares") is False:
         stem = f"{stem}_unadjusted"
+    if analysis.get("point_in_time_universe"):
+        stem = f"{stem}_pit"
 
     json_path = output_directory / f"backtest_{stem}.json"
     periods_path = output_directory / f"backtest_periods_{stem}.csv"
@@ -956,6 +1004,66 @@ def _compounded(period_metrics: list[dict], config: dict) -> dict:
     return summary
 
 
+def _share_unit_factor(
+    fundamental_history: FundamentalHistory | None,
+    history: pd.DataFrame,
+    splits: SplitHistory,
+    provider_market_cap: float | None,
+) -> float:
+    """A constant correction for filers whose share count is in other units.
+
+    An ADS that bundles ordinary shares leaves no split to read, so the
+    filing's share count times the price is off by the bundling ratio on
+    every date. Comparing the derived cap at the end of the series with the
+    provider's current cap exposes that ratio. It is only applied when the
+    two disagree by more than the reconciliation tolerance, because ordinary
+    issuance and the month between the series end and the run also move it.
+    """
+    if fundamental_history is None or not _positive(provider_market_cap):
+        return 1.0
+    last_date = history.index[-1]
+    last_close = history["Close"].iloc[-1]
+    if not _positive(last_close):
+        return 1.0
+    derived = fundamental_history.signals_as_of(
+        last_date.date(), price=float(last_close), splits=splits,
+    ).get("pit_market_cap")
+    if not _positive(derived):
+        return 1.0
+    ratio = float(provider_market_cap) / float(derived)
+    tolerance = float(
+        fundamental_history.config["market_cap_reconciliation_tolerance"]
+    )
+    return ratio if ratio >= tolerance or ratio <= 1.0 / tolerance else 1.0
+
+
+def _universe_market_cap(
+    observation: dict,
+    provider_market_cap: float | None,
+    start_close: object,
+    last_close: object,
+    unit_factor: float,
+) -> tuple[float | None, str]:
+    """Market cap at an observation date, for the universe band only.
+
+    Filers' split-adjusted share counts known at the date give the market cap
+    directly. Without them the provider's current market cap is scaled by
+    the split-adjusted price change, which ignores issuance and buybacks in
+    between and is labelled as an approximation.
+    """
+    derived = observation.get("pit_market_cap")
+    if _positive(derived):
+        return float(derived) * unit_factor, (
+            "filed_shares_unit_corrected" if unit_factor != 1.0 else "filed_shares"
+        )
+    if _positive(provider_market_cap) and _positive(start_close) and _positive(last_close):
+        return (
+            float(provider_market_cap) * float(start_close) / float(last_close),
+            "price_scaled_approximation",
+        )
+    return None, "unavailable"
+
+
 def _apply_shadow_models(frame: pd.DataFrame) -> pd.DataFrame:
     """Score each period's cross-section with every configured shadow model."""
     frame = frame.copy()
@@ -1120,6 +1228,10 @@ def _validated_config(config: dict | None) -> dict:
     # Measuring the split correction needs a control on the same universe,
     # so the adjustment can be turned off deliberately. On is correct.
     merged.setdefault("split_adjust_shares", True)
+    # Choose each month's universe by that month's market cap instead of
+    # today's. Off reproduces the published backtest; see
+    # build_backtest_universe for why on is the honest setting.
+    merged.setdefault("point_in_time_universe", False)
     merged.setdefault("top_n", [10, 25, 50, 100])
     merged.setdefault("quantiles", 5)
     merged.setdefault("minimum_cross_section", 50)

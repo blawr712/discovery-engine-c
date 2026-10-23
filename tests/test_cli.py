@@ -184,6 +184,13 @@ class CliTests(unittest.TestCase):
         with self.assertRaises(SystemExit):
             parse_args(["--history-summary", "--index-run", "run-123"])
 
+    def test_point_in_time_universe_requires_a_backtest(self):
+        args = parse_args(["--backtest-run", "run-123", "--point-in-time-universe"])
+        self.assertTrue(args.point_in_time_universe)
+        self.assertFalse(parse_args(["--backtest-run", "run-123"]).point_in_time_universe)
+        with self.assertRaises(SystemExit):
+            parse_args(["--point-in-time-universe"])
+
     def test_monthly_cycle_options(self):
         args = parse_args(["--monthly"])
         self.assertTrue(args.monthly)

@@ -160,6 +160,14 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
         help="recompute cached point-in-time fundamentals during --rescore-run",
     )
     parser.add_argument(
+        "--point-in-time-universe",
+        action="store_true",
+        help=(
+            "for --backtest-run: choose each month's universe by that month's "
+            "market cap, adding names filtered today only for size"
+        ),
+    )
+    parser.add_argument(
         "--backtest-limit",
         type=_positive_integer,
         metavar="COUNT",
@@ -229,6 +237,8 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
         parser.error("--refresh-fundamentals requires --rescore-run")
     if args.backtest_limit is not None and args.backtest_run is None:
         parser.error("--backtest-limit requires --backtest-run")
+    if args.point_in_time_universe and args.backtest_run is None:
+        parser.error("--point-in-time-universe requires --backtest-run")
     if args.with_fundamentals and args.backtest_run is None:
         parser.error("--with-fundamentals requires --backtest-run")
     if args.with_insiders and args.backtest_run is None:

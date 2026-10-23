@@ -223,6 +223,7 @@ def main(arguments=None):
             limit=args.backtest_limit,
             with_fundamentals=args.with_fundamentals,
             with_insiders=args.with_insiders,
+            point_in_time_universe=args.point_in_time_universe,
         )
         return
     if args.freeze_research_baseline:
@@ -1331,8 +1332,10 @@ def backtest_saved_run(
     limit: int | None = None,
     with_fundamentals: bool = False,
     with_insiders: bool = False,
+    point_in_time_universe: bool = False,
 ) -> None:
     """Replay technical scoring point-in-time for a completed run's universe."""
+    overrides = {"point_in_time_universe": True} if point_in_time_universe else {}
     period = str(BACKTEST_CONFIG.get("price_history_period", "10y"))
     ttl_hours = float(BACKTEST_CONFIG.get("price_history_ttl_hours", 168))
     fundamental_settings = BACKTEST_CONFIG.get("sec_fundamentals", {})
@@ -1344,7 +1347,7 @@ def backtest_saved_run(
     insider_stats = None
     try:
         manifest, results = load_saved_run(RUN_DIR, run_id)
-        universe = build_backtest_universe(results)
+        universe = build_backtest_universe(results, overrides or None)
         if limit is not None:
             universe = universe[:limit]
         source = build_market_data_source(price_history_ttl_hours=ttl_hours)
@@ -1393,6 +1396,7 @@ def backtest_saved_run(
             benchmark_histories,
             BENCHMARKS,
             run_id,
+            config=overrides or None,
             collection_errors=errors,
             fundamental_histories=fundamental_histories,
             fundamental_stats=fundamental_stats,
@@ -1421,6 +1425,8 @@ def backtest_saved_run(
                 "fundamental_coverage": analysis["fundamental_coverage"],
                 "with_insiders": with_insiders,
                 "insider_coverage": analysis["insider_coverage"],
+                "point_in_time_universe": analysis["point_in_time_universe"],
+                "universe_band": analysis["universe_band"],
                 "official_scores_and_ranks_unchanged": True,
                 **artifacts,
             },
@@ -1441,6 +1447,14 @@ def backtest_saved_run(
         f"({coverage['first_period']} to {coverage['last_period']})"
     )
     print(f"Observations: {coverage['observations']}")
+    band = analysis.get("universe_band")
+    if band:
+        print(
+            "Point-in-time universe: "
+            f"{band.get('inside_band', 0)} observations inside the market-cap band, "
+            f"{band.get('outside_band', 0)} outside; basis "
+            + ", ".join(f"{k[6:]} {v}" for k, v in band.items() if k.startswith("basis_"))
+        )
     if source.enabled:
         print(f"Cache hits: {source.stats.hits}")
         print(f"Cache misses: {source.stats.misses}")
