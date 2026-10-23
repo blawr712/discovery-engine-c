@@ -698,27 +698,52 @@ def survivorship_test(run_id: str) -> None:
         notices.extend(filings.listing_notices(year, quarter))
     candidates = delisted_candidates(notices, current, start, end)
 
-    exits, failures = [], Counter()
-    for index, (cik, entry) in enumerate(sorted(candidates.items()), start=1):
-        print_progress("survivorship-exits", index, len(candidates), str(entry.get("name"))[:40])
-        try:
-            submissions = filings.submissions(cik)
-        except Exception as error:  # noqa: BLE001 - one company at a time
-            failures[f"submissions: {type(error).__name__}"] += 1
+    # The SEC answers one request in roughly half a second, so a few workers
+    # sharing the source's pacing lock fetch faster without exceeding its
+    # request rate.
+    from concurrent.futures import ThreadPoolExecutor
+
+    def fetched(label, keys, fetch, names):
+        results, errors = {}, Counter()
+
+        def one(key):
+            try:
+                return key, fetch(key), None
+            except Exception as error:  # noqa: BLE001 - one company at a time
+                return key, None, type(error).__name__
+
+        with ThreadPoolExecutor(max_workers=3) as pool:
+            for index, (key, value, error) in enumerate(pool.map(one, keys), start=1):
+                print_progress(label, index, len(keys), str(names.get(key, key))[:40])
+                if error:
+                    errors[error] += 1
+                else:
+                    results[key] = value
+        return results, errors
+
+    ordered = sorted(candidates)
+    submissions_by_cik, errors = fetched(
+        "survivorship-exits", ordered, filings.submissions,
+        {cik: entry.get("name") for cik, entry in candidates.items()},
+    )
+    failures = Counter({f"submissions: {name}": count for name, count in errors.items()})
+    exits = []
+    for cik in ordered:
+        submissions = submissions_by_cik.get(cik)
+        if submissions is None:
             continue
         if submissions.get("entity_type") not in (None, "operating"):
             failures["not an operating company"] += 1
             continue
+        entry = candidates[cik]
         exits.append(classify_exit(cik, entry.get("name"), entry["notices"], submissions))
     population = [item for item in exits if not item.blank_check]
 
-    extracts = {}
-    for index, item in enumerate(population, start=1):
-        print_progress("survivorship-facts", index, len(population), item.name[:40])
-        try:
-            extracts[item.cik] = filings.company_facts(item.cik)
-        except Exception as error:  # noqa: BLE001 - many dead filers have no XBRL facts
-            failures[f"facts: {type(error).__name__}"] += 1
+    extracts, errors = fetched(
+        "survivorship-facts", [item.cik for item in population], filings.company_facts,
+        {item.cik: item.name for item in population},
+    )
+    failures.update({f"facts: {name}": count for name, count in errors.items()})
 
     funnel = {
         "delisting notices in window": len(notices),
