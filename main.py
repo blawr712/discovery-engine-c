@@ -39,6 +39,9 @@ from src.data_sources.sec_xbrl_source import SecXbrlSource
 from src.fundamentals_pit import FundamentalHistory
 from src.split_adjustment import SplitHistory
 from src.keep_awake import keep_awake
+from src.data_sources.sec_filings_source import SecFilingsSource, quarters
+from src.survivorship import classify_exit, dead_observations, delisted_candidates
+from src.survivorship_report import build_markdown, build_report
 from src.monthly import (
     TMX_STALE_AFTER,
     build_cycle_report,
@@ -302,6 +305,9 @@ def main(arguments=None):
         return
     if args.monthly:
         run_monthly(cycle=args.cycle, skip_universe=args.skip_universe)
+        return
+    if args.survivorship_test:
+        survivorship_test(args.survivorship_test)
         return
     run_discovery(
         tickers=args.tickers,
@@ -634,6 +640,120 @@ def run_monthly(cycle: str | None = None, skip_universe: bool = False) -> None:
             f"Monthly cycle {label} finished with failures. Run --monthly again "
             "to retry the failed and blocked steps; finished steps are not repeated."
         )
+
+
+def survivorship_test(run_id: str) -> None:
+    """Bound the backtest's survivorship with SEC records of delisted companies."""
+    import pandas as pd
+
+    from src.backtest import MAX_MARKET_CAP, MIN_MARKET_CAP
+    from src.scoring_v2 import model_configs, score_frame
+
+    user_agent = os.environ.get("SEC_USER_AGENT", "").strip()
+    if not user_agent:
+        raise SystemExit("--survivorship-test requires SEC_USER_AGENT in .env.")
+    filings = SecFilingsSource(
+        user_agent=user_agent,
+        cache_directory=BASE_DIR / "data" / "cache" / "sec_filings",
+        request_interval_seconds=float(FUNDAMENTALS_CONFIG.get("request_interval_seconds", 0.11)),
+    )
+    sec = build_sec_xbrl_source()
+    try:
+        _, results = load_saved_run(RUN_DIR, run_id)
+    except (FileNotFoundError, OSError, ValueError) as error:
+        raise SystemExit(f"Unable to load run {run_id}: {error}") from error
+
+    basis = "point-in-time universe"
+    path = OUTPUT_DIR / f"backtest_observations_{run_id}_pit.csv.gz"
+    if not path.is_file():
+        basis = "today's universe (no point-in-time backtest found)"
+        path = OUTPUT_DIR / f"backtest_observations_{run_id}.csv.gz"
+    if not path.is_file():
+        raise SystemExit(f"No backtest observations for {run_id}; run --backtest-run first.")
+    print(f"Backtest observations: {path.name} ({basis})")
+    observations = pd.read_csv(path, low_memory=False)
+    observations["period"] = observations["period"].astype(str)
+    period_dates = (
+        observations[["period", "date"]].drop_duplicates("period").sort_values("period")
+    )
+    periods = [
+        (str(label), datetime.strptime(str(value)[:10], "%Y-%m-%d").date())
+        for label, value in period_dates.itertuples(index=False)
+    ]
+    start, end = periods[0][1], periods[-1][1]
+
+    current = {
+        cik for cik in (
+            sec.cik_for(row.get("ticker")) for row in results
+            if str(row.get("country") or "").upper() == "US"
+        ) if cik
+    }
+    today = datetime.now(timezone.utc)
+    quarter_list = quarters(
+        (start.year, (start.month - 1) // 3 + 1), (today.year, (today.month - 1) // 3 + 1),
+    )
+    notices = []
+    for index, (year, quarter) in enumerate(quarter_list, start=1):
+        print_progress("survivorship-notices", index, len(quarter_list), f"{year}q{quarter}")
+        notices.extend(filings.listing_notices(year, quarter))
+    candidates = delisted_candidates(notices, current, start, end)
+
+    exits, failures = [], Counter()
+    for index, (cik, entry) in enumerate(sorted(candidates.items()), start=1):
+        print_progress("survivorship-exits", index, len(candidates), str(entry.get("name"))[:40])
+        try:
+            submissions = filings.submissions(cik)
+        except Exception as error:  # noqa: BLE001 - one company at a time
+            failures[f"submissions: {type(error).__name__}"] += 1
+            continue
+        if submissions.get("entity_type") not in (None, "operating"):
+            failures["not an operating company"] += 1
+            continue
+        exits.append(classify_exit(cik, entry.get("name"), entry["notices"], submissions))
+    population = [item for item in exits if not item.blank_check]
+
+    extracts = {}
+    for index, item in enumerate(population, start=1):
+        print_progress("survivorship-facts", index, len(population), item.name[:40])
+        try:
+            extracts[item.cik] = filings.company_facts(item.cik)
+        except Exception as error:  # noqa: BLE001 - many dead filers have no XBRL facts
+            failures[f"facts: {type(error).__name__}"] += 1
+
+    funnel = {
+        "delisting notices in window": len(notices),
+        "issuers delisted and not in today's universe": len(candidates),
+        "operating companies classified": len(exits),
+        "blank-check companies dropped": len(exits) - len(population),
+        "with SEC fundamentals": len(extracts),
+        "exit types": dict(Counter(item.exit_type for item in population)),
+        "lookup failures": dict(failures),
+    }
+    model = next(m for m in model_configs() if m["output_prefix"] == "score_v3")
+    variants = {}
+    for name, unknown in (("in_band_only", False), ("including_unknown_size", True)):
+        dead = dead_observations(
+            population, extracts, periods, MIN_MARKET_CAP, MAX_MARKET_CAP,
+            include_unknown_size=unknown,
+        )
+        variants[name] = build_report(
+            observations, dead, model, score_frame,
+            {**funnel, "dead companies with observations": int(dead["ticker"].nunique()) if not dead.empty else 0},
+        )
+    payload = {"run_id": run_id, "basis": basis, "variants": variants}
+    json_path = OUTPUT_DIR / f"survivorship_{run_id}.json"
+    markdown_path = OUTPUT_DIR / f"survivorship_{run_id}.md"
+    json_path.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
+    markdown_path.write_text(
+        build_markdown(variants["in_band_only"], run_id, basis)
+        + "\n\n# Sensitivity: including delisted companies of unknown size\n\n"
+        + build_markdown(variants["including_unknown_size"], run_id, basis).split("\n", 2)[2],
+        encoding="utf-8",
+    )
+    print()
+    print(markdown_path.read_text(encoding="utf-8"))
+    print(f"Survivorship JSON: {json_path}")
+    print(f"Survivorship report: {markdown_path}")
 
 
 def _resolution_headline(entry: dict) -> dict:

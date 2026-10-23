@@ -150,3 +150,62 @@ class ReturnTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ReportTests(unittest.TestCase):
+    """The bounded comparison, on a tiny synthetic backtest."""
+
+    def _observations(self):
+        rows = []
+        for month in ("2020-01", "2020-02", "2023-01", "2023-02"):
+            for index in range(6):
+                rows.append({
+                    "period": month, "ticker": f"S{index}", "sector": "Unknown",
+                    "return_1M": 2.0, "benchmark_return_1M": 1.0,
+                    "score_v3": 50.0 + index, "score_v3_excluded": False,
+                })
+            for index in range(3):
+                rows.append({
+                    "period": month, "ticker": f"X{index}", "sector": "Unknown",
+                    "return_1M": 1.0, "benchmark_return_1M": 1.0,
+                    "score_v3": None, "score_v3_excluded": True,
+                })
+        return pd.DataFrame(rows)
+
+    def test_dead_rows_join_the_group_the_filters_would_have_put_them_in(self):
+        from src.survivorship_report import build_report
+
+        dead = pd.DataFrame([
+            {"period": "2020-01", "ticker": "DEAD:1", "exit_type": "bankruptcy",
+             "pit_revenue_ttm": 1.0, "pit_cash": 1.0},
+            {"period": "2020-02", "ticker": "DEAD:1", "exit_type": "bankruptcy",
+             "pit_revenue_ttm": 1.0, "pit_cash": 1.0},
+        ])
+
+        def fake_score_frame(frame, model):
+            dead_rows = frame["ticker"].astype(str).str.startswith("DEAD:")
+            return pd.DataFrame({
+                "excluded": dead_rows | frame["ticker"].astype(str).str.startswith("X"),
+                "score": frame["ticker"].map(lambda t: 1.0 if str(t).startswith("S") else None),
+            }, index=frame.index)
+
+        report = build_report(
+            self._observations(), dead, {}, fake_score_frame, {"delisted": 1},
+            minimum_cross_section=5, minimum_scored=5,
+        )
+        early = report["windows"]["2016-2021"]
+        self.assertEqual(early["months"], 2)
+        self.assertEqual(early["counts"]["filter_excluded"]["dead_per_month"], 1.0)
+        self.assertEqual(early["counts"]["scored"]["dead_per_month"], 0.0)
+        # Observed: excluded names made 1% a month, about 2% over two months.
+        self.assertAlmostEqual(early["observed"]["filter_excluded"], 2.01, places=2)
+        # A -95% bankruptcy spread over two months is -77.6% a month; beside
+        # three observed names at +1% the group averages -18.65% a month.
+        monthly = (0.05 ** 0.5 - 1.0) * 100.0
+        group = (3 * 1.0 + monthly) / 4
+        expected = ((1 + group / 100) ** 2 - 1) * 100
+        self.assertAlmostEqual(early["scenarios"]["central"]["filter_excluded"], expected, places=6)
+        self.assertAlmostEqual(early["scenarios"]["central"]["scored"], early["observed"]["scored"])
+        self.assertEqual(early["dead_exit_types"], {"bankruptcy": 1})
+        later = report["windows"]["2022-2026"]
+        self.assertEqual(later["counts"]["filter_excluded"]["dead_per_month"], 0.0)

@@ -90,6 +90,11 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
         ),
     )
     selection.add_argument(
+        "--survivorship-test",
+        metavar="RUN_ID",
+        help="bound the backtest's survivorship bias using SEC records of delisted companies",
+    )
+    selection.add_argument(
         "--index-run",
         metavar="RUN_ID",
         help="index a completed saved run into the local history database",
