@@ -18,6 +18,9 @@ from src.data_sources.base import MarketDataSource
 
 
 CONFIG = {
+    # Most fixtures test scoring mechanics on a fixed universe; the
+    # point-in-time universe has its own tests below.
+    "point_in_time_universe": False,
     "forward_horizons_days": {"1M": 21, "3M": 63},
     "compounding_horizon": "1M",
     "top_n": [5, 10],
@@ -427,7 +430,7 @@ class ExportTests(unittest.TestCase):
         universe, histories, benchmarks = _synthetic_universe(ticker_count=25)
         analysis = build_backtest(
             universe, histories, benchmarks, {"US": "SPY"}, "RUN1",
-            config=CONFIG, limit=25,
+            config={**CONFIG, "point_in_time_universe": True}, limit=25,
         )
         with tempfile.TemporaryDirectory() as directory:
             paths = export_backtest(analysis, Path(directory))
@@ -485,7 +488,7 @@ class SplitAdjustmentSwitchTests(unittest.TestCase):
         universe, histories, benchmarks = _synthetic_universe(ticker_count=25)
         analysis = build_backtest(
             universe, histories, benchmarks, {"US": "SPY"}, "RUN1",
-            config={**CONFIG, "split_adjust_shares": False},
+            config={**CONFIG, "split_adjust_shares": False, "point_in_time_universe": True},
         )
         self.assertFalse(analysis["split_adjust_shares"])
         with tempfile.TemporaryDirectory() as directory:
@@ -499,7 +502,7 @@ class SplitAdjustmentSwitchTests(unittest.TestCase):
     def test_adjusted_run_keeps_the_plain_name(self):
         universe, histories, benchmarks = _synthetic_universe(ticker_count=25)
         analysis = build_backtest(
-            universe, histories, benchmarks, {"US": "SPY"}, "RUN1", config=CONFIG,
+            universe, histories, benchmarks, {"US": "SPY"}, "RUN1", config={**CONFIG, "point_in_time_universe": True},
         )
         self.assertTrue(analysis["split_adjust_shares"])
         with tempfile.TemporaryDirectory() as directory:
@@ -559,6 +562,11 @@ class PointInTimeUniverseTests(unittest.TestCase):
         self.assertTrue(analysis["point_in_time_universe"])
         self.assertGreater(analysis["universe_band"]["outside_band"], 0)
 
+    def test_point_in_time_is_the_default(self):
+        from src.backtest import _validated_config
+
+        self.assertTrue(_validated_config(None)["point_in_time_universe"])
+
     def test_disabled_flag_keeps_every_observation(self):
         universe, histories, benchmarks = _synthetic_universe(ticker_count=25)
         analysis = build_backtest(
@@ -568,7 +576,18 @@ class PointInTimeUniverseTests(unittest.TestCase):
         self.assertIsNone(analysis["universe_band"])
         self.assertNotIn("universe_market_cap", analysis["_observations"])
 
-    def test_point_in_time_artifacts_get_their_own_names(self):
+    def test_the_static_control_gets_its_own_names(self):
+        universe, histories, benchmarks = _synthetic_universe(ticker_count=25)
+        analysis = build_backtest(
+            universe, histories, benchmarks, {"US": "SPY"}, "RUN1", config=CONFIG,
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            paths = export_backtest(analysis, Path(directory))
+        self.assertTrue(
+            paths["backtest_json_path"].endswith("backtest_RUN1_static_universe.json")
+        )
+
+    def test_point_in_time_runs_keep_the_plain_names(self):
         universe, histories, benchmarks = _synthetic_universe(ticker_count=25)
         analysis = build_backtest(
             universe, histories, benchmarks, {"US": "SPY"}, "RUN1",
@@ -576,7 +595,7 @@ class PointInTimeUniverseTests(unittest.TestCase):
         )
         with tempfile.TemporaryDirectory() as directory:
             paths = export_backtest(analysis, Path(directory))
-        self.assertTrue(paths["backtest_json_path"].endswith("backtest_RUN1_pit.json"))
+        self.assertTrue(paths["backtest_json_path"].endswith("backtest_RUN1.json"))
 
 
 class UniverseMarketCapTests(unittest.TestCase):

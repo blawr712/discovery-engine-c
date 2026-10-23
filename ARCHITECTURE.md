@@ -146,6 +146,15 @@ them. `src/monthly_schedule.py` registers it as a Windows scheduled task that
 retries daily for a week, which the resumability makes safe, and
 `src/keep_awake.py` holds an idle-sleep exemption while a cycle runs.
 
+Survivorship bounds (`src/survivorship.py`, `src/survivorship_report.py`,
+`--survivorship-test`): delisted companies are missing from the backtest
+because their prices are not available for free, but the SEC keeps their
+filings. `src/data_sources/sec_filings_source.py` reads EDGAR's delisting
+notices, each company's exit filings, and its facts by CIK with public float;
+the exit is typed from the filings around it, v3's price-free filters place
+each dead company in a group, and scenario returns by exit type bound the
+backtest's group comparisons with them included.
+
 Backtest Engine: Replay the Scoring Engine's technical factor functions at
 historical month-ends using only price data available on each date, then
 measure rank correlation, quantile spreads, and top-N outcomes against forward
@@ -153,7 +162,11 @@ benchmark-relative returns. It reuses the scoring functions rather than
 re-implementing them, reads its universe from a completed saved run, collects
 long price histories through the same cached, paced, retried provider stack,
 and never changes official scores or ranks. Its configuration lives in
-`config/backtest.json`, outside the run fingerprint. `split_adjust_shares`
+`config/backtest.json`, outside the run fingerprint. `point_in_time_universe`
+(on by default) adds the names filtered today only for size and keeps an
+observation only when that month-end's market cap was inside the live band,
+so the universe is not defined by today's market caps; off is the
+`--static-universe` control. `split_adjust_shares`
 defaults to on and exists so the split correction can be measured against a
 control on the same universe; an unadjusted run writes to its own artifact
 names.

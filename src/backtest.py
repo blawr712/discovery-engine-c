@@ -127,13 +127,14 @@ def build_backtest_universe(
 ) -> list[dict]:
     """Select saved-run rows to replay.
 
-    By default these are the rows that passed today's metadata screening,
-    which defines a ten-year universe by today's market caps: a company that
-    grew past the cap is missing exactly in the years it was a winner, and
-    one that shrank below the floor is missing in the years it lost. With
-    ``point_in_time_universe`` the rows filtered only for size are added too,
-    and each month's observations are restricted to companies whose market
-    cap was inside the band at that month-end.
+    Rows that passed today's metadata screening alone would define a ten-year
+    universe by today's market caps: a company that grew past the cap would
+    be missing exactly in the years it was a winner, and one that shrank
+    below the floor in the years it lost. So with ``point_in_time_universe``
+    (the default) the rows filtered only for size are added too, and each
+    month's observations are restricted to companies whose market cap was
+    inside the band at that month-end. Turning it off gives the today's-
+    universe control.
     """
     config = _validated_config(config)
     statuses = set(config["source_statuses"])
@@ -562,8 +563,8 @@ def export_backtest(
     # An unadjusted control must never overwrite the real result.
     if analysis.get("split_adjust_shares") is False:
         stem = f"{stem}_unadjusted"
-    if analysis.get("point_in_time_universe"):
-        stem = f"{stem}_pit"
+    if analysis.get("point_in_time_universe") is False:
+        stem = f"{stem}_static_universe"
 
     json_path = output_directory / f"backtest_{stem}.json"
     periods_path = output_directory / f"backtest_periods_{stem}.csv"
@@ -1229,9 +1230,9 @@ def _validated_config(config: dict | None) -> dict:
     # so the adjustment can be turned off deliberately. On is correct.
     merged.setdefault("split_adjust_shares", True)
     # Choose each month's universe by that month's market cap instead of
-    # today's. Off reproduces the published backtest; see
-    # build_backtest_universe for why on is the honest setting.
-    merged.setdefault("point_in_time_universe", False)
+    # today's; see build_backtest_universe. On is correct; off reproduces the
+    # universe defined by today's market caps, as a control.
+    merged.setdefault("point_in_time_universe", True)
     merged.setdefault("top_n", [10, 25, 50, 100])
     merged.setdefault("quantiles", 5)
     merged.setdefault("minimum_cross_section", 50)

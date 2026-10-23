@@ -99,6 +99,15 @@
 - Pointed the stale-TMX warning at the page the workbook is downloaded from;
   the download itself stays manual because TMX's robots.txt disallows
   automated fetching of the workbook's path
+- Chose each month's backtest universe by that month's market cap, by default,
+  adding names filtered today only for size; `--static-universe` keeps today's
+  universe as a control
+- Added `--survivorship-test`, which bounds the remaining survivorship bias
+  with EDGAR delisting notices, exit filings, and company facts by CIK
+- Added an SEC filings source for the form index, per-company submissions, and
+  company facts by CIK with public float
+- Corrected the excluded-versus-scored mean comparison, which had counted every
+  unscored name as excluded
 - Taught the resolver about baseline kinds, reading each baseline's own
   cohort split so Moonshot and research cohorts stay separate; added
   `--baseline moonshot|research|all`

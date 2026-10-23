@@ -226,7 +226,7 @@ def main(arguments=None):
             limit=args.backtest_limit,
             with_fundamentals=args.with_fundamentals,
             with_insiders=args.with_insiders,
-            point_in_time_universe=args.point_in_time_universe,
+            static_universe=args.static_universe,
         )
         return
     if args.freeze_research_baseline:
@@ -663,13 +663,14 @@ def survivorship_test(run_id: str) -> None:
     except (FileNotFoundError, OSError, ValueError) as error:
         raise SystemExit(f"Unable to load run {run_id}: {error}") from error
 
-    basis = "point-in-time universe"
-    path = OUTPUT_DIR / f"backtest_observations_{run_id}_pit.csv.gz"
-    if not path.is_file():
-        basis = "today's universe (no point-in-time backtest found)"
-        path = OUTPUT_DIR / f"backtest_observations_{run_id}.csv.gz"
+    path = OUTPUT_DIR / f"backtest_observations_{run_id}.csv.gz"
     if not path.is_file():
         raise SystemExit(f"No backtest observations for {run_id}; run --backtest-run first.")
+    observations_probe = pd.read_csv(path, nrows=1)
+    basis = (
+        "point-in-time universe" if "universe_market_cap" in observations_probe
+        else "today's universe (rerun --backtest-run for the point-in-time universe)"
+    )
     print(f"Backtest observations: {path.name} ({basis})")
     observations = pd.read_csv(path, low_memory=False)
     observations["period"] = observations["period"].astype(str)
@@ -1477,10 +1478,10 @@ def backtest_saved_run(
     limit: int | None = None,
     with_fundamentals: bool = False,
     with_insiders: bool = False,
-    point_in_time_universe: bool = False,
+    static_universe: bool = False,
 ) -> None:
     """Replay technical scoring point-in-time for a completed run's universe."""
-    overrides = {"point_in_time_universe": True} if point_in_time_universe else {}
+    overrides = {"point_in_time_universe": False} if static_universe else {}
     period = str(BACKTEST_CONFIG.get("price_history_period", "10y"))
     ttl_hours = float(BACKTEST_CONFIG.get("price_history_ttl_hours", 168))
     fundamental_settings = BACKTEST_CONFIG.get("sec_fundamentals", {})

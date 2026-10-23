@@ -122,6 +122,26 @@ ranks never change. The artifacts state their limitations explicitly: the
 universe is survivorship-biased toward companies still listed, market-cap and
 sector points are static, and no result is a return forecast.
 
+Each month's universe is chosen by that month's market cap: names filtered
+today only for being too big or too small are replayed too, and an observation
+counts only if its market cap was inside the band at that month-end.
+`--static-universe` replays today's universe at every date instead, as a
+control, and writes `*_static_universe` artifacts.
+
+Bound what the remaining survivorship costs, using SEC records of companies
+delisted during the backtest window:
+
+```powershell
+python main.py --survivorship-test RUN_ID
+```
+
+It reads EDGAR's delisting notices, classifies each exit (bankruptcy,
+acquisition, delisting for failing listing rules), checks whether v3's filters
+would have rejected each dead company, and recomputes the backtest's group
+returns with them included under mild, central, and severe return scenarios.
+It writes `survivorship_*.json` and `survivorship_*.md`. The results are a
+range, not a measurement.
+
 Add point-in-time fundamentals for U.S. filers to the same backtest. The SEC
 requires a contact `User-Agent`; put it in an untracked `.env` file (see
 `.env.example`) or set the environment variable directly:

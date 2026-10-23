@@ -44,6 +44,13 @@ points are strongly negative in this universe.
 
 **Where.** `src/scoring_v2.py`, `src/research_ranking.py`.
 
+**Amended 2026-10-23.** Measured on a point-in-time universe, the official
+technical score's 1Y IC is +0.014 (t 1.7), not -0.03, and v2's is 0.072, not
+0.04. Defining the universe by today's market caps had removed the stocks that
+grew past $1B, the high-momentum winners, and understated every price-trend
+signal. The decision stands, since v2 and v3 still beat the official score
+clearly, but the official score is closer to uninformative than harmful.
+
 ## 2026-09-18: Fundamentals dominate; revenue growth is negative
 
 **Decision.** Score v3 is a value and quality composite with exclusion
@@ -449,11 +456,143 @@ have helped almost mechanically. It is encouraging and settles nothing.
 **Where.** `src/monthly.py`, `scoring_v3_1` in `config/strategy.json`,
 `compared_scores` in `src/baseline_resolution.py`.
 
+## 2026-10-23: Survivorship test; the backtest's universe is now point in time
+
+**Decision.** Choose each month's backtest universe by that month's market
+cap, and make it the default. Record the bounds the SEC's records of delisted
+companies put on what survivorship still costs. Change no weights.
+
+**Two biases, not one.** The backtest replayed every name that passed today's
+pre-filter over ten years. That misses delisted companies, the survivorship
+the test set out to bound, and it also defines the universe by today's market
+caps: in the Oct 19 run 2,335 still-listed operating companies were filtered
+as too big and 473 as too small, so a company that grew past $1B was missing
+in exactly the years it was a winner, and companies inside the band today were
+replayed at dates when they were outside it.
+
+**Part A: the point-in-time universe, which is exact.** The size-filtered names
+were added and each observation kept only if that month-end's market cap was
+inside the band (split-adjusted filed shares times the close, with a constant
+per-filer unit factor for bundled ADSs, and a price-scaled fallback for names
+without filed shares). 270,831 observations stay and 230,292 are dropped.
+1Y rank correlations, today's universe against point in time:
+
+| Signal | Today's universe | Point in time |
+|---|---|---|
+| Score v3 | 0.083 (t 11.7) | 0.080 (t 10.4) |
+| Score v2 | 0.039 (t 3.4) | **0.072 (t 6.1)** |
+| Official technical score | **-0.031 (t -3.9)** | +0.014 (t 1.7) |
+| Official score with static points | -0.006 (t -0.7) | +0.031 (t 3.7) |
+| Net insider buying (in v3) | **0.070 (t 14.3)** | 0.015 (t 3.3) |
+| Insider purchases, 12 months | - | 0.046 (t 8.6) |
+| FCF yield | 0.154 | 0.176 |
+| Operating margin | 0.122 | 0.158 |
+| Net cash / market cap | -0.018 | -0.053 |
+| Share dilution | -0.175 | -0.186 |
+
+v3 barely moves, which is the most reassuring result in the test. Three
+earlier conclusions do not survive:
+
+- *The official score is anti-predictive* (the 2026-09-18 entry) was largely
+  produced by the universe. Defining it by today's caps removed the stocks
+  that grew past $1B, which are the high-momentum names, and kept fallen
+  former large caps, so every price-trend signal was understated. The official
+  score is closer to uninformative than harmful, and v2 is nearly twice as
+  strong as measured.
+- *Net insider buying is v3's steadiest signal* does not survive either. Among
+  names outside the band today, mostly companies that grew past $1B, net
+  buying is negatively predictive (-0.074, t -7.8), because insiders sell into
+  a rally; among names inside the band it is +0.050. Insider purchases alone,
+  ignoring sales, are positive in both groups (+0.045 and +0.057). That points
+  to replacing v3's insider input, which should go through the same pre-stated
+  paired test as any other weight change rather than be made on this evidence.
+- v3's quintile ladder flattens at the top: medians run -21.7%, -14.9%, -11.9%,
+  -12.9%, -11.3% from Q1 to Q5, and win rates 33.8% then about 38% for Q2-Q5.
+  Its value is concentrated in avoiding the bottom fifth.
+
+Compounded equal-weight 1M returns by what v3 did with each name:
+
+| Group | 2016-21 | 2022-26 |
+|---|---|---|
+| Rejected by v3's filters | 256% | **-38%** |
+| Scored by v3 | 187% | 72% |
+| v3 top fifth | 245% | 103% |
+| v3 top 25 | 522% | 74% |
+| Never scored | 260% | 93% |
+| Universe | 253% | 51% |
+| Benchmark | 102% | 76% |
+
+**Part B: delisted companies, which are bounds.** EDGAR's form index gives
+18,237 exchange delisting notices in the window, from 4,411 issuers not in
+today's universe. Dropping 1,082 non-operating entities and 635 blank checks
+leaves 2,694 companies with an exit to classify: 1,689 acquired, 522 delisted
+for failing listing rules, 286 bankrupt, 197 other (counts include companies
+without usable facts). 1,898 have months in which their public float places
+them inside the market-cap band.
+
+They are a third of the cross-section, not a margin. In 2016-21 delisted
+companies would have been 34.7% of the filter-rejected group and 34.3% of the
+scored group, and about 16% of each in 2022-26.
+
+The cleanest result needs no return assumption. v3's filters, which use no
+price, sort dead companies by how they died:
+
+| Delisted companies v3 would have | Failed | Acquired |
+|---|---|---|
+| Rejected, 2016-21 | **49.7%** | 49.1% |
+| Scored, 2016-21 | 28.5% | **70.2%** |
+| Rejected, 2022-26 | **52.6%** | 46.1% |
+| Scored, 2022-26 | 33.9% | **65.4%** |
+
+"Failed" is bankruptcy or delisting for failing listing rules. Rejected
+companies were about 1.7 times as likely to fail. This is conservative: a dead
+company has no price series to read reverse splits from, so its dilution is
+understated and the dilution filter catches fewer of them than it should.
+
+With assumed lifetime returns by exit type (central: bankruptcy -95%, rule
+delisting -75%, other -50%, acquired +10%), compounded group returns become:
+
+| | Rejected | Scored | Never scored | Universe |
+|---|---|---|---|---|
+| 2016-21 observed | 256% | 187% | 260% | 253% |
+| 2016-21 mild / central / severe | 95% / **40%** / -24% | 77% / **40%** / -8% | 195% / 167% / 124% | 132% / 92% / 36% |
+| 2022-26 observed | -38% | 72% | 93% | 51% |
+| 2022-26 mild / central / severe | -44% / **-55%** / -70% | 46% / **25%** / -6% | 81% / 69% / 53% | 34% / 17% / -6% |
+
+Under central assumptions the 2016-21 advantage of rejected names disappears
+(40% each), and the filters win every 2022-26 scenario. Counting delisted
+companies of unknown size as well moves these by a few points and changes no
+conclusion. The universe's compounded mean roughly halves or worse: the
+survivorship-biased backtest overstated how well this universe did by a wide
+margin, which matters for any absolute claim (the top 25's 988% compounded
+included) and very little for v3's ranking.
+
+**What it does not settle.** Dead companies have no v3 score, so the bounds
+cover groups, not v3's top fifth or top 25. The returns within each exit type
+are assumptions, applied equally across groups. The size estimate assumes
+insiders hold 25%.
+
+**Consequence for paid data.** The question the paid data was wanted for,
+whether v3's filters discard real winners, is answered well enough for free:
+they do not, once the missing failures are counted. A delisting-inclusive
+price vendor would now buy trustworthy absolute returns and basket-level
+numbers, which is worth having but not urgent.
+
+**Where.** `--backtest-run` (point-in-time universe by default,
+`--static-universe` for the control), `--survivorship-test`,
+`src/survivorship.py`, `src/data_sources/sec_filings_source.py`, artifacts
+`survivorship_20261019T223433Z-f13f71e5.*`. The today's-universe backtest is
+kept as `backtest_*_static_universe.*`.
+
 ## Standing caveats that gate any promotion to "official"
 
-- **Survivorship.** The universe is companies alive at the source run; the
-  rebound effect in low-scored names is inflated. Credible mean-based claims
-  need a delisting-inclusive price vendor.
+- **Survivorship.** The backtest's universe is chosen point in time from
+  companies alive at the source run, so delisted companies are still missing;
+  the SEC bounds of 2026-10-23 say they are about a third of the 2016-21
+  cross-section and that counting them roughly halves the universe's
+  compounded return or worse. Rankings and group comparisons survive the
+  bounds; absolute returns and basket-level means do not, and those need a
+  delisting-inclusive price vendor.
 - **In-sample weights.** v3's weights were set from the same decade they are
   evaluated on. They are coarse and evidence-aligned rather than optimized,
   and year-by-year stability is reassuring, but a true out-of-sample test needs
