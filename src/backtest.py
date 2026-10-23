@@ -23,10 +23,12 @@ import numpy as np
 import pandas as pd
 
 from src.config import BACKTEST_CONFIG, MAX_MARKET_CAP, MIN_MARKET_CAP, SCORING_CONFIG
+from src.liquidity import MINIMUM_AVERAGE_DOLLAR_VOLUME
 from src.data_sources.base import MarketDataSource
 from src.fundamentals_pit import FundamentalHistory
 from src.insider_signals import InsiderHistory
 from src.scoring import (
+    average_dollar_volume,
     score_liquidity,
     score_market_cap,
     score_relative_strength,
@@ -437,6 +439,14 @@ def build_backtest(
                     date.date(),
                     market_cap=observation.get("pit_market_cap"),
                 ))
+            dollar_volume = average_dollar_volume(history_slice)
+            observation["average_dollar_volume_30d"] = _finite(dollar_volume)
+            floor = float(config["minimum_average_dollar_volume"])
+            if floor > 0 and not (
+                np.isfinite(dollar_volume) and dollar_volume >= floor
+            ):
+                universe_stats["below_liquidity_floor"] += 1
+                continue
             if point_in_time:
                 universe_cap, cap_basis = _universe_market_cap(
                     observation, row["market_cap"], start_close,
@@ -512,10 +522,8 @@ def build_backtest(
         "limit": limit,
         "split_adjust_shares": bool(config["split_adjust_shares"]),
         "point_in_time_universe": bool(config["point_in_time_universe"]),
-        "universe_band": (
-            dict(sorted(universe_stats.items()))
-            if config["point_in_time_universe"] else None
-        ),
+        "minimum_average_dollar_volume": float(config["minimum_average_dollar_volume"]),
+        "universe_band": dict(sorted(universe_stats.items())) or None,
         "config": config,
         "limitations": list(LIMITATIONS)
         + (list(FUNDAMENTAL_LIMITATIONS) if with_fundamentals else [])
@@ -565,6 +573,8 @@ def export_backtest(
         stem = f"{stem}_unadjusted"
     if analysis.get("point_in_time_universe") is False:
         stem = f"{stem}_static_universe"
+    if analysis.get("minimum_average_dollar_volume") == 0:
+        stem = f"{stem}_no_liquidity_floor"
 
     json_path = output_directory / f"backtest_{stem}.json"
     periods_path = output_directory / f"backtest_periods_{stem}.csv"
@@ -1233,6 +1243,9 @@ def _validated_config(config: dict | None) -> dict:
     # today's; see build_backtest_universe. On is correct; off reproduces the
     # universe defined by today's market caps, as a control.
     merged.setdefault("point_in_time_universe", True)
+    # Names below this 30-day average dollar volume are not tradeable
+    # research candidates; 0 turns the floor off, as a control.
+    merged.setdefault("minimum_average_dollar_volume", MINIMUM_AVERAGE_DOLLAR_VOLUME)
     merged.setdefault("top_n", [10, 25, 50, 100])
     merged.setdefault("quantiles", 5)
     merged.setdefault("minimum_cross_section", 50)

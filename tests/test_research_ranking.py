@@ -20,20 +20,20 @@ def _breakdown(**factors):
 
 def _results():
     return [
-        {"ticker": "V3A", "status": "OK", "country": "US", "discovery_score": 40,
+        {"ticker": "V3A", "status": "OK", "average_dollar_volume_30d": 1e6, "country": "US", "discovery_score": 40,
          "score_v3": 80.0, "score_v3_rank": 1, "score_v2": 90.0, "score_v2_rank": 1,
          "score_v3_breakdown": _breakdown(pit_sales_yield=9, volatility=2, momentum_long=5),
          "fundamentals_status": "collected"},
-        {"ticker": "V3B", "status": "OK", "country": "US", "discovery_score": 90,
+        {"ticker": "V3B", "status": "OK", "average_dollar_volume_30d": 1e6, "country": "US", "discovery_score": 90,
          "score_v3": 60.0, "score_v3_rank": 2, "score_v2": 10.0, "score_v2_rank": 4},
-        {"ticker": "V2ONLY", "status": "OK", "country": "CA", "discovery_score": 70,
+        {"ticker": "V2ONLY", "status": "OK", "average_dollar_volume_30d": 1e6, "country": "CA", "discovery_score": 70,
          "score_v3": None, "score_v3_confidence": 25.0, "score_v2": 55.0, "score_v2_rank": 2,
          "fundamentals_status": "not_applicable"},
-        {"ticker": "EXCL", "status": "OK", "country": "US", "discovery_score": 85,
+        {"ticker": "EXCL", "status": "OK", "average_dollar_volume_30d": 1e6, "country": "US", "discovery_score": 85,
          "score_v3": None, "score_v3_excluded": True,
          "score_v3_exclusion_reasons": "Top-quintile share dilution; Top-quintile revenue growth",
          "score_v2": 70.0, "score_v2_rank": 3},
-        {"ticker": "LEGACY", "status": "OK", "country": "US", "discovery_score": 60},
+        {"ticker": "LEGACY", "status": "OK", "average_dollar_volume_30d": 1e6, "country": "US", "discovery_score": 60},
         {"ticker": "FILTERED", "status": "FILTERED", "discovery_score": 0, "score_v3": 99},
     ]
 

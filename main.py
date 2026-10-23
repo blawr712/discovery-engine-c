@@ -227,6 +227,7 @@ def main(arguments=None):
             with_fundamentals=args.with_fundamentals,
             with_insiders=args.with_insiders,
             static_universe=args.static_universe,
+            no_liquidity_floor=args.no_liquidity_floor,
         )
         return
     if args.freeze_research_baseline:
@@ -308,6 +309,9 @@ def main(arguments=None):
         return
     if args.survivorship_test:
         survivorship_test(args.survivorship_test)
+        return
+    if args.test_v3_change:
+        test_v3_change(args.test_v3_change, args.change)
         return
     run_discovery(
         tickers=args.tickers,
@@ -640,6 +644,55 @@ def run_monthly(cycle: str | None = None, skip_universe: bool = False) -> None:
             f"Monthly cycle {label} finished with failures. Run --monthly again "
             "to retry the failed and blocked steps; finished steps are not repeated."
         )
+
+
+def test_v3_change(run_id: str, change_text: str) -> None:
+    """Run the pre-stated paired test for one proposed Score v3 change."""
+    import pandas as pd
+
+    from src.model_tests import export_result, paired_test, rescore
+
+    try:
+        change = json.loads(change_text)
+    except (TypeError, ValueError) as error:
+        raise SystemExit(f"--change must be JSON, for example '{{\"momentum_long\": null}}': {error}")
+    if not isinstance(change, dict) or not change:
+        raise SystemExit("--change must be a non-empty JSON object of signal changes.")
+    path = OUTPUT_DIR / f"backtest_observations_{run_id}.csv.gz"
+    if not path.is_file():
+        raise SystemExit(f"No backtest observations for {run_id}; run --backtest-run first.")
+    observations = pd.read_csv(path, low_memory=False)
+    observations["period"] = observations["period"].astype(str)
+    base = STRATEGY.get("scoring_v3") or {}
+    print(f"Observations: {path.name}, {len(observations):,} rows")
+    if "score_v3" in observations:
+        drift = (rescore(observations, base) - observations["score_v3"]).abs().max()
+        if drift > 1e-6:
+            print(
+                "Warning: the current v3 config does not reproduce the scores this "
+                f"backtest recorded (largest gap {drift:.2f} points); the test compares "
+                "against the current config, not the one the backtest ran."
+            )
+        else:
+            print("Current v3 config reproduces the backtest's own v3 scores.")
+    try:
+        result = paired_test(observations, base, change)
+    except ValueError as error:
+        raise SystemExit(str(error)) from error
+    print(f"Change: {json.dumps(change)}")
+    print(f"{'horizon':<8} {'fit diff':>9} {'NW t':>6} {'holdout diff':>13} {'NW t':>6}")
+    for horizon, windows in result["horizons"].items():
+        fit, holdout = windows["fit"], windows["holdout"]
+        print(
+            f"{horizon:<8} {fit['mean_difference']:>+9.4f} {fit['newey_west_t']:>6.1f} "
+            f"{holdout['mean_difference']:>+13.4f} {holdout['newey_west_t']:>6.1f}"
+        )
+    print(
+        f"Verdict on {result['decision_horizon']}: "
+        + ("ACCEPT" if result["accepted"] else "reject")
+        + " (positive in both windows, |t| >= 2 in one, significantly negative in neither)"
+    )
+    print(f"Result saved to: {export_result(result, run_id, OUTPUT_DIR)}")
 
 
 def survivorship_test(run_id: str) -> None:
@@ -1479,9 +1532,12 @@ def backtest_saved_run(
     with_fundamentals: bool = False,
     with_insiders: bool = False,
     static_universe: bool = False,
+    no_liquidity_floor: bool = False,
 ) -> None:
     """Replay technical scoring point-in-time for a completed run's universe."""
     overrides = {"point_in_time_universe": False} if static_universe else {}
+    if no_liquidity_floor:
+        overrides["minimum_average_dollar_volume"] = 0
     period = str(BACKTEST_CONFIG.get("price_history_period", "10y"))
     ttl_hours = float(BACKTEST_CONFIG.get("price_history_ttl_hours", 168))
     fundamental_settings = BACKTEST_CONFIG.get("sec_fundamentals", {})

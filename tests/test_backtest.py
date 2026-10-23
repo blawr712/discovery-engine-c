@@ -631,3 +631,35 @@ class UniverseMarketCapTests(unittest.TestCase):
         self.assertEqual(_share_unit_factor(History(3.4e7), frame, SplitHistory(), 6.88e8), 6.88e8 / 3.4e7)
         self.assertEqual(_share_unit_factor(History(6.5e8), frame, SplitHistory(), 6.88e8), 1.0)
         self.assertEqual(_share_unit_factor(None, frame, SplitHistory(), 6.88e8), 1.0)
+
+
+class LiquidityFloorTests(unittest.TestCase):
+    """Names below the dollar-volume floor are not research candidates."""
+
+    def _universe(self):
+        universe, histories, benchmarks = _synthetic_universe(ticker_count=25)
+        thin = histories["T00"].copy()
+        thin["Volume"] = 20.0          # about $200 a day at these prices
+        histories["T00"] = thin
+        return universe, histories, benchmarks
+
+    def test_thinly_traded_observations_are_dropped_by_default(self):
+        universe, histories, benchmarks = self._universe()
+        analysis = build_backtest(universe, histories, benchmarks, {"US": "SPY"}, "RUN1", config=CONFIG)
+        frame = analysis["_observations"]
+
+        self.assertNotIn("T00", set(frame["ticker"]))
+        self.assertTrue((frame["average_dollar_volume_30d"] >= 250_000).all())
+        self.assertGreater(analysis["universe_band"]["below_liquidity_floor"], 0)
+        self.assertEqual(analysis["minimum_average_dollar_volume"], 250_000)
+
+    def test_a_zero_floor_is_the_control(self):
+        universe, histories, benchmarks = self._universe()
+        analysis = build_backtest(
+            universe, histories, benchmarks, {"US": "SPY"}, "RUN1",
+            config={**CONFIG, "minimum_average_dollar_volume": 0},
+        )
+        self.assertIn("T00", set(analysis["_observations"]["ticker"]))
+        with tempfile.TemporaryDirectory() as directory:
+            paths = export_backtest(analysis, Path(directory))
+        self.assertIn("_no_liquidity_floor", paths["backtest_json_path"])

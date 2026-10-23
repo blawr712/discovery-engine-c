@@ -144,6 +144,7 @@ def calculate_scores(
         **pit_signals,
         **insider_signals,
         "latest_close": latest_close,
+        "average_dollar_volume_30d": _finite_or_none(_average_dollar_volume(price_history)),
         "volume_score": volume_score,
         "volume_ratio": round(volume_ratio, 2) if volume_ratio is not None else None,
         "relative_strength_score": relative_strength_score,
@@ -373,6 +374,15 @@ def _build_factor_results(
             ),
         ),
     ]
+
+
+def average_dollar_volume(df: pd.DataFrame) -> float:
+    """30-day mean volume times 30-day mean close, NaN without both columns."""
+    return _average_dollar_volume(df)
+
+
+def _finite_or_none(value: float) -> float | None:
+    return None if value is None or not np.isfinite(value) else round(float(value), 2)
 
 
 def _average_dollar_volume(df: pd.DataFrame) -> float:

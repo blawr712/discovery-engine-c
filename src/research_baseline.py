@@ -24,6 +24,7 @@ from pathlib import Path
 import tempfile
 
 from src.config import BENCHMARKS, RESEARCH_BASELINE_CONFIG, SCORING_V3_CONFIG
+from src.liquidity import MINIMUM_AVERAGE_DOLLAR_VOLUME
 
 
 DEFAULT_CONFIG = {
@@ -82,6 +83,7 @@ def build_research_baseline(
             "score_v3": _number(row.get("score_v3")),
             "score_v3_confidence": _number(row.get("score_v3_confidence")),
             "score_v3_excluded": bool(row.get("score_v3_excluded")),
+            "average_dollar_volume_30d": _number(row.get("average_dollar_volume_30d")),
             "score_v2": _number(row.get("score_v2")),
             # The challenger's score, frozen beside v3.0's so resolution can
             # compare the two rankings on the same unseen outcomes.
@@ -113,6 +115,7 @@ def build_research_baseline(
         "selected_classifications": list(SELECTED_CLASSIFICATIONS),
         "control_classifications": list(CONTROL_CLASSIFICATIONS),
         "config": config,
+        "minimum_average_dollar_volume": MINIMUM_AVERAGE_DOLLAR_VOLUME,
         "interpretation_warning": INTERPRETATION_WARNING,
         "official_scores_and_ranks_unchanged": True,
         "candidates": candidates,
@@ -208,7 +211,9 @@ def _classify(
         ticker = str(row.get("ticker", ""))
         if ticker in labels:
             continue
-        if row.get("score_v3_excluded"):
+        if str(row.get("ranking_basis")) == "below_liquidity_floor":
+            labels[ticker] = "below_liquidity_floor"
+        elif row.get("score_v3_excluded"):
             labels[ticker] = "v3_excluded"
         elif str(row.get("ranking_basis")) == "score_v2":
             labels[ticker] = "v2_fallback"

@@ -95,6 +95,11 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
         help="bound the backtest's survivorship bias using SEC records of delisted companies",
     )
     selection.add_argument(
+        "--test-v3-change",
+        metavar="RUN_ID",
+        help="paired backtest test of a proposed Score v3 change; needs --change",
+    )
+    selection.add_argument(
         "--index-run",
         metavar="RUN_ID",
         help="index a completed saved run into the local history database",
@@ -163,6 +168,19 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
         "--refresh-fundamentals",
         action="store_true",
         help="recompute cached point-in-time fundamentals during --rescore-run",
+    )
+    parser.add_argument(
+        "--change",
+        metavar="JSON",
+        help=(
+            "for --test-v3-change: signal changes, e.g. "
+            "'{\"momentum_long\": null, \"pit_fcf_yield\": 20}'"
+        ),
+    )
+    parser.add_argument(
+        "--no-liquidity-floor",
+        action="store_true",
+        help="for --backtest-run: a control that keeps names below the liquidity floor",
     )
     parser.add_argument(
         "--static-universe",
@@ -242,6 +260,12 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
         parser.error("--refresh-fundamentals requires --rescore-run")
     if args.backtest_limit is not None and args.backtest_run is None:
         parser.error("--backtest-limit requires --backtest-run")
+    if args.test_v3_change and not args.change:
+        parser.error("--test-v3-change requires --change")
+    if args.change and not args.test_v3_change:
+        parser.error("--change requires --test-v3-change")
+    if args.no_liquidity_floor and args.backtest_run is None:
+        parser.error("--no-liquidity-floor requires --backtest-run")
     if args.static_universe and args.backtest_run is None:
         parser.error("--static-universe requires --backtest-run")
     if args.with_fundamentals and args.backtest_run is None:

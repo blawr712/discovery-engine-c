@@ -184,6 +184,20 @@ class CliTests(unittest.TestCase):
         with self.assertRaises(SystemExit):
             parse_args(["--history-summary", "--index-run", "run-123"])
 
+    def test_v3_change_needs_both_flags(self):
+        args = parse_args(["--test-v3-change", "run-123", "--change", '{"momentum_long": null}'])
+        self.assertEqual(args.test_v3_change, "run-123")
+        for invalid in (["--test-v3-change", "run-123"], ["--change", "{}"]):
+            with self.assertRaises(SystemExit):
+                parse_args(invalid)
+
+    def test_no_liquidity_floor_control_requires_a_backtest(self):
+        self.assertTrue(
+            parse_args(["--backtest-run", "run-123", "--no-liquidity-floor"]).no_liquidity_floor
+        )
+        with self.assertRaises(SystemExit):
+            parse_args(["--no-liquidity-floor"])
+
     def test_static_universe_control_requires_a_backtest(self):
         args = parse_args(["--backtest-run", "run-123", "--static-universe"])
         self.assertTrue(args.static_universe)

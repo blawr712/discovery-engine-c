@@ -151,14 +151,14 @@ class CrossSectionTests(unittest.TestCase):
 class ApplyScoresTests(unittest.TestCase):
     def setUp(self):
         self.results = [
-            {"ticker": "AAA", "status": "OK", "sector": "Tech", "discovery_score": 70,
+            {"ticker": "AAA", "status": "OK", "average_dollar_volume_30d": 1e6, "sector": "Tech", "discovery_score": 70,
              f"{RAW_PREFIX}momentum_long": 0.5, f"{RAW_PREFIX}volatility": 0.2,
              f"{RAW_PREFIX}volume_trend": 1.5},
             {"ticker": "BBB", "status": "FILTERED", "discovery_score": 0},
-            {"ticker": "CCC", "status": "OK", "sector": "Tech", "discovery_score": 40,
+            {"ticker": "CCC", "status": "OK", "average_dollar_volume_30d": 1e6, "sector": "Tech", "discovery_score": 40,
              f"{RAW_PREFIX}momentum_long": -0.2, f"{RAW_PREFIX}volatility": 0.9,
              f"{RAW_PREFIX}volume_trend": 0.8},
-            {"ticker": "DDD", "status": "OK", "sector": "Energy", "discovery_score": 55,
+            {"ticker": "DDD", "status": "OK", "average_dollar_volume_30d": 1e6, "sector": "Energy", "discovery_score": 55,
              f"{RAW_PREFIX}momentum_long": None, f"{RAW_PREFIX}volatility": None,
              f"{RAW_PREFIX}volume_trend": None},
             {"ticker": "EEE", "status": "FAILED", "discovery_score": 0},
@@ -273,13 +273,13 @@ class SectorApplicabilityTests(unittest.TestCase):
 
     def _rows(self):
         return [
-            {"ticker": "BANK", "status": "OK", "sector": "Financial Services",
+            {"ticker": "BANK", "status": "OK", "average_dollar_volume_30d": 1e6, "sector": "Financial Services",
              "pit_sales_yield": 0.01, "pit_share_change_1y": 0.0,
              f"{RAW_PREFIX}volatility": 0.2},
-            {"ticker": "OPCO", "status": "OK", "sector": "Technology",
+            {"ticker": "OPCO", "status": "OK", "average_dollar_volume_30d": 1e6, "sector": "Technology",
              "pit_sales_yield": 2.0, "pit_share_change_1y": 0.05,
              f"{RAW_PREFIX}volatility": 0.4},
-            {"ticker": "CHEAP", "status": "OK", "sector": "Technology",
+            {"ticker": "CHEAP", "status": "OK", "average_dollar_volume_30d": 1e6, "sector": "Technology",
              "pit_sales_yield": 0.05, "pit_share_change_1y": 0.01,
              f"{RAW_PREFIX}volatility": 0.3},
         ]
@@ -320,19 +320,19 @@ class SectorApplicabilityTests(unittest.TestCase):
 class CompositeModelTests(unittest.TestCase):
     def _rows(self):
         return [
-            {"ticker": "A", "status": "OK", "sector": "Tech", "discovery_score": 50,
+            {"ticker": "A", "status": "OK", "average_dollar_volume_30d": 1e6, "sector": "Tech", "discovery_score": 50,
              "pit_sales_yield": 2.0, "pit_share_change_1y": 0.01,
              "pit_operating_margin_ttm": 0.20, f"{RAW_PREFIX}volatility": 0.3},
-            {"ticker": "B", "status": "OK", "sector": "Tech", "discovery_score": 50,
+            {"ticker": "B", "status": "OK", "average_dollar_volume_30d": 1e6, "sector": "Tech", "discovery_score": 50,
              "pit_sales_yield": 1.0, "pit_share_change_1y": 0.02,
              "pit_operating_margin_ttm": 0.10, f"{RAW_PREFIX}volatility": 0.4},
-            {"ticker": "C", "status": "OK", "sector": "Tech", "discovery_score": 50,
+            {"ticker": "C", "status": "OK", "average_dollar_volume_30d": 1e6, "sector": "Tech", "discovery_score": 50,
              "pit_sales_yield": 0.5, "pit_share_change_1y": 0.03,
              "pit_operating_margin_ttm": 0.05, f"{RAW_PREFIX}volatility": 0.5},
-            {"ticker": "D", "status": "OK", "sector": "Tech", "discovery_score": 50,
+            {"ticker": "D", "status": "OK", "average_dollar_volume_30d": 1e6, "sector": "Tech", "discovery_score": 50,
              "pit_sales_yield": 3.0, "pit_share_change_1y": 0.90,
              "pit_operating_margin_ttm": -0.80, f"{RAW_PREFIX}volatility": 0.9},
-            {"ticker": "E", "status": "OK", "sector": "Energy", "discovery_score": 50,
+            {"ticker": "E", "status": "OK", "average_dollar_volume_30d": 1e6, "sector": "Energy", "discovery_score": 50,
              "pit_sales_yield": None, "pit_share_change_1y": None,
              "pit_operating_margin_ttm": None, f"{RAW_PREFIX}volatility": 0.2},
         ]
@@ -350,10 +350,10 @@ class CompositeModelTests(unittest.TestCase):
                            "exclude_above_percentile": 90, "reason": "Stale"}]})
         self.assertIn("ins_cluster_buy_short", config["signals"])
         rows = [
-            {"ticker": "A", "status": "OK", "sector": "Tech",
+            {"ticker": "A", "status": "OK", "average_dollar_volume_30d": 1e6, "sector": "Tech",
              "ins_net_value_to_market_cap_short": 0.02, "ins_cluster_buy_short": 1.0,
              "ins_days_since_last_purchase": 10.0},
-            {"ticker": "B", "status": "OK", "sector": "Tech",
+            {"ticker": "B", "status": "OK", "average_dollar_volume_30d": 1e6, "sector": "Tech",
              "ins_net_value_to_market_cap_short": -0.01, "ins_cluster_buy_short": 0.0,
              "ins_days_since_last_purchase": 300.0},
         ]
@@ -393,7 +393,7 @@ class CompositeModelTests(unittest.TestCase):
         for index in range(25):
             signals = compute_raw_signals(history)
             rows.append({
-                "ticker": f"T{index}", "status": "OK", "sector": "Tech",
+                "ticker": f"T{index}", "status": "OK", "average_dollar_volume_30d": 1e6, "sector": "Tech",
                 **{k: (v * (1 + index / 10) if v is not None else None) for k, v in signals.items()},
                 "pit_sales_yield": index / 10, "pit_net_cash_to_market_cap": 0.1,
                 "pit_fcf_yield": 0.05, "pit_fcf_margin_ttm": 0.1,
