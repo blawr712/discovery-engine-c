@@ -167,7 +167,12 @@ and never changes official scores or ranks. Its configuration lives in
 (on by default) adds the names filtered today only for size and keeps an
 observation only when that month-end's market cap was inside the live band,
 so the universe is not defined by today's market caps; off is the
-`--static-universe` control. `split_adjust_shares`
+`--static-universe` control. Observations below the liquidity floor are
+dropped as well (`src/liquidity.py`), matching live research, where shadow
+models rank only tradeable names and the research queue puts the rest last.
+`src/model_tests.py` (`--test-v3-change`) runs the paired, Newey-West test of a
+proposed Score v3 change against saved observations with the decision rule
+fixed in advance. `split_adjust_shares`
 defaults to on and exists so the split correction can be measured against a
 control on the same universe; an unadjusted run writes to its own artifact
 names.

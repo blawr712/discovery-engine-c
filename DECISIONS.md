@@ -645,6 +645,67 @@ are unchanged; the Oct 19 baseline file is byte-identical.
 **Where.** `scoring_v3` and `scoring_v3_challenger` in `config/strategy.json`;
 harness over `backtest_observations_20261019T223433Z-f13f71e5.csv.gz`.
 
+## 2026-10-24: A liquidity floor for research candidates; v3 is a filter more than a picker
+
+**Decision.** Apply the $250,000 30-day average dollar volume floor that
+`universe.minimum_average_dollar_volume` always defined and nothing read.
+Names below it keep their official score but are not research candidates:
+shadow models rank only tradeable names against each other, the research
+queue lists illiquid names last as `below_liquidity_floor`, and the backtest
+drops them at each month-end. Read v3's ranking as which names to avoid more
+than which to buy.
+
+**Evidence.** In the Oct 19 run half of v3.2's top 25 traded below the floor
+(12 of 25; 9 below $100k; the top name about $5,300 a day), and about half of
+all point-in-time backtest observations sit below it (49% in 2016-21, 46% in
+2022-26). The backtest already recorded a liquidity score that is positive
+exactly at $250k, so the effect of the floor was measured offline first and
+then confirmed by a full rerun:
+
+| v3.2, point-in-time universe | All names | Tradeable only |
+|---|---|---|
+| 1Y IC | 0.089 (t 11.8) | **0.079 (t 9.1)** |
+| Quintile medians, Q1 to Q5 | -22.1, -14.8, -12.3, -12.6, -10.7 | -21.9, -14.9, **-11.4**, -12.0, -12.7 |
+| Quintile win rates, Q1 to Q5 | 33.5, 36.7, 38.5, 38.3, 38.7 | 33.0, 36.1, 38.8, 38.6, 36.8 |
+| Top-25 median / hit rate | -11.1% / 40.2% | -13.3% / 36.1% |
+| Top 25 compounded, 2016-21 / 2022-26 | 498% / 93% | 211% / 104% |
+
+v3 keeps nearly all of its ranking power among tradeable names, and its
+holdout correlation barely moves (0.105 to 0.097). But its top fifth is no
+better than its middle once illiquid names are gone; what it reliably does is
+separate the bottom two fifths from the rest. Illiquid names have the same
+median return as liquid ones and a far higher mean (+24.3% against +10.7% in
+2016-21), which is what outliers and thin closing prices look like: returns
+that could not have been captured. v3's top 25 leaned towards them (41-45%
+illiquid, against about 30% in its top fifth), which is where part of its
+apparent 2016-21 strength came from.
+
+One guess did not hold: illiquid names do not look low-volatility because
+they rarely trade. Their measured volatility is higher (median 0.735 against
+0.567), so v3's low-volatility tilt is not what drew it towards them.
+
+The full rerun keeps 142,349 observations, drops 149,366 below the floor and
+209,408 outside the size band. v2's 1Y IC is 0.071 and the official technical
+score's 0.001.
+
+**Effect on the queue.** On the Oct 19 run 1,823 of 3,023 successful names
+clear the floor. Every name in the new top 25 trades at least $298,000 a day.
+Frozen cohorts are unchanged; cohorts frozen from now on classify illiquid
+names as `below_liquidity_floor` and record the floor.
+
+**How to use v3 now.** As a screen: set aside its bottom two fifths and the
+names its filters reject, then research what remains, rather than treating the
+top 25 as the best 25.
+
+**Open.** Interlisted companies can appear twice (HITI and HITI.V on Oct 19).
+The floor is applied in each listing's trading currency, so it is looser for
+Canadian listings by the exchange rate, as the market-cap band already was.
+
+**Where.** `src/liquidity.py`, `minimum_average_dollar_volume` and
+`--no-liquidity-floor` for the backtest; `--test-v3-change` now runs the
+paired test behind past weight decisions, reproducing the v3.2 decision
+exactly.
+
 ## Standing caveats that gate any promotion to "official"
 
 - **Survivorship.** The backtest's universe is chosen point in time from
@@ -665,8 +726,9 @@ harness over `backtest_observations_20261019T223433Z-f13f71e5.csv.gz`.
   assumption that the same signals behave the same way north of the border.
   Insider signals remain U.S. only.
 - **Picks versus baskets.** Even v3's top 25 has a negative median and a
-  ~38% hit rate; the edge is a fatter right tail within the top group. It
-  works as a basket, not as individual conviction.
+  hit rate near 36% among tradeable names, and among them its top fifth is no
+  better than its middle. Its evidence supports avoiding its bottom two
+  fifths, not conviction in its top names.
 - **Splits: fixed.** Share counts are restated into the price basis in every
   path, measured, and reported above. Superseded figures elsewhere in this
   file are left in place as a record of what was believed at the time.

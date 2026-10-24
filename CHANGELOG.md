@@ -114,6 +114,12 @@
   `score_v3_challenger` slot, so forward cohorts test the insider change
 - Labelled research baselines with the version of the model that produced
   their scores, instead of a separately configured version
+- Applied the configured $250,000 liquidity floor, which was defined but never
+  read: shadow models rank only tradeable names, the research queue lists the
+  rest last as `below_liquidity_floor`, and the backtest drops them at each
+  month-end (`--no-liquidity-floor` for the control)
+- Recorded each scored row's 30-day average dollar volume
+- Added `--test-v3-change` to run the paired test behind past weight decisions
 - Taught the resolver about baseline kinds, reading each baseline's own
   cohort split so Moonshot and research cohorts stay separate; added
   `--baseline moonshot|research|all`

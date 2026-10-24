@@ -128,6 +128,25 @@ counts only if its market cap was inside the band at that month-end.
 `--static-universe` replays today's universe at every date instead, as a
 control, and writes `*_static_universe` artifacts.
 
+Observations below the liquidity floor, a 30-day average dollar volume of
+$250,000 (`universe.minimum_average_dollar_volume`), are dropped too, as they
+are from live research: shadow models rank only tradeable names, and the
+research queue lists names below the floor last, as `below_liquidity_floor`.
+`--no-liquidity-floor` is the backtest control.
+
+Test a proposed Score v3 change the way past changes were tested:
+
+```powershell
+python main.py --test-v3-change RUN_ID --change '{"momentum_long": null, "pit_fcf_yield": 20}'
+```
+
+A signal mapped to `null` is removed and a number sets its weight. The current
+and changed models are compared period by period on the saved backtest
+observations, in a 2016-21 fitting window and a 2022-26 holdout, with
+Newey-West standard errors. A change is accepted only if it improves both
+windows, significantly in at least one, and is significantly worse in
+neither. The verdict is saved as `model_test_*.json`.
+
 Bound what the remaining survivorship costs, using SEC records of companies
 delisted during the backtest window:
 
