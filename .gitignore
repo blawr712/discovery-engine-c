@@ -29,6 +29,7 @@ data/outputs/
 data/cache/
 data/runs/
 data/history/
+data/rehearsal/
 
 # Logs
 *.log

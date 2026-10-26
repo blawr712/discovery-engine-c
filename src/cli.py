@@ -160,6 +160,21 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
         help="monthly cycle label such as 2026-11 (default: the current or unfinished cycle)",
     )
     parser.add_argument(
+        "--rehearsal",
+        action="store_true",
+        help=(
+            "with --monthly: rehearse the whole cycle on a small sample in an "
+            "isolated folder under data/rehearsal; nothing touches real records"
+        ),
+    )
+    parser.add_argument(
+        "--rehearsal-size",
+        type=_positive_integer,
+        metavar="PER_COUNTRY",
+        default=25,
+        help="names per country in a --rehearsal (default 25)",
+    )
+    parser.add_argument(
         "--skip-universe",
         action="store_true",
         help="use the existing universe files instead of rebuilding them during --monthly",
@@ -254,6 +269,8 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
         parser.error("--moonshot-limit requires --collect-market-risk")
     if args.cycle is not None and not args.monthly:
         parser.error("--cycle requires --monthly")
+    if args.rehearsal and not args.monthly:
+        parser.error("--rehearsal requires --monthly")
     if args.skip_universe and not args.monthly:
         parser.error("--skip-universe requires --monthly")
     if args.refresh_fundamentals and args.rescore_run is None:

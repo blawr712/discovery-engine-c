@@ -159,6 +159,7 @@ from src.config import (
     RESUME_ENABLED,
     RETRY_ERRORS_ON_RESUME,
     MAX_RESUME_AGE_HOURS,
+    ISOLATED_ROOT,
     RUN_DIR,
     OUTPUT_DIR,
     SETTINGS,
@@ -309,7 +310,14 @@ def main(arguments=None):
         )
         return
     if args.monthly:
-        run_monthly(cycle=args.cycle, skip_universe=args.skip_universe)
+        if args.rehearsal and ISOLATED_ROOT is None:
+            rehearse_monthly(arguments)
+            return
+        run_monthly(
+            cycle=args.cycle,
+            skip_universe=args.skip_universe,
+            rehearsal_size=args.rehearsal_size if args.rehearsal else None,
+        )
         return
     if args.survivorship_test:
         survivorship_test(args.survivorship_test)
@@ -529,15 +537,54 @@ def run_discovery(
     return run_state.run_id
 
 
-def run_monthly(cycle: str | None = None, skip_universe: bool = False) -> None:
+def rehearse_monthly(arguments=None) -> None:
+    """Run the monthly cycle on a small sample in an isolated folder.
+
+    The rehearsal is a separate process because the isolation has to be in
+    place before any module reads its output paths.
+    """
+    import subprocess
+    import sys
+
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    root = BASE_DIR / "data" / "rehearsal" / stamp
+    root.mkdir(parents=True, exist_ok=False)
+    forwarded = list(arguments) if arguments is not None else sys.argv[1:]
+    print(f"Rehearsing the monthly cycle in {root}")
+    print("Real runs, exports, cohorts, and the history database are not touched.")
+    completed = subprocess.run(
+        [sys.executable, str(Path(__file__).resolve()), *forwarded],
+        env={**os.environ, "DISCOVERY_ISOLATED_ROOT": str(root)},
+        cwd=str(BASE_DIR),
+    )
+    print()
+    print(f"Rehearsal folder: {root}")
+    if completed.returncode != 0:
+        raise SystemExit(completed.returncode)
+
+
+def run_monthly(
+    cycle: str | None = None,
+    skip_universe: bool = False,
+    rehearsal_size: int | None = None,
+) -> None:
     """Run every unfinished step of this month's research cycle."""
     state_directory = RUN_DIR / "monthly"
     now = datetime.now(timezone.utc)
+    if rehearsal_size is not None and ISOLATED_ROOT is None:
+        raise SystemExit("A rehearsal must run in an isolated folder; use --monthly --rehearsal.")
     try:
-        label = validate_cycle(cycle) if cycle else default_cycle(state_directory, now)
+        if cycle:
+            label = validate_cycle(cycle)
+        elif rehearsal_size is not None:
+            label = validate_cycle(f"{now:%Y-%m}-rehearsal")
+        else:
+            label = default_cycle(state_directory, now)
     except ValueError as error:
         raise SystemExit(str(error)) from error
-    print(f"Monthly cycle: {label}")
+    print(f"Monthly cycle: {label}" + (
+        f" (rehearsal, {rehearsal_size} names per country)" if rehearsal_size else ""
+    ))
     canadian_universe = BASE_DIR / "data" / "raw" / "universe" / "universe_ca_auto.csv"
 
     def universe_step(context):
@@ -564,7 +611,7 @@ def run_monthly(cycle: str | None = None, skip_universe: bool = False) -> None:
         return {"detail": f"{detail}; TMX data as of {source_date or 'unknown'}"}
 
     def discovery_step(context):
-        run_id = run_discovery(cycle=label)
+        run_id = run_discovery(cycle=label, balanced_sample=rehearsal_size)
         manifest, results = load_saved_run(RUN_DIR, run_id)
         if manifest.get("status") not in {"completed", "completed_with_errors"}:
             raise RuntimeError(f"run {run_id} ended with status {manifest.get('status')}")

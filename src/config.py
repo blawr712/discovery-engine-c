@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -31,6 +32,20 @@ RUN_DIR = BASE_DIR / DIRECTORIES.get("run_directory", "data/runs")
 HISTORY_DATABASE = BASE_DIR / DIRECTORIES.get(
     "history_database", "data/history/discovery_history.sqlite3"
 )
+# A rehearsal of the monthly cycle runs in a process whose runs, exports, and
+# history database live in their own folder, so nothing it writes can be
+# mistaken for real records: its frozen cohort can never be resolved as one,
+# and the dashboard never sees its run. Caches stay shared; they are keyed by
+# content and expire on their own. Set here, where every module reads these
+# paths, because some modules import them directly rather than through main.
+ISOLATED_ROOT = (
+    Path(os.environ["DISCOVERY_ISOLATED_ROOT"]).resolve()
+    if os.environ.get("DISCOVERY_ISOLATED_ROOT") else None
+)
+if ISOLATED_ROOT is not None:
+    OUTPUT_DIR = ISOLATED_ROOT / "exports"
+    RUN_DIR = ISOLATED_ROOT / "runs"
+    HISTORY_DATABASE = ISOLATED_ROOT / "history" / "discovery_history.sqlite3"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 CACHE_CONFIG = SETTINGS.get("cache", {})
