@@ -43,6 +43,7 @@ from src.data_sources.sec_filings_source import SecFilingsSource, quarters
 from src.data_sources.sec_form4_source import SecForm4Source
 from src.data_sources.sec_pacing import SecPacer
 from src.insider_supplement import SupplementedInsiderLookup
+from src.liquidity import liquidity_eligible
 from src.survivorship import classify_exit, dead_observations, delisted_candidates
 from src.survivorship_report import build_markdown, build_report
 from src.monthly import (
@@ -1108,6 +1109,17 @@ def rescore_saved_run(run_id: str, refresh_fundamentals: bool = False) -> None:
                 )
                 insider_lookup, insider_index_stats = build_live_insider_lookup(
                     insider_source, sec_source.cik_for, labels[max(0, len(labels) - lookback)],
+                )
+                # Rescoring walks rows one at a time; fetch tradeable names'
+                # recent filings concurrently first so that pass reads cache.
+                insider_lookup.prefetch(
+                    [
+                        str(row.get("ticker")) for row in results
+                        if row.get("status") == "OK"
+                        and str(row.get("country") or "").upper() == "US"
+                        and liquidity_eligible(row)
+                    ],
+                    progress=print_progress,
                 )
         rescored, stats = rescore_results(
             results, as_of,

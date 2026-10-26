@@ -49,6 +49,31 @@ class SupplementedInsiderLookup:
     def __call__(self, ticker: str) -> InsiderHistory | None:
         return self._history(ticker, fresh=True)
 
+    def prefetch(self, tickers: list[str], workers: int = 6, progress=None) -> None:
+        """Warm the filing cache for many companies at once.
+
+        Callers that score rows one by one would otherwise wait on each
+        filing in turn; a few workers sharing the SEC pacer fetch the same
+        filings several times faster without exceeding its request rate.
+        """
+        if self.form4_source is None or not tickers:
+            return
+        from concurrent.futures import ThreadPoolExecutor
+
+        ciks = sorted({str(cik).zfill(10) for cik in map(self.cik_for, tickers) if cik})
+
+        def warm(cik: str) -> str:
+            try:
+                self.form4_source.transactions(cik, filed_after=self.data_through)
+            except Exception:  # noqa: BLE001 - the lookup itself will fall back
+                pass
+            return cik
+
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            for index, cik in enumerate(pool.map(warm, ciks), start=1):
+                if progress is not None:
+                    progress("form4-prefetch", index, len(ciks), cik)
+
     def bulk_only(self, ticker: str) -> InsiderHistory | None:
         """The data-set history alone, without fetching recent filings."""
         return self._history(ticker, fresh=False)

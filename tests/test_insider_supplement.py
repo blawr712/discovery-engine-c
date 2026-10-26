@@ -75,6 +75,14 @@ class LookupTests(unittest.TestCase):
         self.assertIsNone(lookup("ZZZZ"))
         self.assertIsNone(lookup("IMMR"))
 
+    def test_prefetch_warms_every_company_once(self):
+        form4 = FakeForm4([_row("B1", "2026-06-15")])
+        lookup = SupplementedInsiderLookup(self.bulk, date(2026, 3, 31), self.cik_for, form4)
+        seen = []
+        lookup.prefetch(["IMMR", "NEW", "IMMR", "ZZZZ"], progress=lambda *args: seen.append(args[1]))
+        self.assertEqual(sorted(cik for cik, _ in form4.calls), ["0000000001", "0000000002"])
+        self.assertEqual(seen, [1, 2])
+
     def test_incomplete_listings_are_counted(self):
         lookup = SupplementedInsiderLookup(
             self.bulk, date(2026, 3, 31), self.cik_for, FakeForm4([], incomplete=True),
