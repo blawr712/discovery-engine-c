@@ -120,6 +120,11 @@
   month-end (`--no-liquidity-floor` for the control)
 - Recorded each scored row's 30-day average dollar volume
 - Added `--test-v3-change` to run the paired test behind past weight decisions
+- Kept live insider signals current by reading each company's own Form 4
+  filings made since the last published SEC insider data set, validated
+  against the data set where both exist
+- Shared one request pacer across all SEC sources so concurrent fetches stay
+  within the SEC's rate limit
 - Taught the resolver about baseline kinds, reading each baseline's own
   cohort split so Moonshot and research cohorts stay separate; added
   `--baseline moonshot|research|all`

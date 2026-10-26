@@ -706,6 +706,44 @@ Canadian listings by the exchange rate, as the market-cap band already was.
 paired test behind past weight decisions, reproducing the v3.2 decision
 exactly.
 
+## 2026-10-26: Live insider data read from companies' own Form 4 filings
+
+**Decision.** Fill the gap after the SEC's quarterly insider data sets with
+each company's own Form 4 filings from EDGAR, in the data sets' exact row
+shape. The backtest stays on the data sets.
+
+**Why.** In late October the newest published data set covered January to
+March 2026; the April to June file still returns 404. Live insider signals
+ended at March 31, so Score v3.2's twelve-month purchase window was missing
+its most recent seven months.
+
+**Evidence that the rows mean the same thing.** On Q1 2026, which both sources
+cover, 40 sampled companies gave 316 transactions from the data set and 316
+from their Form 4s. 39 matched transaction for transaction; the fortieth
+differed only because the data set rounds fractional share counts to two
+decimals.
+
+**Effect on the Oct 19 run.** 1,626 tradeable U.S. companies were refreshed
+through 2026-10-26, adding 10,922 transactions filed since April. Of 1,629
+tradeable U.S. names, 537 now count more twelve-month purchases (none fewer)
+and 257 went from none to some; 200 more companies have any insider history.
+The queue's top 25 keeps 20 names (LOVE, SPOK, AMWL, BOLD, OSUR in; AUDC,
+KMDA, CRTO, CRNT, CCLD out).
+
+**Design notes.** Filings already in a data set are skipped by accession, a
+company whose filings cannot be read keeps its data-set history, and recent
+filings are fetched only for names above the liquidity floor, since insider
+signals reach the queue only through v3. All SEC sources now share one
+request pacer, because a run fetching facts and Form 4s concurrently would
+otherwise exceed the SEC's ten-per-second limit. The first fetch read about
+21,000 filings; each later run reads only new ones.
+
+**Open.** The backtest's most recent months still see insider data only
+through March 2026, which slightly understates insider signals there.
+
+**Where.** `src/data_sources/sec_form4_source.py`, `src/insider_supplement.py`,
+`src/data_sources/sec_pacing.py`.
+
 ## Standing caveats that gate any promotion to "official"
 
 - **Survivorship.** The backtest's universe is chosen point in time from
@@ -724,7 +762,9 @@ exactly.
   names receive live-run fundamentals from provider statements with estimated
   filing dates; those were never backtested, so their v3 scores rest on the
   assumption that the same signals behave the same way north of the border.
-  Insider signals remain U.S. only.
+  Insider signals remain U.S. only; live ones are current through each
+  run's date via companies' own Form 4s, the backtest's through the last
+  published quarterly data set.
 - **Picks versus baskets.** Even v3's top 25 has a negative median and a
   hit rate near 36% among tradeable names, and among them its top fifth is no
   better than its middle. Its evidence supports avoiding its bottom two

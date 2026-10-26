@@ -109,7 +109,13 @@ the SEC's quarterly insider-transaction data sets once each, keeps only
 open-market purchases and sales with filing dates and owner relationships,
 and caches the compact extract; `src/insider_signals.py` answers windowed
 "what was filed by this date" queries per issuer. The Backtest Engine and the
-live orchestration engine both consume these histories for U.S. filers.
+live orchestration engine both consume these histories for U.S. filers. The
+data sets are published months late, so live runs and rescoring append each
+company's own Form 4 filings made since the last published quarter
+(`src/data_sources/sec_form4_source.py`, `src/insider_supplement.py`), parsed
+into the same rows, skipping any filing already held and fetched only for
+names above the liquidity floor. Every SEC source in a process shares one
+request pacer (`src/data_sources/sec_pacing.py`).
 
 Forward Baselines (`src/research_baseline.py`, `--freeze-research-baseline`):
 freeze a completed run's research queue into labelled cohorts with fixed

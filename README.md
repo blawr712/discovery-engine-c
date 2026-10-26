@@ -128,6 +128,12 @@ counts only if its market cap was inside the band at that month-end.
 `--static-universe` replays today's universe at every date instead, as a
 control, and writes `*_static_universe` artifacts.
 
+Live runs keep insider signals current. The SEC's quarterly insider data
+sets are published months late, so each tradeable U.S. company's own Form 4
+filings made since the last published quarter are read from EDGAR, cached for
+good, and appended in the same form. The first run after a long gap reads tens
+of thousands of filings; later runs read only new ones.
+
 Observations below the liquidity floor, a 30-day average dollar volume of
 $250,000 (`universe.minimum_average_dollar_volume`), are dropped too, as they
 are from live research: shadow models rank only tradeable names, and the
