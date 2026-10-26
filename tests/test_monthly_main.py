@@ -25,6 +25,7 @@ class MonthlyWiringTests(unittest.TestCase):
         )
         self.calls = []
         self.results = [{"status": "OK"}] * 300 + [{"status": "FILTERED"}] * 300
+        self.status = "completed_with_errors"
 
         def record(name):
             return lambda *args, **kwargs: self.calls.append((name, args, kwargs))
@@ -35,7 +36,7 @@ class MonthlyWiringTests(unittest.TestCase):
             mock.patch.object(main, "BASE_DIR", self.base),
             mock.patch.object(main, "run_discovery", side_effect=self._discovery),
             mock.patch.object(main, "load_saved_run", side_effect=lambda *_: (
-                {"status": "completed_with_errors"}, self.results)),
+                {"status": self.status}, self.results)),
             mock.patch.object(main, "index_history_run", side_effect=record("index")),
             mock.patch.object(main, "analyze_moonshot_run", side_effect=record("moonshot")),
             mock.patch.object(main, "calibrate_saved_moonshot", side_effect=record("calibrate")),
@@ -66,6 +67,20 @@ class MonthlyWiringTests(unittest.TestCase):
         self.assertIn("Status: **completed**", report)
         self.assertIn("rebuild skipped (--skip-universe); TMX data as of 2026-10-31", report)
         self.assertTrue((self.runs / "monthly" / "2026-11.json").is_file())
+
+    def test_a_clean_run_with_no_errors_is_accepted(self):
+        """A run with no provider errors ends 'complete'; the rehearsal of
+        2026-10-26 found the step accepting only runs that had errors."""
+        self.status = "complete"
+        main.run_monthly(cycle="2026-11", skip_universe=True)
+        names = [name for name, _, _ in self.calls]
+        self.assertIn("freeze", names)
+
+    def test_a_run_still_in_progress_is_not_accepted(self):
+        self.status = "in_progress"
+        with self.assertRaises(SystemExit):
+            main.run_monthly(cycle="2026-11", skip_universe=True)
+        self.assertNotIn("freeze", [name for name, _, _ in self.calls])
 
     def test_incomplete_run_is_never_frozen(self):
         self.results = [{"status": "OK"}] * 500 + [{"status": "ERROR"}] * 100

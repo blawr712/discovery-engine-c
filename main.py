@@ -61,6 +61,7 @@ from src.calibration import build_calibration, export_calibration
 from src.scoring_v2 import apply_all_models
 from src.engine import DiscoveryEngine
 from src.run_state import (
+    COMPLETED_RUN_STATUSES,
     RunState,
     build_run_fingerprint,
     load_saved_run,
@@ -613,7 +614,7 @@ def run_monthly(
     def discovery_step(context):
         run_id = run_discovery(cycle=label, balanced_sample=rehearsal_size)
         manifest, results = load_saved_run(RUN_DIR, run_id)
-        if manifest.get("status") not in {"completed", "completed_with_errors"}:
+        if manifest.get("status") not in COMPLETED_RUN_STATUSES:
             raise RuntimeError(f"run {run_id} ended with status {manifest.get('status')}")
         ok, detail = discovery_quality(results)
         if not ok:

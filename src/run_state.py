@@ -15,6 +15,8 @@ import re
 
 
 RUN_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+# A finished run: clean, or with provider errors that a resume can retry.
+COMPLETED_RUN_STATUSES = frozenset({"complete", "completed_with_errors"})
 
 
 def build_run_fingerprint(
@@ -377,7 +379,7 @@ def load_saved_manifest(root_directory: Path, run_id: str) -> dict:
             manifest = json.load(file)
     except (OSError, json.JSONDecodeError, TypeError) as error:
         raise ValueError(f"Saved run manifest is unreadable: {run_id}") from error
-    if manifest.get("status") not in {"complete", "completed_with_errors"}:
+    if manifest.get("status") not in COMPLETED_RUN_STATUSES:
         raise ValueError(f"Saved run is not complete: {run_id}")
     if manifest.get("run_id") != run_id:
         raise ValueError(f"Saved run manifest ID does not match: {run_id}")
