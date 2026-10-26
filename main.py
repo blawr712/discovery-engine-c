@@ -40,6 +40,9 @@ from src.fundamentals_pit import FundamentalHistory
 from src.split_adjustment import SplitHistory
 from src.keep_awake import keep_awake
 from src.data_sources.sec_filings_source import SecFilingsSource, quarters
+from src.data_sources.sec_form4_source import SecForm4Source
+from src.data_sources.sec_pacing import SecPacer
+from src.insider_supplement import SupplementedInsiderLookup
 from src.survivorship import classify_exit, dead_observations, delisted_candidates
 from src.survivorship_report import build_markdown, build_report
 from src.monthly import (
@@ -389,14 +392,17 @@ def run_discovery(
     if INSIDERS_CONFIG.get("live_collection_enabled", True) and fundamentals_source is not None:
         insider_source = build_sec_insider_source(required=False)
         if insider_source is not None:
-            insider_index, insider_index_stats = load_insider_index(
-                insider_source, live_insider_start_quarter(),
+            insider_lookup, insider_index_stats = build_live_insider_lookup(
+                insider_source, fundamentals_source.cik_for, live_insider_start_quarter(),
             )
-            insider_lookup = _insider_lookup(insider_index, fundamentals_source.cik_for)
     print(
         "SEC insiders: "
         + (
-            f"enabled, data through {insider_index_stats['data_through']}"
+            f"enabled, data sets through {insider_index_stats['data_through']}"
+            + (
+                "; recent Form 4 filings read for tradeable candidates"
+                if insider_index_stats["form4_supplement"] else ""
+            )
             if insider_index_stats else "disabled"
         )
     )
@@ -491,6 +497,7 @@ def run_discovery(
             "SEC insiders: "
             + ", ".join(f"{name} {count}" for name, count in sorted(insider_statuses.items()))
         )
+        print_insider_supplement(insider_lookup)
     if provider.enabled:
         print(f"Pacing waits: {provider.stats.pacing_waits}")
         print(f"Rate-limit cooldowns: {provider.stats.cooldown_events}")
@@ -1099,10 +1106,9 @@ def rescore_saved_run(run_id: str, refresh_fundamentals: bool = False) -> None:
                 labels = quarter_labels(
                     "2000q1", f"{as_of.year}q{(as_of.month - 1) // 3 + 1}",
                 )
-                insider_index, insider_index_stats = load_insider_index(
-                    insider_source, labels[max(0, len(labels) - lookback)],
+                insider_lookup, insider_index_stats = build_live_insider_lookup(
+                    insider_source, sec_source.cik_for, labels[max(0, len(labels) - lookback)],
                 )
-                insider_lookup = _insider_lookup(insider_index, sec_source.cik_for)
         rescored, stats = rescore_results(
             results, as_of,
             fundamentals_lookup=fundamentals_lookup,
@@ -1148,6 +1154,8 @@ def rescore_saved_run(run_id: str, refresh_fundamentals: bool = False) -> None:
     )
     if sec_source is None:
         print("SEC data skipped: set SEC_USER_AGENT in .env to use cached SEC extracts")
+    if insider_lookup is not None:
+        print_insider_supplement(insider_lookup)
     print("Official Discovery scores and ranks: unchanged")
     print(f"Report refreshed: {report_path}")
     print(f"Candidate report refreshed: {candidate_path}")
@@ -1465,6 +1473,69 @@ def build_sec_resolver(sec_source):
     return resolver
 
 
+_SEC_PACER: SecPacer | None = None
+
+
+def sec_pacer() -> SecPacer:
+    """The one request schedule every SEC source in this process shares."""
+    global _SEC_PACER
+    if _SEC_PACER is None:
+        _SEC_PACER = SecPacer(float(FUNDAMENTALS_CONFIG.get("request_interval_seconds", 0.11)))
+    return _SEC_PACER
+
+
+def build_sec_form4_source() -> SecForm4Source | None:
+    """Recent Form 4 filings, read per company, when SEC access is configured."""
+    user_agent = os.environ.get("SEC_USER_AGENT", "").strip()
+    if not user_agent or not INSIDERS_CONFIG.get("form4_supplement_enabled", True):
+        return None
+    return SecForm4Source(
+        user_agent=user_agent,
+        cache_directory=BASE_DIR / "data" / "cache" / "sec_form4",
+        pacer=sec_pacer(),
+    )
+
+
+def build_live_insider_lookup(insider_source, cik_for, start_quarter: str):
+    """Insider histories from the data sets plus filings made since they end."""
+    transactions, loaded, unavailable = insider_source.load_quarters(start_quarter)
+    data_through = quarter_end(loaded[-1]) if loaded else None
+    form4 = build_sec_form4_source()
+    lookup = SupplementedInsiderLookup(
+        transactions, data_through, cik_for, form4, INSIDER_SIGNALS_CONFIG,
+    )
+    return lookup, {
+        "quarters_loaded": loaded,
+        "quarters_unavailable": unavailable,
+        "data_through": data_through.isoformat() if data_through else None,
+        "transactions": len(transactions),
+        "issuers": len(lookup.rows_by_cik),
+        "form4_supplement": form4 is not None,
+    }
+
+
+def print_insider_supplement(lookup) -> None:
+    stats = getattr(lookup, "stats", None)
+    if not stats:
+        return
+    form4 = getattr(lookup, "form4_source", None)
+    parts = [
+        f"{stats.get('fresh', 0)} companies refreshed"
+        + (f" through {lookup.fresh_through}" if lookup.fresh_through else ""),
+        f"{stats.get('fresh_transactions', 0)} recent transactions",
+        f"{stats.get('data_set_only', 0)} below the liquidity floor on data sets only",
+    ]
+    if stats.get("fresh_failed"):
+        parts.append(f"{stats['fresh_failed']} kept data sets only after a failed fetch")
+    if stats.get("fresh_incomplete"):
+        parts.append(f"{stats['fresh_incomplete']} with possibly incomplete filing lists")
+    if form4 is not None:
+        parts.append(
+            f"{form4.stats.filings_parsed} filings read, {form4.stats.filings_cached} from cache"
+        )
+    print("Form 4 supplement: " + "; ".join(parts))
+
+
 def build_sec_xbrl_source(required: bool = True) -> SecXbrlSource | None:
     """Build the paced, compact-cached SEC company-facts source."""
     user_agent = os.environ.get("SEC_USER_AGENT", "").strip()
@@ -1481,6 +1552,7 @@ def build_sec_xbrl_source(required: bool = True) -> SecXbrlSource | None:
         cache_directory=BASE_DIR / settings.get("cache_directory", "data/cache/sec_facts"),
         ttl_hours=float(settings.get("cache_ttl_hours", 168)),
         request_interval_seconds=float(settings.get("request_interval_seconds", 0.11)),
+        pacer=sec_pacer(),
     )
 
 

@@ -12,9 +12,10 @@ import pandas as pd
 from src.data_sources.base import MarketDataSource
 from src.fundamentals_pit import FundamentalHistory
 from src.insider_signals import InsiderHistory
+from src.liquidity import MINIMUM_AVERAGE_DOLLAR_VOLUME
 from src.statements_extract import extract_from_statements
 from src.pre_filter import evaluate_stock, filtered_result
-from src.scoring import calculate_scores
+from src.scoring import average_dollar_volume, calculate_scores
 
 
 ProgressCallback = Callable[[str, int, int, str], None]
@@ -274,7 +275,7 @@ class DiscoveryEngine:
     ) -> dict:
         price_history = self.source.get_price_history(candidate.ticker)
         fundamental_history, status = self._load_fundamentals(candidate)
-        insider_history, insider_status = self._load_insiders(candidate)
+        insider_history, insider_status = self._load_insiders(candidate, price_history)
         fx_multiplier, status = self._reporting_fx(candidate, fundamental_history, status)
         return calculate_scores(
             {
@@ -310,15 +311,26 @@ class DiscoveryEngine:
     def _load_insiders(
         self,
         candidate: Candidate,
+        price_history=None,
     ) -> tuple[InsiderHistory | None, str]:
-        """Look up Form 4 history with per-company failure isolation."""
+        """Look up Form 4 history with per-company failure isolation.
+
+        A lookup that can read recent filings does so only for names above
+        the liquidity floor: insider signals reach the research queue only
+        through Score v3, which ranks tradeable names.
+        """
         if self.insider_lookup is None:
             return None, "not_requested"
         country = str(candidate.stock_data.get("country") or "").upper()
         if country not in self.fundamentals_countries:
             return None, "not_applicable"
+        lookup = self.insider_lookup
+        if price_history is not None and hasattr(lookup, "bulk_only"):
+            dollar_volume = average_dollar_volume(price_history)
+            if not (dollar_volume == dollar_volume and dollar_volume >= MINIMUM_AVERAGE_DOLLAR_VOLUME):
+                lookup = lookup.bulk_only
         try:
-            history = self.insider_lookup(candidate.ticker)
+            history = lookup(candidate.ticker)
         except Exception as error:  # noqa: BLE001 - isolate lookup failures
             return None, f"unavailable: {type(error).__name__}: {error}"
         if history is None or not history.has_data:

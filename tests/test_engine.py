@@ -425,3 +425,36 @@ class StaleSecFallbackTests(unittest.TestCase):
         row = engine.run([{"ticker": "OLD", "country": "US"}])[0]
         self.assertEqual(row["fundamentals_status"], "collected (stale)")
         self.assertIsNone(row["pit_revenue_ttm"])
+
+
+class InsiderFreshnessGateTests(unittest.TestCase):
+    """Recent Form 4s are read only for names that can be candidates."""
+
+    class Lookup:
+        def __init__(self):
+            self.calls = []
+
+        def __call__(self, ticker):
+            self.calls.append(("fresh", ticker))
+            return None
+
+        def bulk_only(self, ticker):
+            self.calls.append(("data_set", ticker))
+            return None
+
+    def _frame(self, volume):
+        return pd.DataFrame({"Close": [10.0] * 40, "Volume": [volume] * 40})
+
+    def test_liquid_candidates_read_recent_filings_and_illiquid_ones_do_not(self):
+        from src.engine import Candidate
+
+        lookup = self.Lookup()
+        engine = DiscoveryEngine(ConcurrentFakeSource(), benchmarks={"US": "SPY"}, insider_lookup=lookup)
+        liquid = Candidate(0, "LIQ", {"ticker": "LIQ", "country": "US"}, "SPY")
+        thin = Candidate(1, "THIN", {"ticker": "THIN", "country": "US"}, "SPY")
+
+        engine._load_insiders(liquid, self._frame(100_000))   # $1M a day
+        engine._load_insiders(thin, self._frame(500))         # $5,000 a day
+        engine._load_insiders(liquid)                         # no prices: unchanged behaviour
+
+        self.assertEqual(lookup.calls, [("fresh", "LIQ"), ("data_set", "THIN"), ("fresh", "LIQ")])

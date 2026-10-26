@@ -22,6 +22,7 @@ from typing import Callable
 from src.fundamentals_pit import FundamentalHistory, SIGNAL_NAMES as FUNDAMENTAL_SIGNAL_NAMES
 from src.insider_signals import InsiderHistory, SIGNAL_NAMES as INSIDER_SIGNAL_NAMES
 from src.scoring_v2 import apply_all_models, model_configs
+from src.liquidity import liquidity_eligible
 from src.split_adjustment import SplitHistory
 
 
@@ -112,7 +113,12 @@ def rescore_results(
                 stats["fundamentals_unavailable"] += 1
 
         if insider_lookup is not None:
-            history = _safe(insider_lookup, ticker)
+            # Recent filings are read only for tradeable names; others keep
+            # the data-set history, as in a live run.
+            lookup = insider_lookup
+            if hasattr(insider_lookup, "bulk_only") and not liquidity_eligible(row):
+                lookup = insider_lookup.bulk_only
+            history = _safe(lookup, ticker)
             if history is not None and history.has_data:
                 row.update(history.signals_as_of(
                     as_of_date, market_cap=_number(row.get("market_cap")),
