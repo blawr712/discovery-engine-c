@@ -153,6 +153,20 @@ Newey-West standard errors. A change is accepted only if it improves both
 windows, significantly in at least one, and is significantly worse in
 neither. The verdict is saved as `model_test_*.json`.
 
+Ask which signals rank names inside the Score v3 screen:
+
+```powershell
+python main.py --screen-research RUN_ID
+```
+
+It rebuilds the screen at every backtest month-end (v3 quintiles 3–5 of
+tradeable, unrejected names) and measures each signal's rank correlation with
+forward excess returns inside it. Because many signals are scanned, a signal
+counts as separating winners only when it has the same sign and |t| ≥ 2 in
+both the 2017-21 and 2022-26 windows; it also reports how many calendar years
+agree and tests a tie-breaker chosen on the first window alone against the
+second. It writes `screen_research_*.json` and `screen_research_*.md`.
+
 Bound what the remaining survivorship costs, using SEC records of companies
 delisted during the backtest window:
 

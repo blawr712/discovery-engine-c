@@ -95,6 +95,11 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
         help="bound the backtest's survivorship bias using SEC records of delisted companies",
     )
     selection.add_argument(
+        "--screen-research",
+        metavar="RUN_ID",
+        help="test which signals rank names inside the Score v3 screen, on the run's backtest",
+    )
+    selection.add_argument(
         "--test-v3-change",
         metavar="RUN_ID",
         help="paired backtest test of a proposed Score v3 change; needs --change",

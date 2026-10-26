@@ -326,6 +326,9 @@ def main(arguments=None):
     if args.test_v3_change:
         test_v3_change(args.test_v3_change, args.change)
         return
+    if args.screen_research:
+        screen_research(args.screen_research)
+        return
     run_discovery(
         tickers=args.tickers,
         limit=args.limit,
@@ -749,6 +752,40 @@ def test_v3_change(run_id: str, change_text: str) -> None:
         + " (positive in both windows, |t| >= 2 in one, significantly negative in neither)"
     )
     print(f"Result saved to: {export_result(result, run_id, OUTPUT_DIR)}")
+
+
+def screen_research(run_id: str) -> None:
+    """Which signals separate winners inside the v3 screen, by a rule fixed in advance."""
+    import pandas as pd
+
+    from src.screen_research import export_screen_research, scan_screen
+
+    path = OUTPUT_DIR / f"backtest_observations_{run_id}.csv.gz"
+    if not path.is_file():
+        raise SystemExit(f"No backtest observations for {run_id}; run --backtest-run first.")
+    observations = pd.read_csv(path, low_memory=False)
+    print(f"Observations: {path.name}, {len(observations):,} rows")
+    result = scan_screen(observations)
+    population = result["population"]
+    print(
+        f"Screen: {population['observations']:,} observations over {population['periods']} "
+        f"month-ends, median {population['median_names_per_period']:.0f} names"
+    )
+    for verdict in ("separates", "suggestive"):
+        names = [
+            f"{name} ({entry['direction']})"
+            for name, entry in result["signals"].items() if entry["verdict"] == verdict
+        ]
+        print(f"{verdict.capitalize()}: {', '.join(names) if names else 'none'}")
+    holdout = result["tiebreaker"]["holdout"]
+    chosen = ", ".join(result["tiebreaker"]["chosen_on_fit_window"]) or "none"
+    print(
+        f"Tie-breaker chosen on 2017-21 ({chosen}): holdout IC {holdout['mean_ic']:+.3f} "
+        f"(t {holdout['newey_west_t']:+.1f})"
+    )
+    json_path, markdown_path = export_screen_research(result, run_id, OUTPUT_DIR)
+    print(f"Report: {markdown_path}")
+    print(f"Data: {json_path}")
 
 
 def survivorship_test(run_id: str) -> None:

@@ -137,6 +137,9 @@
   listing), the view defaults to names that pass, shows the backtest's
   quintile outcomes beside the list, and sorts by v3 order, insider
   purchases, dollar volume, or name
+- Added `--screen-research` to test which signals rank names inside the v3
+  screen, with a two-window rule fixed in advance, a year-by-year agreement
+  count, and an out-of-sample tie-breaker test
 - Taught the resolver about baseline kinds, reading each baseline's own
   cohort split so Moonshot and research cohorts stay separate; added
   `--baseline moonshot|research|all`

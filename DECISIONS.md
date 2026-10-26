@@ -801,6 +801,60 @@ Queues exported before this change show a notice to rescore.
 **Where.** `_apply_screen` and `SCREEN_STATUSES` in
 `src/research_ranking.py`; `screen` and `sort` on `/api/research-queue`.
 
+## 2026-10-26: Nothing in the data reliably ranks names inside the screen
+
+**Decision.** Keep the screen unordered. Do not add a tie-breaker to the
+queue on this evidence. A defensive ordering is the candidate for a forward
+test.
+
+**Method, fixed before results were read.** At each of 110 month-ends
+(2017-08 to 2026-09) the backtest population was cut to what the live screen
+passes, about 315 names a month, and 43 signals and composites were scanned
+for rank correlation with forward excess return inside it. Scanning that many
+signals turns up chance winners, so the bar was the same sign in 2017-21 and
+2022-26 with |t| ≥ 2 in both. A tie-breaker was also chosen on 2017-21 alone
+and judged on 2022-26 alone.
+
+**Result.** No signal passed. v3's own order inside the screen has 1Y IC
++0.009 and -0.001 (positive in 4 of 9 years). The tie-breaker chosen on
+2017-21 (falling gross margins) did nothing afterwards (holdout IC +0.008,
+t 0.5).
+
+Ten signals were significant in the holdout only, and they agree with each
+other: nearness to the 52-week high, lower volatility, larger size, higher
+earnings yield, higher FCF yield and margin, and less net cash relative to
+market cap. Their 2022-26 ICs reach t 3 to 5 and the five strongest hold
+their sign in 7 or 8 of 9 years. All fail in 2020, when the most beaten-down,
+volatile names rebounded hardest. Combined equally, the least defensive third
+of the screen beat the most defensive third by 41 points of median 1Y excess
+from 2020 month-ends, and lost to it by 5 to 30 points in 2018 and in every
+year from 2021 to 2025. This is the quality and low-risk tilt that small-cap investors
+know, and it was found after looking at the holdout, so it cannot be
+validated on this backtest.
+
+**Insider purchases do not help inside the screen.** Twelve-month purchase
+counts, which v3.2 uses across all v3-ranked names, correlate negatively with
+returns inside the screen in 6 of 9 years (holdout t -4.6). The insider sort
+on the dashboard is a research convenience and nothing more.
+
+**A false winner caught.** The official score's static form,
+`discovery_score_static`, passed the bar with the wrong sign. Its market-cap
+points come from the source run's current market cap, which encodes each
+name's later returns; that part alone had a 1Y IC of -0.18 (t -20) inside the
+screen. It is now left out of the scan. The backtest already scores the
+official model by `technical_score` for this reason, so earlier conclusions
+stand.
+
+**Survivorship.** Missing delisted companies are mostly small, volatile, and
+far from their highs, so the defensive signals' measured edge is more likely
+understated than flattered. That is an argument for testing it, not evidence.
+
+**Open.** Freeze a defensive tie-breaker as a forward shadow ordering in
+monthly cohorts, so its within-screen effect is measured on months no one has
+seen.
+
+**Where.** `src/screen_research.py`, `--screen-research RUN_ID`.
+
 ## Standing caveats that gate any promotion to "official"
 
 - **Survivorship.** The backtest's universe is chosen point in time from
