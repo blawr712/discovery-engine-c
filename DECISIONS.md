@@ -776,6 +776,31 @@ next scheduled cycle.
 **Where.** `src/listings.py`, `--monthly --rehearsal`,
 `COMPLETED_RUN_STATUSES` in `src/run_state.py`.
 
+## 2026-10-26: The dashboard shows v3 as a screen, not a top 25
+
+**Decision.** The dashboard's main list is now a research screen. A name
+passes when it is ranked by v3 in quintile 3, 4, or 5, its v3 filters did not
+reject it, it clears the liquidity floor, and it is the kept listing of its
+company. The view opens on passing names. The queue order is still exported
+and still feeds research packets; only its presentation changed.
+
+**Why.** The liquidity-floor rerun (2026-10-24) showed that among tradeable
+names v3's quintile medians run -21.9, -14.9, -11.4, -12.0, -12.7: the bottom
+two fifths are clearly worse, the top three are indistinguishable. A ranked
+top 25 implies an ordering inside the top fifths that the evidence does not
+support. The screen shows what the evidence does support, and the dashboard
+prints those quintile outcomes beside the list so the reason stays visible.
+
+**Details.** Quintiles are assigned over the v3-ranked rows with the formula
+frozen cohorts use, so the quintile on screen is the one the forward test
+records (checked by a test). The cut-off is `screen_minimum_quintile` in
+`research_ranking` settings. Sorting inside the screen (v3 order, insider
+purchases, dollar volume, name) is a research convenience, not a ranking.
+Queues exported before this change show a notice to rescore.
+
+**Where.** `_apply_screen` and `SCREEN_STATUSES` in
+`src/research_ranking.py`; `screen` and `sort` on `/api/research-queue`.
+
 ## Standing caveats that gate any promotion to "official"
 
 - **Survivorship.** The backtest's universe is chosen point in time from

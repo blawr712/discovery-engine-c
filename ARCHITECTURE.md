@@ -62,7 +62,10 @@ Research Engine: Generate explainable research summaries. Packet selection
 follows the research queue (`src/research_ranking.py`), which orders
 successful companies by Score v3, then Score v2, then the official Discovery
 Score, keeping the official rank alongside for provenance. The queue is a
-pure function of a completed run's rows and is exported with every run.
+pure function of a completed run's rows and is exported with every run. Each
+row also carries its v3 quintile and a screen status (`SCREEN_STATUSES`),
+assigned with the frozen cohorts' quintile formula; the dashboard presents the
+queue as a screen filtered on that status rather than as a ranked list.
 
 Fundamentals (point-in-time): `src/data_sources/sec_xbrl_source.py` fetches
 SEC company facts for U.S. filers, keeps only configured concepts with their

@@ -335,10 +335,19 @@ from the candidate explorer, then reviewed against the immediately preceding
 indexed run for status, rank, and Discovery Score changes. Watchlists are local
 workflow state and never trigger market-data or AI requests.
 
-The dashboard opens on the **Research Queue** for the selected run: every
-successful company ordered by Score v3, then Score v2, then the official score,
-with basis chips, v3 and v2 scores, official rank, key point-in-time ratios,
-exclusion markers, and filters by basis, country, sector, and text. Clicking a
+The dashboard opens on the **Research Screen** for the selected run. Score v3
+is read as a screen, because in the backtest its bottom two fifths did clearly
+worse while its top three fifths did alike: a name *passes* when v3 puts it
+in quintile 3–5, v3's filters did not reject it, it clears the liquidity
+floor, and it is the kept listing of its company. Every other name carries the
+reason it does not pass (low v3 quintile, rejected by filters, not scored by
+v3, illiquid, duplicate listing). The screen shows each name's v3 quintile and
+score, 30-day dollar volume, twelve-month insider purchases with their
+data-through date, and key point-in-time ratios, with the backtest's quintile
+outcomes beside it, filters by screen status, country, sector, and text, and
+sorting by v3 order, insider purchases, dollar volume, or name. Ordering
+inside the screen is a convenience, not a ranking. Queues exported before the
+screen existed need `--rescore-run RUN_ID` to show statuses. Clicking a
 company opens the candidate terminal, which now carries a model-rank strip and
 three additional tabs: **Score v3** (each signal's percentile, contribution,
 applicability, and plain-language explanation for v3 and v2, plus exclusion

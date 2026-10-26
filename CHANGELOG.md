@@ -131,6 +131,12 @@
   with every output isolated under `data/rehearsal/`
 - Fixed the monthly discovery step rejecting a clean run, found by the first
   rehearsal
+- Turned the dashboard's research queue into a research screen: every queued
+  name carries its v3 quintile and one screen status (passes, low v3
+  quintile, rejected by filters, not scored by v3, illiquid, duplicate
+  listing), the view defaults to names that pass, shows the backtest's
+  quintile outcomes beside the list, and sorts by v3 order, insider
+  purchases, dollar volume, or name
 - Taught the resolver about baseline kinds, reading each baseline's own
   cohort split so Moonshot and research cohorts stay separate; added
   `--baseline moonshot|research|all`

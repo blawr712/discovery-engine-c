@@ -26,7 +26,21 @@ DEFAULT_CONFIG = {
     "final_fallback": "discovery_score",
     "top_stocks": 100,
     "packet_source": "research_queue",
+    # v3 is read as a screen: among tradeable names its bottom two fifths and
+    # its filter rejections did worst, while its top three fifths did alike.
+    "screen_quantiles": 5,
+    "screen_minimum_quintile": 3,
 }
+
+# What the screen says about each queued name, best first.
+SCREEN_STATUSES = (
+    "passes",
+    "low_v3_quintile",
+    "rejected_by_filters",
+    "not_scored_by_v3",
+    "below_liquidity_floor",
+    "duplicate_listing",
+)
 
 KEY_RATIOS = (
     "pit_sales_yield",
@@ -133,13 +147,25 @@ def build_research_queue(
             "score_v3_challenger": row.get("score_v3_challenger"),
             "score_v3_challenger_rank": row.get("score_v3_challenger_rank"),
             "fundamentals_status": row.get("fundamentals_status"),
+            "ins_purchase_count_long": row.get("ins_purchase_count_long"),
+            "ins_data_through": row.get("ins_data_through"),
             **{name: row.get(name) for name in KEY_RATIOS},
             "strongest_drivers": _drivers(row, f"{field}_breakdown", best=True),
             "weakest_drivers": _drivers(row, f"{field}_breakdown", best=False),
         })
 
+    _apply_screen(queue, config)
+
     summary = {
         "queued": len(queue),
+        "by_screen": {
+            status: sum(1 for row in queue if row["screen_status"] == status)
+            for status in SCREEN_STATUSES
+        },
+        "screen": {
+            "quantiles": config["screen_quantiles"],
+            "minimum_quintile": config["screen_minimum_quintile"],
+        },
         "by_basis": _counts(queue, "ranking_basis"),
         "by_tier": _counts(queue, "ranking_tier"),
         "excluded_by_primary": sum(
@@ -155,6 +181,36 @@ def build_research_queue(
         ),
     }
     return queue, summary
+
+
+def _apply_screen(queue: list[dict], config: dict) -> None:
+    """Give each queued row its v3 quintile and what the screen makes of it.
+
+    Quintiles are assigned over the v3-ranked rows in queue order with the
+    formula frozen cohorts use, so a name's quintile here is the quintile the
+    forward test records for it.
+    """
+    quantiles = int(config["screen_quantiles"])
+    minimum = int(config["screen_minimum_quintile"])
+    primary = config["primary_model"]
+    ranked = [row for row in queue if row["ranking_basis"] == primary]
+    total = len(ranked)
+    for index, row in enumerate(ranked):
+        bucket = min(quantiles - 1, index * quantiles // total)
+        row["v3_quintile"] = quantiles - bucket
+    for row in queue:
+        basis = row["ranking_basis"]
+        row.setdefault("v3_quintile", None)
+        if basis == "duplicate_listing":
+            row["screen_status"] = "duplicate_listing"
+        elif basis == "below_liquidity_floor":
+            row["screen_status"] = "below_liquidity_floor"
+        elif basis == primary:
+            row["screen_status"] = "passes" if row["v3_quintile"] >= minimum else "low_v3_quintile"
+        elif row.get(f"{primary}_excluded"):
+            row["screen_status"] = "rejected_by_filters"
+        else:
+            row["screen_status"] = "not_scored_by_v3"
 
 
 def export_research_queue(

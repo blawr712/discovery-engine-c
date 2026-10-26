@@ -209,6 +209,8 @@ class DashboardStore:
                 "score_v3_rank": row.get("score_v3_rank"),
                 "research_rank": (queue_row or {}).get("research_rank"),
                 "ranking_basis": (queue_row or {}).get("ranking_basis"),
+                "screen_status": (queue_row or {}).get("screen_status"),
+                "v3_quintile": (queue_row or {}).get("v3_quintile"),
                 "candidate_count": len(ranks),
             },
             "shadow_glossary": SHADOW_GLOSSARY,
@@ -234,8 +236,16 @@ class DashboardStore:
         search: str | None = None,
         hide_excluded: bool = False,
         limit: int = 100,
+        screen: str | None = None,
+        sort: str | None = None,
     ) -> dict:
-        """Return the exported research queue for a run, filtered and bounded."""
+        """Return the exported research queue for a run, filtered and bounded.
+
+        ``screen`` keeps one screen status; ``sort`` orders what is kept by
+        queue position (the default), recent insider purchases, liquidity, or
+        name. Ordering inside the screen is a research convenience, not a
+        ranking the evidence supports.
+        """
         run_id = run_id or self.overview()["latest_run_id"]
         document = self._export_document("research_queue", run_id)
         if document is None:
@@ -243,7 +253,12 @@ class DashboardStore:
                 "available": False, "run_id": run_id, "total": 0, "rows": [],
                 "message": "No research queue is exported for this run. Rescore or rerun it.",
             }
-        limit = max(1, min(int(limit), 300))
+        limit = max(1, min(int(limit), 1000))
+        summary = document.get("summary", {})
+        screen_available = "by_screen" in summary
+        # A queue exported before the screen existed has no statuses to
+        # filter on; show it whole rather than empty.
+        screen_filter = (screen or "").strip() if screen_available else ""
         basis_filter = (basis or "").strip()
         country_filter = (country or "").strip().upper()
         sector_filter = (sector or "").strip()
@@ -264,11 +279,15 @@ class DashboardStore:
                 continue
             if hide_excluded and row.get("score_v3_excluded"):
                 continue
+            if screen_filter and str(row.get("screen_status")) != screen_filter:
+                continue
             rows.append(row)
+        rows = _sorted_queue(rows, sort)
         return {
             "available": True,
             "run_id": run_id,
-            "summary": document.get("summary", {}),
+            "screen_available": screen_available,
+            "summary": summary,
             "sectors": sorted(sectors),
             "total": len(rows),
             "rows": rows[:limit],
@@ -587,6 +606,8 @@ def create_dashboard_server(
                         search=_one(query, "search"),
                         hide_excluded=_one(query, "hide_excluded", "0") == "1",
                         limit=int(_one(query, "limit", "100")),
+                        screen=_one(query, "screen"),
+                        sort=_one(query, "sort"),
                     ))
                 elif parsed.path == "/api/evidence":
                     self._json(200, store.evidence(run_id=_one(query, "run_id")))
@@ -717,6 +738,19 @@ def run_dashboard(
         print("\nDashboard stopped.")
     finally:
         server.server_close()
+
+
+QUEUE_SORTS = {
+    "queue": lambda row: (row.get("research_rank") or 0,),
+    "insider": lambda row: (-(row.get("ins_purchase_count_long") or 0), row.get("research_rank") or 0),
+    "liquidity": lambda row: (-(row.get("average_dollar_volume_30d") or 0), row.get("research_rank") or 0),
+    "name": lambda row: (str(row.get("company_name") or row.get("ticker") or "").upper(),),
+}
+
+
+def _sorted_queue(rows: list[dict], sort: str | None) -> list[dict]:
+    key = QUEUE_SORTS.get((sort or "queue").strip(), QUEUE_SORTS["queue"])
+    return sorted(rows, key=key)
 
 
 def _one(query: dict, name: str, default=None):
