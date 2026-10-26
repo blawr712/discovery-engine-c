@@ -65,6 +65,8 @@ def build_research_queue(
     discovery_ranks = _ranks(rows, config["final_fallback"])
     # Names below the liquidity floor are not research candidates. They stay
     # visible, last and labelled, ordered by the official score.
+    duplicates = [row for row in rows if row.get("duplicate_of")]
+    rows = [row for row in rows if not row.get("duplicate_of")]
     illiquid = [row for row in rows if not liquidity_eligible(row)]
     rows = [row for row in rows if liquidity_eligible(row)]
 
@@ -93,6 +95,9 @@ def build_research_queue(
     ))
     for row in illiquid:
         queued.append(("illiquid", "below_liquidity_floor", row))
+    duplicates.sort(key=lambda row: str(row.get("ticker", "")))
+    for row in duplicates:
+        queued.append(("duplicate", "duplicate_listing", row))
 
     queue = []
     for rank, (tier, field, row) in enumerate(queued, start=1):
@@ -101,8 +106,10 @@ def build_research_queue(
             "ranking_basis": field,
             "ranking_tier": tier,
             "ranking_score": _number(row.get(
-                config["final_fallback"] if field == "below_liquidity_floor" else field
+                config["final_fallback"]
+                if field in ("below_liquidity_floor", "duplicate_listing") else field
             )),
+            "duplicate_of": row.get("duplicate_of"),
             "ticker": row.get("ticker"),
             "company_name": row.get("company_name"),
             "country": row.get("country"),

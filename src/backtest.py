@@ -24,6 +24,7 @@ import pandas as pd
 
 from src.config import BACKTEST_CONFIG, MAX_MARKET_CAP, MIN_MARKET_CAP, SCORING_CONFIG
 from src.liquidity import MINIMUM_AVERAGE_DOLLAR_VOLUME
+from src.listings import duplicate_listings
 from src.data_sources.base import MarketDataSource
 from src.fundamentals_pit import FundamentalHistory
 from src.insider_signals import InsiderHistory
@@ -141,8 +142,13 @@ def build_backtest_universe(
     config = _validated_config(config)
     statuses = set(config["source_statuses"])
     include_size_filtered = bool(config["point_in_time_universe"])
+    # A second listing of the same company would count it twice in every
+    # month's cross-section.
+    duplicates = duplicate_listings(results)
     universe = {}
     for row in results:
+        if str(row.get("ticker") or "").upper() in duplicates:
+            continue
         size_filtered = (
             include_size_filtered
             and str(row.get("status")) == "FILTERED"

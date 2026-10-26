@@ -211,7 +211,9 @@ def _classify(
         ticker = str(row.get("ticker", ""))
         if ticker in labels:
             continue
-        if str(row.get("ranking_basis")) == "below_liquidity_floor":
+        if str(row.get("ranking_basis")) == "duplicate_listing":
+            labels[ticker] = "duplicate_listing"
+        elif str(row.get("ranking_basis")) == "below_liquidity_floor":
             labels[ticker] = "below_liquidity_floor"
         elif row.get("score_v3_excluded"):
             labels[ticker] = "v3_excluded"

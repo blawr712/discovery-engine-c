@@ -21,6 +21,7 @@ import pandas as pd
 
 from src.config import SCORING_V2_CONFIG, SCORING_V3_CHALLENGER_CONFIG, SCORING_V3_CONFIG
 from src.liquidity import average_dollar_volume, liquidity_eligible
+from src.listings import duplicate_listings
 from src.factors import FactorResult, score_confidence
 from src.fundamentals_pit import SIGNAL_NAMES as FUNDAMENTAL_SIGNAL_NAMES
 from src.insider_signals import SIGNAL_NAMES as INSIDER_SIGNAL_NAMES
@@ -287,12 +288,17 @@ def apply_cross_sectional_scores(
     # Shadow models rank tradeable names against each other only, the same
     # cross-section the backtest scores. A name below the liquidity floor
     # keeps its official score and gets no shadow score.
-    indices = [index for index in successful if liquidity_eligible(updated[index])]
+    # A second listing of the same company is not ranked either, or the
+    # company would be counted twice in every percentile.
+    indices = [
+        index for index in successful
+        if liquidity_eligible(updated[index]) and not updated[index].get("duplicate_of")
+    ]
     for index in successful:
         row = updated[index]
         row["average_dollar_volume_30d"] = average_dollar_volume(row)
         row["liquidity_eligible"] = liquidity_eligible(row)
-        if not row["liquidity_eligible"]:
+        if not row["liquidity_eligible"] or row.get("duplicate_of"):
             for suffix in ("", "_confidence", "_rank", "_breakdown"):
                 row[f"{prefix}{suffix}"] = None
             row[f"{prefix}_excluded"] = False
@@ -338,6 +344,12 @@ def apply_cross_sectional_scores(
 
 def apply_all_models(results: list[dict]) -> list[dict]:
     """Apply every configured shadow model in order."""
+    duplicates = duplicate_listings(results)
+    results = [
+        {**row, "duplicate_of": duplicates.get(str(row.get("ticker") or "").upper())}
+        if row.get("status") == "OK" else row
+        for row in results
+    ]
     for config in model_configs():
         results = apply_cross_sectional_scores(results, config)
     return results
