@@ -744,6 +744,38 @@ through March 2026, which slightly understates insider signals there.
 **Where.** `src/data_sources/sec_form4_source.py`, `src/insider_supplement.py`,
 `src/data_sources/sec_pacing.py`.
 
+## 2026-10-26: One candidate per company, and a rehearsal before the first scheduled cycle
+
+**Decision.** Count each interlisted company once, and rehearse the monthly
+cycle end to end before it runs unattended on Nov 16.
+
+**Duplicates.** The Oct 19 run held 29 companies twice, once per exchange
+(HITI and HITI.V, TLRY and TLRY.TO), with identical fundamentals, so each
+counted twice in every cross-section and would have weighed twice in frozen
+cohorts, which cannot be corrected afterwards. A Canadian listing is now a
+duplicate when it is flagged interlisted, the U.S. ticker is its root, and the
+names agree by the SEC mapping's rule; that last test kept 35 shared roots
+that are different companies apart (VHI.TO VitalHub and VHI Valhi). The U.S.
+listing is kept when tradeable; on Oct 19 it was kept in all 29.
+
+**The rehearsal found a bug that would have cost November.** The first
+rehearsal, launched through the scheduled task's own wrapper, failed at
+discovery: a run with no provider errors ends with status `complete`, and the
+monthly step accepted only `completed` or `completed_with_errors`, confusing
+the run's status with the cycle's. The October run had one provider error,
+which is why nothing had exercised the clean path. On Nov 16 a perfect run
+would have blocked indexing, Moonshot, and the cohort freeze for the month.
+After the fix a second rehearsal completed all seven steps; real exports,
+runs, and the history database were byte-for-byte unchanged, and the
+rehearsal's cohort was labelled v3.2 with the challenger's scores and the
+liquidity floor recorded.
+
+**Practice.** Rehearse after any change to the code the cycle runs, before the
+next scheduled cycle.
+
+**Where.** `src/listings.py`, `--monthly --rehearsal`,
+`COMPLETED_RUN_STATUSES` in `src/run_state.py`.
+
 ## Standing caveats that gate any promotion to "official"
 
 - **Survivorship.** The backtest's universe is chosen point in time from

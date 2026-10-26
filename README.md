@@ -403,6 +403,23 @@ exits with an error until every step has succeeded. Progress is kept in
   the run and retries the failed rows.
 - The report warns when the TMX workbook's data is more than 45 days old.
 
+### Rehearsing a cycle
+
+Before a scheduled cycle, and after any change to the code it runs, rehearse
+it:
+
+```powershell
+python main.py --monthly --rehearsal
+```
+
+This runs every step of the real cycle on a balanced sample of 25 names per
+country (`--rehearsal-size` changes it) in a fresh folder under
+`data/rehearsal/`. Runs, exports, frozen cohorts, and the history database are
+all written there, so nothing a rehearsal does can be mistaken for a real
+record; caches are shared. Running it through `scriptsun_monthly.cmd
+--rehearsal` also tests the scheduled task's wrapper and log. The folders are
+safe to delete.
+
 ### Scheduled runs
 
 A Windows scheduled task runs the cycle automatically:

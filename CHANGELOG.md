@@ -125,6 +125,12 @@
   against the data set where both exist
 - Shared one request pacer across all SEC sources so concurrent fetches stay
   within the SEC's rate limit
+- Kept one research candidate per company across interlisted U.S. and
+  Canadian listings, in the queue, frozen cohorts, and the backtest
+- Added `--monthly --rehearsal`, which runs the whole cycle on a small sample
+  with every output isolated under `data/rehearsal/`
+- Fixed the monthly discovery step rejecting a clean run, found by the first
+  rehearsal
 - Taught the resolver about baseline kinds, reading each baseline's own
   cohort split so Moonshot and research cohorts stay separate; added
   `--baseline moonshot|research|all`
