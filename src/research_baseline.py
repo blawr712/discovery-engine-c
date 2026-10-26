@@ -24,6 +24,7 @@ from pathlib import Path
 import tempfile
 
 from src.config import BENCHMARKS, RESEARCH_BASELINE_CONFIG, SCORING_V3_CONFIG
+from src.defensive_order import SCORE_FIELD as DEFENSIVE_FIELD, definition as defensive_definition
 from src.liquidity import MINIMUM_AVERAGE_DOLLAR_VOLUME
 
 
@@ -88,6 +89,11 @@ def build_research_baseline(
             # The challenger's score, frozen beside v3.0's so resolution can
             # compare the two rankings on the same unseen outcomes.
             "score_v3_challenger": _number(row.get("score_v3_challenger")),
+            # The screen as the dashboard showed it, and the defensive
+            # ordering under forward test, scored only for names that pass.
+            "screen_status": row.get("screen_status"),
+            "v3_quintile": row.get("v3_quintile"),
+            DEFENSIVE_FIELD: _number(row.get(DEFENSIVE_FIELD)),
             "discovery_rank": row.get("discovery_rank"),
             "benchmark": BENCHMARKS.get(str(row.get("country") or ""), "SPY"),
             "baseline_as_of": baseline_as_of,
@@ -116,6 +122,10 @@ def build_research_baseline(
         "control_classifications": list(CONTROL_CLASSIFICATIONS),
         "config": config,
         "minimum_average_dollar_volume": MINIMUM_AVERAGE_DOLLAR_VOLUME,
+        "defensive_order": (
+            defensive_definition()
+            if any(row.get(DEFENSIVE_FIELD) is not None for row in queue) else None
+        ),
         "interpretation_warning": INTERPRETATION_WARNING,
         "official_scores_and_ranks_unchanged": True,
         "candidates": candidates,

@@ -951,6 +951,14 @@ def _resolution_headline(entry: dict) -> dict:
                 "resolved": common["resolved"],
                 **common["information_coefficient"],
             }
+        screen = measured.get("screen_comparison")
+        if screen:
+            headline[horizon]["inside_screen"] = {
+                "resolved": screen["resolved"],
+                **screen["information_coefficient"],
+                "most_minus_least_defensive_median_percent":
+                    screen["most_minus_least_defensive_median_percent"],
+            }
     return headline
 
 
@@ -1137,6 +1145,17 @@ def _resolve_one_baseline(
                 f"{name} {value}" for name, value in common["information_coefficient"].items()
             )
             print(f"  Head to head on {common['resolved']} names both scored: {coefficients}")
+        screen = report.get("screen_comparison")
+        if screen:
+            coefficients = screen["information_coefficient"]
+            ladder = ", ".join(
+                f"T{t['tercile']} {t['median_excess_percent']}%" for t in screen["defensive_terciles"]
+            )
+            print(
+                f"  Inside the screen ({screen['resolved']} names): defensive IC "
+                f"{coefficients['score_defensive']}, v3 IC {coefficients['score_v3']}"
+                + (f"; defensive terciles, least to most, {ladder}" if ladder else "")
+            )
     if resolution["pending_horizons"]:
         print(f"\nStill pending: {', '.join(resolution['pending_horizons'])}")
     print("Forward baseline file: unchanged")

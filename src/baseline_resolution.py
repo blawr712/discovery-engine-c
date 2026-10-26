@@ -169,6 +169,7 @@ def resolve_baseline(
             "sector": row.get("sector"),
             "size_tier": row.get("size_tier"),
             "classification": row.get("classification"),
+            "screen_status": row.get("screen_status"),
             "moonshot_rank": row.get("moonshot_rank"),
             "upside_score": row.get("upside_score"),
             "risk_of_ruin_score": row.get("risk_of_ruin_score"),
@@ -411,7 +412,75 @@ def _horizon_report(candidates: list[dict], label: str, config: dict) -> dict:
     comparison = _model_comparison(candidates, label, config)
     if comparison:
         report["model_comparison"] = comparison
+    screen = _screen_comparison(candidates, label, config)
+    if screen:
+        report["screen_comparison"] = screen
     return report
+
+
+SCREEN_SCORES = ("score_defensive", "score_v3")
+
+
+def _screen_comparison(candidates: list[dict], label: str, config: dict) -> dict:
+    """Inside the screen: the defensive ordering against v3's own order.
+
+    Only names that passed the screen when the cohort froze are used, and
+    only those that carry a frozen defensive score, so both orderings are
+    measured on the same names. One cohort is one observation; the verdict
+    comes from pooling many monthly cohorts, not from any single one.
+    """
+    rows = []
+    for candidate in candidates:
+        if candidate.get("screen_status") != "passes":
+            continue
+        scores = candidate.get("scores") or {}
+        horizon = candidate["horizons"].get(label) or {}
+        if "score_defensive" not in scores or "score_v3" not in scores:
+            continue
+        if horizon.get("status") != "resolved" or "excess_return_percent" not in horizon:
+            continue
+        rows.append((scores, horizon["excess_return_percent"], str(candidate.get("ticker"))))
+    if not rows:
+        return {}
+    minimum = int(config["minimum_comparison_size"])
+    enough = len(rows) >= minimum
+    coefficients = {
+        name: (_spearman([scores[name] for scores, _, _ in rows], [e for _, e, _ in rows])
+               if enough else None)
+        for name in SCREEN_SCORES
+    }
+    difference = (
+        round(coefficients["score_defensive"] - coefficients["score_v3"], 4)
+        if None not in coefficients.values() else None
+    )
+    terciles = []
+    if enough:
+        ordered = sorted(rows, key=lambda row: (row[0]["score_defensive"], row[2]))
+        buckets: list[list[float]] = [[], [], []]
+        for index, (_, excess, _) in enumerate(ordered):
+            buckets[min(2, index * 3 // len(ordered))].append(excess)
+        for number, values in enumerate(buckets, start=1):
+            terciles.append({
+                "tercile": number,
+                "resolved": len(values),
+                "median_excess_percent": round(statistics.median(values), 2) if values else None,
+                "win_rate_percent": (
+                    round(sum(1 for v in values if v > 0) / len(values) * 100.0, 2)
+                    if values else None
+                ),
+            })
+    spread = (
+        round(terciles[2]["median_excess_percent"] - terciles[0]["median_excess_percent"], 2)
+        if terciles and None not in (terciles[0]["median_excess_percent"], terciles[2]["median_excess_percent"])
+        else None
+    )
+    return {
+        "resolved": len(rows),
+        "information_coefficient": coefficients,
+        "defensive_minus_v3_information_coefficient": difference,
+        "defensive_terciles": terciles,
+        "most_minus_least_defensive_median_percent": spread,
+    }
 
 
 def _frozen_scores(row: dict) -> dict:

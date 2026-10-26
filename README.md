@@ -167,6 +167,14 @@ both the 2017-21 and 2022-26 windows; it also reports how many calendar years
 agree and tests a tie-breaker chosen on the first window alone against the
 second. It writes `screen_research_*.json` and `screen_research_*.md`.
 
+The scan found no signal that passed, but a defensive combination (near the
+52-week high, low volatility, cheap on earnings, less net cash, larger) is
+being tested forward as `defensive-v1` (`src/defensive_order.py`). Each
+research cohort freezes its score for names that pass the screen, and each
+resolution reports an **inside the screen** comparison: its rank correlation
+with outcomes against v3's, and outcomes by defensive third. It never orders
+the queue; DECISIONS.md fixes how and when it will be judged.
+
 Bound what the remaining survivorship costs, using SEC records of companies
 delisted during the backtest window:
 

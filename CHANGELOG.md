@@ -140,6 +140,10 @@
 - Added `--screen-research` to test which signals rank names inside the v3
   screen, with a two-window rule fixed in advance, a year-by-year agreement
   count, and an out-of-sample tie-breaker test
+- Started a forward test of a defensive ordering inside the screen
+  (`defensive-v1`): names that pass carry a frozen defensive score in each
+  research cohort, and resolutions compare it with v3's order on the same
+  names, with the judging rule fixed in DECISIONS.md before any cohort
 - Taught the resolver about baseline kinds, reading each baseline's own
   cohort split so Moonshot and research cohorts stay separate; added
   `--baseline moonshot|research|all`

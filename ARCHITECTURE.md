@@ -184,7 +184,11 @@ proposed Score v3 change against saved observations with the decision rule
 fixed in advance. `src/screen_research.py` (`--screen-research`) rebuilds the
 v3 screen at each month-end with the research queue's quintile formula and
 scans signals for ordering power inside it, with a stricter two-window rule
-because it tests many signals at once. `split_adjust_shares`
+because it tests many signals at once. `src/defensive_order.py` holds the
+`defensive-v1` ordering under forward test: the research queue scores names
+that pass the screen, cohorts freeze the score, and baseline resolution adds a
+`screen_comparison` measured on passing names only, leaving the v3 head to
+head untouched. `split_adjust_shares`
 defaults to on and exists so the split correction can be measured against a
 control on the same universe; an unadjusted run writes to its own artifact
 names.

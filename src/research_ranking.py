@@ -16,6 +16,7 @@ import os
 from pathlib import Path
 import tempfile
 
+from src.defensive_order import DEFENSIVE_INPUTS, apply_defensive_order, definition as defensive_definition
 from src.liquidity import average_dollar_volume, liquidity_eligible
 from src.config import RESEARCH_RANKING_CONFIG
 
@@ -150,13 +151,18 @@ def build_research_queue(
             "ins_purchase_count_long": row.get("ins_purchase_count_long"),
             "ins_data_through": row.get("ins_data_through"),
             **{name: row.get(name) for name in KEY_RATIOS},
+            # Inputs of the defensive ordering under forward test.
+            **{name: row.get(name) for name in DEFENSIVE_INPUTS},
             "strongest_drivers": _drivers(row, f"{field}_breakdown", best=True),
             "weakest_drivers": _drivers(row, f"{field}_breakdown", best=False),
         })
 
     _apply_screen(queue, config)
+    # Frozen into cohorts for a forward test only; it never orders the queue.
+    apply_defensive_order(queue)
 
     summary = {
+        "defensive_order": defensive_definition(),
         "queued": len(queue),
         "by_screen": {
             status: sum(1 for row in queue if row["screen_status"] == status)

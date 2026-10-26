@@ -351,6 +351,30 @@ def build_cycle_report(state: dict, resolutions: list[dict] | None = None) -> st
                     f"- {entry['kind']} `{entry['run_id']}` {horizon}, "
                     f"{measured.get('resolved')} names: {models}"
                 )
+        inside = [
+            (entry, horizon, (entry.get("summary") or {}).get(horizon, {}).get("inside_screen"))
+            for entry in resolutions for horizon in entry.get("horizons", [])
+        ]
+        inside = [item for item in inside if item[2]]
+        if inside:
+            lines += [
+                "",
+                "## Inside the screen: defensive ordering against v3",
+                "",
+                "Forward test of the defensive ordering (DECISIONS.md, 2026-10-26). "
+                "One cohort is one observation; judge only the pooled record.",
+                "",
+            ]
+            for entry, horizon, measured in inside:
+                def _ic(value):
+                    return f"{value:.3f}" if isinstance(value, (int, float)) else "-"
+                lines.append(
+                    f"- {entry['kind']} `{entry['run_id']}` {horizon}, "
+                    f"{measured.get('resolved')} names: defensive IC "
+                    f"{_ic(measured.get('score_defensive'))}, v3 IC {_ic(measured.get('score_v3'))}, "
+                    f"most minus least defensive third "
+                    f"{_pct(measured.get('most_minus_least_defensive_median_percent'))}"
+                )
     lines += [
         "",
         "This records what was run and measured. It is not a forecast or an "

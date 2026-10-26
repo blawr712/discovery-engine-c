@@ -855,6 +855,52 @@ seen.
 
 **Where.** `src/screen_research.py`, `--screen-research RUN_ID`.
 
+## 2026-10-26: A forward test of the defensive ordering, rules fixed now
+
+**Decision.** From the Nov 16 cycle on, every frozen research cohort carries
+a defensive score for each name that passes the screen, next to v3, and each
+resolution measures both inside the screen. The score never orders the queue
+or the dashboard.
+
+**The hypothesis, `defensive-v1`.** Equal-weight mean of signed percentile
+ranks among passing names: nearness to the 52-week high (higher), volatility
+(lower), earnings yield (higher), net cash to market cap (lower), and
+market cap (higher), scaled 0 to 100. A name missing a signal is scored on
+the rest, and a name missing all sits at 50. Size uses `pit_market_cap`,
+which exists live and in the backtest (the scan's `universe_market_cap` gives
+the same result: holdout IC 0.099 against 0.098). In the backtest this
+combination had a within-screen 1Y IC of +0.05 (t 0.6) in 2017-21 and +0.10
+(t 6.0) in 2022-26. Changing any part of it makes a new hypothesis with a new
+version, and its record starts again from zero.
+
+**How it will be judged.** No single cohort can decide this; one cohort is
+one observation of one market. The rule:
+
+- Primary horizon 6M, pooled over monthly cohorts frozen from Nov 2026, with
+  Newey-West standard errors (5 lags, because 6M outcomes of monthly cohorts
+  overlap).
+- No decision before 12 cohorts have resolved 6M (the Oct 2027 cohort, around
+  April 2028). Earlier results are for watching only.
+- Adopt it as the screen's sort only if all three hold: the mean
+  within-screen IC is positive with t ≥ 2; it beats v3's own within-screen IC
+  on average; and the most defensive third beats the least defensive third
+  on median excess in at least 7 of the 12 cohorts.
+- Retire it if the mean IC after 12 cohorts is negative.
+- 1Y results are reported alongside; they cannot rescue a failed 6M test.
+
+**Known differences from the backtest.** The live screen includes about 47
+Canadian interlisted names (the backtest's screen was U.S. only), and live
+market caps come from each listing's own data. Both are small and recorded,
+not adjusted for.
+
+**Effect on Oct 19.** All 469 passing names get a score. The most defensive
+are larger, calmer names (INN, ACCO, SGU; volatility 0.12 to 0.29); the least
+defensive are small and volatile (MDXH, ACH, FLNA; volatility 1.05 to 2.53).
+The Oct 19 cohort is already frozen and stays as it is.
+
+**Where.** `src/defensive_order.py`; `screen_comparison` in each research
+resolution; an "Inside the screen" section in the monthly cycle report.
+
 ## Standing caveats that gate any promotion to "official"
 
 - **Survivorship.** The backtest's universe is chosen point in time from
