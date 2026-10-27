@@ -104,7 +104,9 @@ def _ic_series(frame: pd.DataFrame, column: str, horizon: str) -> tuple[pd.Serie
         coverage[period] = len(pairs) / len(usable)
         if len(pairs) >= MINIMUM_PAIRS and pairs[column].nunique() > 1:
             values[period] = pairs[column].rank().corr(pairs[excess].rank())
-    return pd.Series(values, dtype=float).sort_index(), pd.Series(coverage, dtype=float).sort_index()
+    # String-indexed even when empty, so window splits by period label work.
+    return (pd.Series(values, dtype=float, index=pd.Index(list(values), dtype=object)).sort_index(),
+            pd.Series(coverage, dtype=float, index=pd.Index(list(coverage), dtype=object)).sort_index())
 
 
 def _windows(series: pd.Series, horizon: str, split: str = SPLIT) -> dict:

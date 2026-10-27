@@ -329,6 +329,9 @@ def main(arguments=None):
     if args.screen_research:
         screen_research(args.screen_research)
         return
+    if args.unscored_research:
+        unscored_research(args.unscored_research)
+        return
     run_discovery(
         tickers=args.tickers,
         limit=args.limit,
@@ -784,6 +787,34 @@ def screen_research(run_id: str) -> None:
         f"(t {holdout['newey_west_t']:+.1f})"
     )
     json_path, markdown_path = export_screen_research(result, run_id, OUTPUT_DIR)
+    print(f"Report: {markdown_path}")
+    print(f"Data: {json_path}")
+
+
+def unscored_research(run_id: str) -> None:
+    """How the names Score v3 never scores compare with the screen."""
+    import pandas as pd
+
+    from src.unscored_research import export_unscored_research, unscored_research as study
+
+    path = OUTPUT_DIR / f"backtest_observations_{run_id}.csv.gz"
+    if not path.is_file():
+        raise SystemExit(f"No backtest observations for {run_id}; run --backtest-run first.")
+    observations = pd.read_csv(path, low_memory=False)
+    print(f"Observations: {path.name}, {len(observations):,} rows")
+    result = study(observations)
+    for name in ("never_scored", "never_scored:financials", "never_scored:no_fundamentals",
+                 "never_scored:other"):
+        against = result["groups"].get(name, {}).get("against_screen") or {}
+        parts = [
+            f"{window} median {values['median_minus_screen']:+.1f} pts, "
+            f"above the screen in {values['periods_median_above_screen']}/{values['periods']} months"
+            for window, values in against.items()
+        ]
+        print(f"{name} vs screen (1Y): " + ("; ".join(parts) if parts else "not measured"))
+    separating = [n for n, e in result["never_scored_signals"].items() if e["verdict"] == "separates"]
+    print(f"Signals that sort the never-scored group: {', '.join(separating) or 'none'}")
+    json_path, markdown_path = export_unscored_research(result, run_id, OUTPUT_DIR)
     print(f"Report: {markdown_path}")
     print(f"Data: {json_path}")
 

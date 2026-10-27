@@ -947,6 +947,62 @@ weighted average per class only stay unscored.
 (extract `sec-facts-3`), `share_count_as_of` in `src/fundamentals_pit.py`,
 `SecXbrlSource.prefetch`, `any_age` on cached statements.
 
+**Backtest rerun.** With the corrected counts (and interlisted duplicates
+removed), v3's 1Y IC is 0.075 (t 9.0, was 0.079); quintile medians -21.3,
+-14.9, -11.6, -11.8, -12.7; the screen holds a median 339 names a month (was
+315). `--screen-research` still finds no signal that ranks names inside the
+screen.
+
+## 2026-10-27: The names v3 never scores, measured properly
+
+**Decision.** Keep names without fundamentals out of the screen. No change
+yet for banks or closed-end funds; both are proposals below.
+
+**Method.** `--unscored-research` labels every tradeable backtest observation
+by screen group and compares each group with the screen month by month on
+median 1Y excess return and win rate, then scans signals inside the
+never-scored group with the two-window rule.
+
+**The earlier "never-scored names out-compound" finding does not survive.**
+It came from compounded means, which a few rebounds carry. On medians the
+group is mixed (-2.2 points against the screen in 2017-21, +5.8 in 2022-26)
+and its win rate is lower in both windows. It is really three groups:
+
+| Never scored, 1Y | Names a month | Median vs screen, fit / holdout | Win rate vs screen | Months ahead of screen |
+|---|---|---|---|---|
+| No fundamentals | 91-121 | -12.3 / -9.4 | -7.9 / -8.4 | 8/53, 3/45 |
+| Banks | 85-107 | +1.1 / +10.5 | -1.3 / +4.4 | 28/53, 31/45 |
+| Asset management (mostly closed-end funds) | 67-74 | -0.2 / +7.1 | -8.2 / -12.6 | 35/53, 36/45 |
+| Other financials | 31-42 | -4.4 / +7.6 | -4.4 / +3.2 | 22/53, 32/45 |
+
+- **Names without fundamentals** did about as badly as v3's bottom quintiles.
+  Excluding them is right.
+- **Closed-end funds** are income and bond funds priced against equity
+  benchmarks: medians near the screen's, but they rarely beat the benchmark.
+  They are not stock picks.
+- **Banks** matched the screen in 2017-21 and beat it in 2022-26, and move as
+  a block (their cheaper half: -34% median in 2019, -22% in 2022, +16% and
+  +11% in 2020-21), so including them is partly a sector call. Inside banks,
+  earnings yield passes the two-window rule: IC +0.092 (t 3.0) and +0.089
+  (t 2.9), right in 7 of 9 years. The cheaper half by earnings yield had a
+  median of -4.7 and -6.7 against the screen's -7.1 and -18.0, and win rates
+  of 42.3% and 41.3% against 40.5% and 35.3%.
+
+**A trap avoided.** Across the whole never-scored group, low volatility looked
+like a strong separator. Inside financials it does nothing (IC -0.02, +0.03);
+it was separating calm financials from volatile names without fundamentals.
+Signals must be tested inside each part, not across a mixed group.
+
+**Proposals, not yet built.** (1) Label closed-end funds as funds in the
+research layer, as illiquid names and duplicates are, so they stop counting
+as candidates. (2) A bank lane: tradeable banks in the cheaper half by
+earnings yield pass the screen, labelled as such and tracked separately in
+forward cohorts. Earnings yield inside banks was found in a scan of five
+signals across three subgroups, which the two-window rule only partly
+protects against.
+
+**Where.** `src/unscored_research.py`, `--unscored-research RUN_ID`.
+
 ## Standing caveats that gate any promotion to "official"
 
 - **Survivorship.** The backtest's universe is chosen point in time from

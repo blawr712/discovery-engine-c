@@ -153,6 +153,9 @@
 - Requested SEC company facts compressed
 - Judged Form 4 listing freshness by the source's own clock, not the file's
   modified time
+- Added `--unscored-research` to compare the names v3 never scores with the
+  screen by group (financials, no fundamentals, other) on medians and win
+  rates, and to scan signals inside the never-scored group
 - Taught the resolver about baseline kinds, reading each baseline's own
   cohort split so Moonshot and research cohorts stay separate; added
   `--baseline moonshot|research|all`

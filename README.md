@@ -175,6 +175,18 @@ resolution reports an **inside the screen** comparison: its rank correlation
 with outcomes against v3's, and outcomes by defensive third. It never orders
 the queue; DECISIONS.md fixes how and when it will be judged.
 
+Ask how the names v3 never scores compare with the screen:
+
+```powershell
+python main.py --unscored-research RUN_ID
+```
+
+It groups every tradeable backtest observation (screen, v3's bottom
+quintiles, filter rejections, never scored, the last split into financials,
+names with no fundamentals, and the rest), compares each with the screen
+month by month on median excess return and win rate, and scans signals inside
+the never-scored group. It writes `unscored_research_*.json` and `.md`.
+
 Bound what the remaining survivorship costs, using SEC records of companies
 delisted during the backtest window:
 
@@ -447,7 +459,8 @@ This runs every step of the real cycle on a balanced sample of 25 names per
 country (`--rehearsal-size` changes it) in a fresh folder under
 `data/rehearsal/`. Runs, exports, frozen cohorts, and the history database are
 all written there, so nothing a rehearsal does can be mistaken for a real
-record; caches are shared. Running it through `scriptsun_monthly.cmd
+record; caches are shared. Running it through `scripts
+un_monthly.cmd
 --rehearsal` also tests the scheduled task's wrapper and log. The folders are
 safe to delete.
 

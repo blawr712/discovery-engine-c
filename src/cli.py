@@ -100,6 +100,11 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
         help="test which signals rank names inside the Score v3 screen, on the run's backtest",
     )
     selection.add_argument(
+        "--unscored-research",
+        metavar="RUN_ID",
+        help="compare the names Score v3 never scores with the screen, on the run's backtest",
+    )
+    selection.add_argument(
         "--test-v3-change",
         metavar="RUN_ID",
         help="paired backtest test of a proposed Score v3 change; needs --change",
