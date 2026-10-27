@@ -3,6 +3,8 @@ import math
 import yfinance as yf
 import pandas as pd
 
+from src.data_sources.price_bars import drop_incomplete_bars
+
 from .base import MarketDataSource
 
 
@@ -57,7 +59,8 @@ class YFinanceSource(MarketDataSource):
         if isinstance(df.columns, pd.MultiIndex):
             df.columns = [col[0] for col in df.columns]
 
-        return df
+        # A day still trading can come back with volume and no close.
+        return drop_incomplete_bars(df)
 
     def get_share_history(
         self,

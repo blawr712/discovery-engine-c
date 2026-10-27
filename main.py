@@ -1218,7 +1218,9 @@ def rescore_saved_run(run_id: str, refresh_fundamentals: bool = False) -> None:
         as_of = datetime.fromisoformat(str(manifest["completed_at"]))
         sec_source = build_sec_xbrl_source(required=False)
         market_source = build_market_data_source()
-        fx_rates = load_fx_rates(market_source, cached_only=True)
+        # A refreshing rescore already goes to the network for SEC extracts;
+        # it fetches exchange rates the cache lacks too.
+        fx_rates = load_fx_rates(market_source, cached_only=not refresh_fundamentals)
         fundamentals_lookup = None
         insider_lookup = None
         insider_index_stats = None
@@ -1246,9 +1248,14 @@ def rescore_saved_run(run_id: str, refresh_fundamentals: bool = False) -> None:
                 return FundamentalHistory(extract_from_statements(ticker, statements))
             return None
 
+        def price_history_lookup(ticker: str):
+            """The price history this run cached, however old: a cache that
+            has merely aged must not cost a rescore its split events."""
+            return market_source.get_cached_price_history(ticker, any_age=True)
+
         def splits_lookup(ticker: str):
             """Split events from the same cached frame the run priced from."""
-            frame = market_source.get_cached_price_history(ticker)
+            frame = price_history_lookup(ticker)
             if frame is None:
                 return None
             return SplitHistory.from_price_history(frame)
@@ -1292,6 +1299,7 @@ def rescore_saved_run(run_id: str, refresh_fundamentals: bool = False) -> None:
             fundamentals_lookup=fundamentals_lookup,
             insider_lookup=insider_lookup,
             splits_lookup=splits_lookup,
+            price_history_lookup=price_history_lookup,
             countries=tuple(FUNDAMENTALS_CONFIG.get("countries", ["US", "CA"])),
             fx_rates=fx_rates,
             refresh_fundamentals=refresh_fundamentals,
@@ -1333,7 +1341,8 @@ def rescore_saved_run(run_id: str, refresh_fundamentals: bool = False) -> None:
         f"{stats['fundamentals_filled']}, cleared {stats['fundamentals_cleared']}, "
         f"unavailable {stats['fundamentals_unavailable']}; "
         f"insiders filled {stats['insiders_filled']}, unavailable "
-        f"{stats['insiders_unavailable']}; non-U.S. {stats['not_applicable']}"
+        f"{stats['insiders_unavailable']}; non-U.S. {stats['not_applicable']}; "
+        f"price signals repaired {stats.get('prices_repaired', 0)}"
     )
     if sec_source is None:
         print("SEC data skipped: set SEC_USER_AGENT in .env to use cached SEC extracts")
@@ -1646,6 +1655,13 @@ def load_fx_rates(source, pairs: list[str] | None = None, cached_only: bool = Fa
         rate = float(closes.iloc[-1])
         rates[(base, quote)] = rate
         rates[(quote, base)] = 1.0 / rate
+    # Cross rates through the dollar, so a Canadian listing that reports in
+    # euros converts as well as a U.S. one does.
+    to_usd = {base: rate for (base, quote), rate in rates.items() if quote == "USD"}
+    for left, left_rate in to_usd.items():
+        for right, right_rate in to_usd.items():
+            if left != right and (left, right) not in rates:
+                rates[(left, right)] = left_rate / right_rate
     return rates
 
 

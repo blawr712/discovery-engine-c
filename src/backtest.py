@@ -435,9 +435,13 @@ def build_backtest(
             }
             start_close = aligned_close.iloc[position]
             if fundamental_history is not None:
+                # Historical exchange rates are not replayed, so a filer that
+                # reports in another currency from its listing gets no
+                # valuation ratios rather than ratios off by the rate.
+                same_currency = _same_currency(getattr(fundamental_history, "currency", None), row.get("currency"))
                 observation.update(fundamental_history.signals_as_of(
                     date.date(),
-                    price=float(start_close) if _positive(start_close) else None,
+                    price=float(start_close) if _positive(start_close) and same_currency else None,
                     splits=splits,
                 ))
             if insider_history is not None:
@@ -1162,6 +1166,13 @@ def _rebalance_periods(
                 continue
             by_label.setdefault(label, {})[ticker] = pd.Timestamp(date)
     return [(label, by_label[label]) for label in sorted(by_label)]
+
+
+def _same_currency(reporting: object, listing: object) -> bool:
+    """True when statements and prices share a currency (listings default to USD)."""
+    reporting = str(reporting or "").upper()
+    listing = str(listing or "USD").upper()
+    return not reporting or reporting == listing
 
 
 def _normalize_history(frame: pd.DataFrame) -> pd.DataFrame | None:

@@ -21,7 +21,8 @@ from typing import Callable
 
 from src.fundamentals_pit import FundamentalHistory, SIGNAL_NAMES as FUNDAMENTAL_SIGNAL_NAMES
 from src.insider_signals import InsiderHistory, SIGNAL_NAMES as INSIDER_SIGNAL_NAMES
-from src.scoring_v2 import apply_all_models, model_configs
+from src.scoring import _latest_close
+from src.scoring_v2 import apply_all_models, compute_raw_signals, model_configs
 from src.liquidity import liquidity_eligible
 from src.split_adjustment import SplitHistory
 
@@ -36,6 +37,7 @@ def rescore_results(
     fundamentals_lookup: Callable[[str], FundamentalHistory | None] | None = None,
     insider_lookup: Callable[[str], InsiderHistory | None] | None = None,
     splits_lookup: Callable[[str], SplitHistory | None] | None = None,
+    price_history_lookup: Callable[[str], object] | None = None,
     countries: tuple[str, ...] = ("US",),
     fx_rates: dict[tuple[str, str], float] | None = None,
     refresh_fundamentals: bool = False,
@@ -61,6 +63,7 @@ def rescore_results(
         "insiders_filled": 0,
         "insiders_unavailable": 0,
         "not_applicable": 0,
+        "prices_repaired": 0,
     }
 
     for row in updated:
@@ -68,6 +71,17 @@ def rescore_results(
             continue
         stats["successful_rows"] += 1
         ticker = str(row.get("ticker", ""))
+        # A run that fetched a bar with no close lost every price signal and
+        # its latest close. Rebuild those shadow inputs from the run's cached
+        # history with the incomplete bar dropped; official fields stay as
+        # recorded, which the check below enforces.
+        if price_history_lookup is not None and row.get("latest_close") is None:
+            history = _safe(price_history_lookup, ticker)
+            latest = _latest_close(history) if history is not None and len(history) else None
+            if latest is not None:
+                row.update(compute_raw_signals(history))
+                row["latest_close"] = latest
+                stats["prices_repaired"] += 1
         if str(row.get("country") or "").upper() not in countries:
             stats["not_applicable"] += 1
             continue

@@ -1053,6 +1053,71 @@ section. The lane can be switched off with `research_ranking.bank_lane`.
 `SupplementedInsiderLookup.investment_fund`, `_apply_bank_lane` in
 `src/research_ranking.py`, `bank_lane_comparison` in baseline resolution.
 
+## 2026-10-27: Four data gaps behind names v3 could not score
+
+**Decision.** Fix four ways ordinary companies lost the inputs v3 needs. Each
+was found by asking why a specific tradeable name was unscored.
+
+1. **Incomplete price bars.** The Oct 19 run fetched prices while the day was
+   still trading, and for 102 tickers the provider returned that day's bar
+   with volume and no close. Every price signal reads the last close, so
+   those names (FMC, Universal, Sinclair, Green Plains, Upbound) lost
+   momentum, volatility, trailing-high proximity, and their market cap. Bars
+   without a close are now dropped wherever histories are read
+   (`src/data_sources/price_bars.py`); a split on a dropped bar moves to the
+   next one. The backtest already did this. Official scores computed on
+   those bars stay as recorded; a rescore rebuilds the shadow price signals
+   from the cached history.
+2. **Split adjustments silently lost in rescores.** Price histories are cached
+   for 24 hours, and a rescore treated an older cache as missing, so every
+   rescore after Oct 20 restated no share counts for splits: 228 names had a
+   split in the year, and no row carried an adjustment. Splits over 2x were
+   caught by the market-cap reconciliation; smaller ones left valuation
+   ratios off by the split. A rescore now reads its run's prices however old.
+   82 rows carry split adjustments again.
+3. **Annual-only filers judged as quarterly ones.** A 20-F filer publishes up
+   to four months after its year ends, so its latest figures are legitimately
+   about sixteen months old; the 400-day limit discarded them. A filer whose
+   latest fiscal year has no quarterly figures now gets 550 days; a quarterly
+   filer that went silent still goes stale at 400. Separately, a quarterly
+   window from years ago no longer beats a current annual figure (RCON's
+   2015-16 quarters had been hiding its 2026 annual revenue).
+4. **Money facts kept only in U.S. and Canadian dollars.** Filers reporting in
+   euros, yuan, francs, or pounds lost all their figures. The extract
+   (`sec-facts-4`) keeps every ISO currency, live valuation converts at
+   current rates for 29 currencies (cross rates through the dollar), and the
+   backtest, which has no historical rates, gives a filer that reports in a
+   different currency from its listing no valuation ratios rather than ratios
+   off by the exchange rate. Converted market caps on Oct 19 reconcile with
+   the provider at a median ratio of 1.00 over 76 names.
+
+**Effect on Oct 19, all four together.** Tradeable names v3 does not score
+fell from 211 to 155. The v3 lane passes 540 names (was 511), the bank lane
+60 (was 56). The top 25 keeps 23 of its names from before these fixes (SANG
+and UPBD in, IPI and MTUS out). The frozen Oct 19 cohort is unchanged.
+
+**What remains unscored, and why.** About 20 non-financial names report no
+revenue at all (pre-revenue biotechs and explorers), which is correct.
+About 30 foreign filers' latest figures are older than even the annual
+limit, usually because their recent annual reports are not tagged. Four
+quarterly filers (Enviri, Park Dental, Digimarc, Boost Run) have no revenue
+in SEC company facts for late 2025 under any tag, a gap in the source. About
+seven multi-class companies report shares per class only (Haverty, Johnson
+Outdoors); the provider's market cap could value them live, but the
+backtest has no historical equivalent, so they stay unscored to keep live
+and backtest consistent.
+
+**Seen on the way.** The provider's own `price_to_sales` divides a dollar
+market cap by revenue in the reporting currency, so it is wrong by the
+exchange rate for foreign filers (Cheche: 0.0045 against a true 0.025). It
+feeds only the official fundamental score.
+
+**Where.** `src/data_sources/price_bars.py`, `any_age` on cached prices,
+`price_history_lookup` in `src/rescore.py`, `reports_quarterly` and
+`maximum_annual_report_age_days` in `src/fundamentals_pit.py`,
+`MONEY_UNITS = "currency"` in `src/data_sources/sec_xbrl_source.py`,
+`fundamentals.fx_pairs` in settings, `_same_currency` in `src/backtest.py`.
+
 ## Standing caveats that gate any promotion to "official"
 
 - **Survivorship.** The backtest's universe is chosen point in time from

@@ -14,6 +14,8 @@ from typing import Callable
 
 import pandas as pd
 
+from src.data_sources.price_bars import drop_incomplete_bars
+
 from .base import MarketDataSource
 
 
@@ -126,12 +128,21 @@ class CachedMarketDataSource(MarketDataSource):
         self._write_json(path, data)
         return data
 
-    def get_cached_price_history(self, ticker: str, period: str = "1y") -> pd.DataFrame | None:
-        """Return cached price history without contacting the provider."""
+    def get_cached_price_history(
+        self, ticker: str, period: str = "1y", any_age: bool = False,
+    ) -> pd.DataFrame | None:
+        """Return cached price history without contacting the provider.
+
+        ``any_age`` ignores the freshness limit: rescoring a saved run needs
+        the prices that run collected, including their split events, however
+        long ago that was.
+        """
         if not self.enabled:
             return None
         path = self._cache_path("prices", f"{ticker}|{period}", "json")
-        return self._read_price_history(path, self.price_history_ttl_seconds)
+        return self._read_price_history(
+            path, float("inf") if any_age else self.price_history_ttl_seconds,
+        )
 
     def get_cached_financial_statements(self, ticker: str, any_age: bool = False) -> dict | None:
         """Return cached statements without contacting the provider.
@@ -217,7 +228,8 @@ class CachedMarketDataSource(MarketDataSource):
             return None
 
         self._record_stat("hits")
-        return data
+        # Histories cached before incomplete bars were dropped may hold one.
+        return drop_incomplete_bars(data)
 
     def _record_stat(self, name: str) -> None:
         with self._stats_lock:

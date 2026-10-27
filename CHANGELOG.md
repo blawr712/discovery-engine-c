@@ -165,6 +165,16 @@
   DECISIONS.md
 - Opened the dashboard on names passing either lane, with chips and filters
   for each lane and for funds
+- Dropped price bars without a close wherever histories are read; on Oct 19
+  102 tickers had an incomplete same-day bar that blanked every price signal
+- Let rescores read their run's cached prices however old, restoring split
+  adjustments every rescore after Oct 20 had lost, and rebuild price signals
+  for rows whose last close was missing
+- Gave annual-only filers a 550-day freshness limit and preferred a current
+  annual figure over a stale quarterly window
+- Kept SEC money facts in every reporting currency (`sec-facts-4`), converted
+  live at 29 currencies' rates with cross rates, and skipped backtest
+  valuation ratios when reporting and listing currencies differ
 - Taught the resolver about baseline kinds, reading each baseline's own
   cohort split so Moonshot and research cohorts stay separate; added
   `--baseline moonshot|research|all`

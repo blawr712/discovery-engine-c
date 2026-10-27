@@ -27,12 +27,15 @@ TICKER_MAP_URL = "https://www.sec.gov/files/company_tickers.json"
 COMPANY_FACTS_URL = "https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json"
 # Bumped when the extract shape changes (v2: per-row units, IFRS aliases).
 # sec-facts-3 added weighted-average basic shares, the only share count many
-# multi-class filers report as one total (2026-10-27).
-EXTRACT_VERSION = "sec-facts-3"
+# multi-class filers report as one total (2026-10-27). sec-facts-4 keeps money
+# facts in every reporting currency, not only U.S. and Canadian dollars.
+EXTRACT_VERSION = "sec-facts-4"
 
 # Ordered aliases per concept: the first taxonomy tag with usable data wins
 # for each period, but every alias is retained so coverage can be measured.
-MONEY_UNITS = ["USD", "CAD"]
+# Money facts are kept in whatever ISO currency the filer reports; the history
+# picks the dominant one and valuation converts it at a known rate or skips.
+MONEY_UNITS = "currency"
 
 CONCEPTS: dict[str, dict] = {
     "revenue": {
@@ -332,9 +335,10 @@ def compact_company_facts(
             units = (
                 facts_by_taxonomy.get(taxonomy, {}).get(name, {}).get("units", {})
             )
-            unit_entries = [
-                (unit, units.get(unit, [])) for unit in spec.get("units", [spec.get("unit")])
-            ]
+            wanted = spec.get("units", [spec.get("unit")])
+            if wanted == MONEY_UNITS:
+                wanted = sorted(unit for unit in units if _is_currency(unit))
+            unit_entries = [(unit, units.get(unit, [])) for unit in wanted]
             if any(entries for _, entries in unit_entries):
                 found.append(tag)
             for unit, entries in unit_entries:
@@ -359,6 +363,11 @@ def compact_company_facts(
         "tags_found": tags_found,
         "facts": extract,
     }
+
+
+def _is_currency(unit: object) -> bool:
+    """An ISO 4217 code as company facts writes it: three capital letters."""
+    return isinstance(unit, str) and len(unit) == 3 and unit.isalpha() and unit.isupper()
 
 
 def _fact_row(entry: dict, kind: str, tag: str) -> dict | None:

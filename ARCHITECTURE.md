@@ -85,8 +85,14 @@ listings only when interlisted and the registrant name matches. Listings
 without one use `src/statements_extract.py`, which converts provider quarterly
 and annual statements into the same extract shape with estimated filing dates
 and an explicit `estimated_filing_dates` quality label. Reporting currencies
-are tracked per filer and trading-currency prices are converted before
-valuation ratios.
+are tracked per filer (the extract keeps money facts in any ISO currency) and
+trading-currency prices are converted at `fundamentals.fx_pairs` rates, with
+cross rates through the dollar, before valuation ratios; the backtest, which
+has no historical rates, gives a filer reporting in a different currency from
+its listing no valuation ratios. Filers whose latest fiscal year has no
+quarterly figures get `maximum_annual_report_age_days` (550) instead of 400.
+Price bars without a close are dropped wherever histories are read
+(`src/data_sources/price_bars.py`).
 
 Market capitalisation for those ratios is the filing's share count times the
 traded price, which is the only construction available in historical replay.

@@ -49,6 +49,10 @@ DEFAULT_CONFIG = {
     "annual_days": [340, 380],
     "period_tolerance_days": 12,
     "maximum_report_age_days": 400,
+    # A filer that reports only annually (most 20-F and 40-F filers) files up
+    # to four months after its year ends, so its latest figures are
+    # legitimately up to about sixteen months old.
+    "maximum_annual_report_age_days": 550,
     # A filing's share count and today's price may legitimately disagree by
     # the issuance or buybacks since the filing. Beyond this factor the
     # disagreement is a unit mismatch (ADS ratio or split), not a flow.
@@ -189,7 +193,35 @@ class FundamentalHistory:
         latest = self.latest_period_end(as_of)
         if latest is None:
             return True
-        return (as_of - latest).days > int(self.config["maximum_report_age_days"])
+        return (as_of - latest).days > self.maximum_age_as_of(as_of)
+
+    def reports_quarterly(self, as_of: date) -> bool:
+        """True unless the latest known fiscal year was reported annually only.
+
+        A filer is annual when its most recent annual figure known on
+        ``as_of`` has no quarterly figures inside that fiscal year. A
+        quarterly filer that has gone silent is still a quarterly filer, so
+        its figures go stale at the ordinary limit.
+        """
+        latest_annual = None
+        for concept in DURATION_CONCEPTS:
+            annuals = self.annuals_as_of(concept, as_of)
+            if annuals and (latest_annual is None or annuals[-1].end > latest_annual):
+                latest_annual = annuals[-1].end
+        if latest_annual is None:
+            return True
+        year_start = latest_annual - timedelta(days=int(self.config["annual_days"][1]))
+        for concept in DURATION_CONCEPTS:
+            for quarter in self.quarters_as_of(concept, as_of):
+                if year_start < quarter.end <= latest_annual:
+                    return True
+        return False
+
+    def maximum_age_as_of(self, as_of: date) -> int:
+        """The report-age limit for this filer on this date."""
+        if self.reports_quarterly(as_of):
+            return int(self.config["maximum_report_age_days"])
+        return int(self.config["maximum_annual_report_age_days"])
 
     def quarters_as_of(self, concept: str, as_of: date) -> list[PeriodValue]:
         """Quarterly values known on ``as_of``, latest filing per period."""
@@ -246,7 +278,7 @@ class FundamentalHistory:
         what one class of a multi-class company looks like. ``basis`` forces
         one source, so a year-ago count can match the current one's basis.
         """
-        maximum_age = int(self.config["maximum_report_age_days"])
+        maximum_age = self.maximum_age_as_of(as_of)
         reference = latest_end or as_of
         period_end = self.instant_as_of("shares_outstanding", as_of, latest_end=latest_end)
         if period_end is not None and (
@@ -279,18 +311,22 @@ class FundamentalHistory:
         quarters = self.quarters_as_of(concept, as_of)
         end_index = len(quarters) - offset
         start_index = end_index - 4
+        quarterly = None
         if start_index >= 0:
             window = quarters[start_index:end_index]
             if _consecutive(window, self.config) and _same_tag(window):
-                return tuple(item.end for item in window), float(sum(item.value for item in window))
-        if offset % 4 != 0:
-            return None
-        annuals = self.annuals_as_of(concept, as_of)
-        index = len(annuals) - 1 - offset // 4
-        if index < 0:
-            return None
-        item = annuals[index]
-        return (item.end,), float(item.value)
+                quarterly = tuple(item.end for item in window), float(sum(item.value for item in window))
+        annual = None
+        if offset % 4 == 0:
+            annuals = self.annuals_as_of(concept, as_of)
+            index = len(annuals) - 1 - offset // 4
+            if index >= 0:
+                annual = (annuals[index].end,), float(annuals[index].value)
+        # A filer that stopped reporting quarters (or reported them years ago)
+        # must not have a stale quarterly window beat a current annual figure.
+        if quarterly is not None and annual is not None and annual[0][-1] > quarterly[0][-1]:
+            return annual
+        return quarterly if quarterly is not None else annual
 
     def annuals_as_of(self, concept: str, as_of: date) -> list[PeriodValue]:
         """Annual values known on ``as_of``, latest filing per fiscal year."""
@@ -320,7 +356,7 @@ class FundamentalHistory:
         signals: dict[str, object] = {name: None for name in SIGNAL_NAMES}
         signals["pit_reporting_currency"] = self.currency
         signals["pit_data_quality"] = self.data_quality
-        maximum_age = int(self.config["maximum_report_age_days"])
+        maximum_age = self.maximum_age_as_of(as_of)
 
         revenue = self.ttm("revenue", as_of)
         if revenue is not None and (as_of - revenue[0][-1]).days > maximum_age:

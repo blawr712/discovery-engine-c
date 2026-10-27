@@ -495,5 +495,50 @@ class WeightedShareFallbackTests(unittest.TestCase):
         self.assertIsNone(signals["pit_sales_yield"])
 
 
+def _annual_filer(old_quarters=False):
+    """A June-year-end 20-F filer, optionally with quarters from years ago."""
+    facts = {
+        "revenue": [
+            _fact("2023-07-01", "2024-06-30", "2024-10-25", 800),
+            _fact("2024-07-01", "2025-06-30", "2025-10-24", 900),
+        ],
+        "net_income": [_fact("2024-07-01", "2025-06-30", "2025-10-24", 90)],
+        "cash": [_instant("2025-06-30", "2025-10-24", 300)],
+        "shares_outstanding": [_instant("2025-06-30", "2025-10-24", 100)],
+    }
+    if old_quarters:
+        facts["revenue"] += [
+            _fact(start, end, "2016-11-01", 50)
+            for start, end in [("2015-07-01", "2015-09-30"), ("2015-10-01", "2015-12-31"),
+                               ("2016-01-01", "2016-03-31"), ("2016-04-01", "2016-06-30")]
+        ]
+    return {"ticker": "ANNL", "facts": facts}
+
+
+class AnnualFilerTests(unittest.TestCase):
+    def test_an_annual_filer_is_current_until_its_next_report_is_due(self):
+        # 477 days after the June year end; the next 20-F is due at the end of October.
+        signals = FundamentalHistory(_annual_filer()).signals_as_of(date(2026, 10, 20), price=10.0)
+        self.assertEqual(signals["pit_revenue_ttm"], 900.0)
+        self.assertEqual(signals["pit_net_income_ttm"], 90.0)
+        self.assertEqual(signals["pit_cash"], 300.0)
+        self.assertAlmostEqual(signals["pit_sales_yield"], 0.9, places=6)
+
+    def test_an_annual_filer_still_goes_stale(self):
+        signals = FundamentalHistory(_annual_filer()).signals_as_of(date(2027, 3, 1), price=10.0)
+        self.assertIsNone(signals["pit_revenue_ttm"])
+
+    def test_old_quarters_do_not_hide_a_current_annual_figure(self):
+        history = FundamentalHistory(_annual_filer(old_quarters=True))
+        self.assertEqual(history.ttm("revenue", date(2026, 10, 20))[1], 900.0)
+        signals = history.signals_as_of(date(2026, 10, 20), price=10.0)
+        self.assertEqual(signals["pit_revenue_ttm"], 900.0)
+
+    def test_quarterly_filers_keep_the_ordinary_limit(self):
+        history = FundamentalHistory(_extract())
+        self.assertTrue(history.reports_quarterly(date(2026, 3, 1)))
+        self.assertFalse(FundamentalHistory(_annual_filer()).reports_quarterly(date(2026, 10, 20)))
+
+
 if __name__ == "__main__":
     unittest.main()
