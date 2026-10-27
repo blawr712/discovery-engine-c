@@ -192,7 +192,9 @@ because it tests many signals at once. `src/defensive_order.py` holds the
 `defensive-v1` ordering under forward test: the research queue scores names
 that pass the screen, cohorts freeze the score, and baseline resolution adds a
 `screen_comparison` measured on passing names only, leaving the v3 head to
-head untouched. `split_adjust_shares`
+head untouched. `src/unscored_research.py` (`--unscored-research`) labels
+backtest observations by screen group and compares the names v3 never scores
+with the screen. `split_adjust_shares`
 defaults to on and exists so the split correction can be measured against a
 control on the same universe; an unadjusted run writes to its own artifact
 names.
