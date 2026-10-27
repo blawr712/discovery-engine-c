@@ -1107,6 +1107,12 @@ Outdoors); the provider's market cap could value them live, but the
 backtest has no historical equivalent, so they stay unscored to keep live
 and backtest consistent.
 
+**Backtest rerun.** v3's 1Y IC is 0.076 (t 9.4, was 0.075); quintile
+medians -21.2, -15.0, -12.3, -11.5, -12.4. `--screen-research` still finds
+nothing that ranks names inside the screen, and `--unscored-research` still
+puts names without fundamentals 10-12 points behind the screen and
+financials level with or ahead of it.
+
 **Seen on the way.** The provider's own `price_to_sales` divides a dollar
 market cap by revenue in the reporting currency, so it is wrong by the
 exchange rate for foreign filers (Cheche: 0.0045 against a true 0.025). It
