@@ -255,10 +255,6 @@ class SignalTests(unittest.TestCase):
         self.assertEqual(signals["pit_report_age_days"], 152.0)
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class MarketCapReconciliationTests(unittest.TestCase):
     """The filing's share count and the traded price must agree on units.
 
@@ -441,3 +437,63 @@ class SplitAdjustedSharesTests(unittest.TestCase):
 
         self.assertAlmostEqual(signals["pit_market_cap"], 110.0, places=6)
         self.assertEqual(signals["pit_market_cap_basis"], "reported_shares")
+
+
+def _multi_class_extract(period_end=None):
+    """A filer with no total period-end share count, only weighted averages."""
+    extract = _extract()
+    facts = extract["facts"]
+    facts["shares_outstanding"] = period_end or []
+    facts["weighted_average_shares"] = [
+        _fact("2024-10-01", "2024-12-31", "2025-02-15", 900),
+        _fact("2024-01-01", "2024-12-31", "2025-02-15", 880),   # annual, same end
+        _fact("2025-07-01", "2025-09-30", "2025-11-01", 980),
+        _fact("2025-10-01", "2025-12-31", "2026-02-15", 1000),
+        _fact("2025-01-01", "2025-12-31", "2026-02-15", 960),   # annual, same end
+    ]
+    return extract
+
+
+class WeightedShareFallbackTests(unittest.TestCase):
+    def test_weighted_average_shares_value_a_multi_class_filer(self):
+        signals = FundamentalHistory(_multi_class_extract()).signals_as_of(date(2026, 3, 1), price=2.0)
+        self.assertEqual(signals["pit_shares_basis"], "weighted_average")
+        self.assertEqual(signals["pit_shares_outstanding"], 1000.0)  # the quarter, not the year
+        self.assertEqual(signals["pit_market_cap"], 2000.0)
+        self.assertAlmostEqual(signals["pit_sales_yield"], 640 / 2000, places=6)
+        # A year earlier on the same basis: the Q4 2024 quarter average.
+        self.assertAlmostEqual(signals["pit_share_change_1y"], 1000 / 900 - 1, places=6)
+
+    def test_a_fresh_period_end_count_is_still_preferred(self):
+        signals = FundamentalHistory(_extract()).signals_as_of(date(2026, 3, 1), price=2.0)
+        self.assertEqual(signals["pit_shares_basis"], "period_end")
+        self.assertEqual(signals["pit_shares_outstanding"], 1100.0)
+
+    def test_one_class_alone_gives_way_to_the_weighted_total(self):
+        partial = [_instant("2025-12-31", "2026-02-15", 300)]  # one class of several
+        signals = FundamentalHistory(_multi_class_extract(partial)).signals_as_of(date(2026, 3, 1), price=2.0)
+        self.assertEqual(signals["pit_shares_basis"], "weighted_average")
+        self.assertEqual(signals["pit_shares_outstanding"], 1000.0)
+
+    def test_stale_and_zero_period_end_counts_are_ignored(self):
+        stale = [_instant("2016-08-05", "2016-08-09", 500)]
+        zero = [_instant("2025-12-31", "2026-02-15", 0)]
+        for counts in (stale, zero):
+            signals = FundamentalHistory(_multi_class_extract(counts)).signals_as_of(date(2026, 3, 1), price=2.0)
+            self.assertEqual(signals["pit_shares_basis"], "weighted_average")
+
+    def test_only_averages_known_on_the_date_are_used(self):
+        signals = FundamentalHistory(_multi_class_extract()).signals_as_of(date(2026, 1, 15), price=2.0)
+        self.assertEqual(signals["pit_shares_outstanding"], 980.0)  # Q4 not filed yet
+
+    def test_no_share_count_at_all_leaves_valuation_empty(self):
+        extract = _multi_class_extract()
+        extract["facts"]["weighted_average_shares"] = []
+        signals = FundamentalHistory(extract).signals_as_of(date(2026, 3, 1), price=2.0)
+        self.assertIsNone(signals["pit_shares_basis"])
+        self.assertIsNone(signals["pit_market_cap"])
+        self.assertIsNone(signals["pit_sales_yield"])
+
+
+if __name__ == "__main__":
+    unittest.main()

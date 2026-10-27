@@ -86,7 +86,11 @@ valuation ratios.
 
 Market capitalisation for those ratios is the filing's share count times the
 traded price, which is the only construction available in historical replay.
-The two are denominated differently in two ways, handled separately.
+The share count is the period-end count when one is fresh, otherwise the
+latest quarter's weighted-average basic shares, which multi-class filers
+report as one total although their period-end counts are per class
+(`share_count_as_of`, recorded as `pit_shares_basis`). The two are
+denominated differently in two ways, handled separately.
 
 Splits are corrected (`src/split_adjustment.py`). A price series is adjusted
 to the date it was downloaded, so a share count from an earlier filing is in

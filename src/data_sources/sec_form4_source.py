@@ -79,11 +79,14 @@ class SecForm4Source:
         cik = _cik(cik)
         path = self._path("listings", cik)
         cached = _read(path)
-        if cached is not None and not _older_than(path, self.listing_ttl_hours, self.clock):
+        if cached is not None and not _expired(cached, path, self.listing_ttl_hours, self.clock):
             self._count("listings_cached")
             return cached
         payload = json.loads(self._request(SUBMISSIONS_URL.format(cik=cik)).decode("utf-8"))
         listing = compact_listing(payload, retrieved=_today(self.clock))
+        # Age is judged by the same clock that stamped it, not the file's
+        # modified time, which mixes real time with an injected clock.
+        listing["_retrieved_at"] = self.clock()
         _write(path, listing)
         return listing
 
@@ -255,6 +258,14 @@ def _date(value: object) -> date | None:
 
 def _today(clock: Callable[[], float]) -> date:
     return datetime.fromtimestamp(clock(), tz=timezone.utc).date()
+
+
+def _expired(cached: dict, path: Path, hours: float, clock: Callable[[], float]) -> bool:
+    stamped = cached.get("_retrieved_at")
+    if isinstance(stamped, (int, float)) and not isinstance(stamped, bool):
+        return clock() - float(stamped) > hours * 3600.0
+    # Listings cached before the stamp existed fall back to the file's age.
+    return _older_than(path, hours, clock)
 
 
 def _older_than(path: Path, hours: float, clock: Callable[[], float]) -> bool:

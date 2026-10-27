@@ -11,6 +11,7 @@ point-in-time about what was knowable on a given day.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import gzip
 import hashlib
 import json
 import os
@@ -25,7 +26,9 @@ from urllib.request import Request, urlopen
 TICKER_MAP_URL = "https://www.sec.gov/files/company_tickers.json"
 COMPANY_FACTS_URL = "https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json"
 # Bumped when the extract shape changes (v2: per-row units, IFRS aliases).
-EXTRACT_VERSION = "sec-facts-2"
+# sec-facts-3 added weighted-average basic shares, the only share count many
+# multi-class filers report as one total (2026-10-27).
+EXTRACT_VERSION = "sec-facts-3"
 
 # Ordered aliases per concept: the first taxonomy tag with usable data wins
 # for each period, but every alias is retained so coverage can be measured.
@@ -114,6 +117,17 @@ CONCEPTS: dict[str, dict] = {
             "ifrs-full:NumberOfSharesOutstanding",
         ],
     },
+    # Companies with several share classes often report period-end shares
+    # per class only, which company facts omit, but report the income
+    # statement's weighted-average count as one total every quarter.
+    "weighted_average_shares": {
+        "units": ["shares"],
+        "kind": "duration",
+        "tags": [
+            "us-gaap:WeightedAverageNumberOfSharesOutstandingBasic",
+            "ifrs-full:WeightedAverageShares",
+        ],
+    },
 }
 
 FACT_FIELDS = ("start", "end", "filed", "form", "fy", "fp", "val")
@@ -154,7 +168,8 @@ class SecXbrlSource:
         if self.request_interval_seconds < 0:
             raise ValueError("SEC request interval cannot be negative.")
         self.cache_directory = Path(self.cache_directory)
-        self.headers = {"User-Agent": self.user_agent, "Accept-Encoding": "identity"}
+        # Company facts compress about tenfold; _fetch decompresses.
+        self.headers = {"User-Agent": self.user_agent, "Accept-Encoding": "gzip"}
         self.fetcher = self.fetcher or _fetch
         self.stats = SecCacheStats()
         self._pace_lock = threading.Lock()
@@ -200,6 +215,37 @@ class SecXbrlSource:
         extract["_retrieved_at"] = self.clock()
         _atomic_json(path, extract)
         return extract
+
+    def prefetch(self, tickers: list[str], workers: int = 4, progress=None) -> dict[str, int]:
+        """Fetch extracts for many tickers at once, sharing the SEC pacer.
+
+        Names already cached are skipped without a request. Failures are
+        counted, not raised: the caller's own lookup reports them per name.
+        """
+        from concurrent.futures import ThreadPoolExecutor
+
+        wanted = sorted({str(ticker).strip().upper() for ticker in tickers if ticker})
+        counts = {"requested": len(wanted), "cached": 0, "fetched": 0, "failed": 0}
+        lock = threading.Lock()
+
+        def warm(ticker: str) -> str:
+            if self.get_cached_company_facts(ticker) is not None:
+                outcome = "cached"
+            else:
+                try:
+                    self.get_company_facts(ticker)
+                    outcome = "fetched"
+                except Exception:  # noqa: BLE001 - reported per name later
+                    outcome = "failed"
+            with lock:
+                counts[outcome] += 1
+            return ticker
+
+        with ThreadPoolExecutor(max_workers=max(1, int(workers))) as pool:
+            for index, ticker in enumerate(pool.map(warm, wanted), start=1):
+                if progress is not None:
+                    progress("sec-facts-prefetch", index, len(wanted), ticker)
+        return counts
 
     def _load_ticker_map(self) -> dict[str, dict]:
         path = self.cache_directory / "company_tickers.json"
@@ -347,7 +393,10 @@ def _fact_row(entry: dict, kind: str, tag: str) -> dict | None:
 def _fetch(url: str, headers: dict[str, str]) -> bytes:
     request = Request(url, headers=headers)
     with urlopen(request, timeout=60) as response:
-        return response.read()
+        body = response.read()
+        if str(response.headers.get("Content-Encoding", "")).lower() == "gzip":
+            body = gzip.decompress(body)
+        return body
 
 
 def _atomic_json(path: Path, data: dict) -> None:

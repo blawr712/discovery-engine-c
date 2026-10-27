@@ -1192,7 +1192,9 @@ def rescore_saved_run(run_id: str, refresh_fundamentals: bool = False) -> None:
                         history = FundamentalHistory(extract)
                         if history.has_data:
                             return history
-            statements = market_source.get_cached_financial_statements(ticker)
+            # The statements this run collected, however long ago: a cache
+            # that has merely aged must not clear a name's fundamentals.
+            statements = market_source.get_cached_financial_statements(ticker, any_age=True)
             if statements:
                 return FundamentalHistory(extract_from_statements(ticker, statements))
             return None
@@ -1225,6 +1227,19 @@ def rescore_saved_run(run_id: str, refresh_fundamentals: bool = False) -> None:
                     ],
                     progress=print_progress,
                 )
+        prefetch_counts = None
+        if refresh_fundamentals and sec_source is not None:
+            # Recomputing reads cached extracts only, and a missing or expired
+            # one would clear that name's fundamentals. Fetch them first.
+            countries = {str(c).upper() for c in FUNDAMENTALS_CONFIG.get("countries", ["US", "CA"])}
+            sec_tickers = []
+            for row in results:
+                if row.get("status") != "OK" or str(row.get("country") or "").upper() not in countries:
+                    continue
+                sec_ticker, _ = resolver(row)
+                if sec_ticker is not None:
+                    sec_tickers.append(sec_ticker)
+            prefetch_counts = sec_source.prefetch(sec_tickers, progress=print_progress)
         rescored, stats = rescore_results(
             results, as_of,
             fundamentals_lookup=fundamentals_lookup,
@@ -1261,6 +1276,11 @@ def rescore_saved_run(run_id: str, refresh_fundamentals: bool = False) -> None:
     print("Models: " + ", ".join(f"{k} {v}" for k, v in stats["models"].items()))
     if stats.get("refresh_fundamentals"):
         print("Fundamentals: recomputed from cached extracts")
+    if prefetch_counts:
+        print(
+            f"SEC facts: {prefetch_counts['requested']} issuers, {prefetch_counts['cached']} cached, "
+            f"{prefetch_counts['fetched']} fetched, {prefetch_counts['failed']} failed"
+        )
     print(
         f"Successful rows: {stats['successful_rows']}; fundamentals filled "
         f"{stats['fundamentals_filled']}, cleared {stats['fundamentals_cleared']}, "

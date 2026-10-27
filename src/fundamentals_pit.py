@@ -19,6 +19,12 @@ count on a different basis from the price and silently scales every yield by
 that factor. When an independently sourced market capitalisation is supplied
 and the two cannot be reconciled, the ratios are built from the supplied
 figure and the result is labelled, rather than quietly published.
+
+Many companies with more than one share class report period-end shares per
+class only, which SEC company facts omit, so they carry no usable count. For
+them the share count falls back to the latest quarter's weighted-average basic
+shares, which they report as one total; ``pit_shares_basis`` records which was
+used.
 """
 
 from __future__ import annotations
@@ -64,6 +70,9 @@ INSTANT_CONCEPTS = (
     "stockholders_equity",
     "shares_outstanding",
 )
+# Share counts never take part in currency selection or filtering.
+SHARE_CONCEPTS = ("shares_outstanding", "weighted_average_shares")
+WEIGHTED_SHARES_MAX_DAYS = 380
 
 SIGNAL_NAMES = (
     "pit_revenue_ttm",
@@ -82,6 +91,7 @@ SIGNAL_NAMES = (
     "pit_total_debt",
     "pit_net_cash",
     "pit_shares_outstanding",
+    "pit_shares_basis",
     "pit_share_change_1y",
     "pit_split_factor",
     "pit_split_ambiguous",
@@ -145,6 +155,10 @@ class FundamentalHistory:
                 entries.sort(key=lambda item: item.filed)
             self._instants[concept] = _prefer_best_tag(instants)
             self._instant_ends[concept] = sorted(self._instants[concept])
+        self._share_averages = _weighted_share_values(
+            facts.get("weighted_average_shares", []), self.config,
+        )
+        self._share_average_ends = sorted(self._share_averages)
 
     @property
     def has_data(self) -> bool:
@@ -203,6 +217,58 @@ class FundamentalHistory:
             if chosen is not None:
                 return chosen
         return None
+
+    def weighted_shares_as_of(
+        self,
+        as_of: date,
+        latest_end: date | None = None,
+    ) -> PeriodValue | None:
+        """Latest weighted-average basic share count known on ``as_of``."""
+        cap = min(as_of, latest_end) if latest_end is not None else as_of
+        position = bisect_right(self._share_average_ends, cap)
+        for index in range(position - 1, -1, -1):
+            chosen = _latest_known(self._share_averages[self._share_average_ends[index]], as_of)
+            if chosen is not None:
+                return chosen
+        return None
+
+    def share_count_as_of(
+        self,
+        as_of: date,
+        latest_end: date | None = None,
+        basis: str | None = None,
+    ) -> tuple[PeriodValue | None, str | None]:
+        """The share count to value the company with, and its basis.
+
+        The period-end count is preferred. The weighted-average count is used
+        when the period-end count is missing or older than the report-age
+        limit, or when it is under half the weighted-average count, which is
+        what one class of a multi-class company looks like. ``basis`` forces
+        one source, so a year-ago count can match the current one's basis.
+        """
+        maximum_age = int(self.config["maximum_report_age_days"])
+        reference = latest_end or as_of
+        period_end = self.instant_as_of("shares_outstanding", as_of, latest_end=latest_end)
+        if period_end is not None and (
+            (reference - period_end.end).days > maximum_age or period_end.value <= 0
+        ):
+            period_end = None
+        average = self.weighted_shares_as_of(as_of, latest_end=latest_end)
+        if average is not None and (
+            (reference - average.end).days > maximum_age or average.value <= 0
+        ):
+            average = None
+        if basis == "period_end":
+            return period_end, "period_end" if period_end else None
+        if basis == "weighted_average":
+            return average, "weighted_average" if average else None
+        if period_end is not None and not (
+            average is not None and period_end.value * 2.0 < average.value
+        ):
+            return period_end, "period_end"
+        if average is not None:
+            return average, "weighted_average"
+        return None, None
 
     def ttm(self, concept: str, as_of: date, offset: int = 0) -> tuple[tuple[date, ...], float] | None:
         """Sum of four consecutive quarters ending ``offset`` quarters back.
@@ -313,8 +379,8 @@ class FundamentalHistory:
             signals["pit_total_debt"] = debt
             signals["pit_net_cash"] = cash.value - debt
 
-        shares = self.instant_as_of("shares_outstanding", as_of)
-        if shares is not None and (as_of - shares.end).days <= maximum_age:
+        shares, shares_basis = self.share_count_as_of(as_of)
+        if shares is not None:
             splits = splits or SplitHistory()
             # Restate into the price series' basis. The whole series is
             # adjusted to its download date, not to the as-of date, so every
@@ -323,12 +389,15 @@ class FundamentalHistory:
             factor = splits.factor_after(shares.end)
             adjusted_shares = shares.value * factor
             signals["pit_shares_outstanding"] = adjusted_shares
+            signals["pit_shares_basis"] = shares_basis
             signals["pit_split_factor"] = factor
             signals["pit_split_ambiguous"] = splits.has_event_between(
                 shares.end, shares.filed,
             )
-            year_ago = self.instant_as_of(
-                "shares_outstanding", as_of, latest_end=shares.end - timedelta(days=350),
+            # The year-ago count comes from the same basis, or a switch from
+            # weighted to period-end counts would read as issuance.
+            year_ago, _ = self.share_count_as_of(
+                as_of, latest_end=shares.end - timedelta(days=350), basis=shares_basis,
             )
             if year_ago is not None and year_ago.value > 0 and (
                 shares.end - year_ago.end
@@ -427,7 +496,7 @@ def _dominant_currency(facts: dict, declared: object) -> str | None:
     """Pick the money unit with the most facts, or the declared currency."""
     counts: dict[str, int] = {}
     for concept, rows in facts.items():
-        if concept == "shares_outstanding":
+        if concept in SHARE_CONCEPTS:
             continue
         for row in rows:
             unit = row.get("unit")
@@ -452,7 +521,7 @@ def _single_currency(facts: dict, currency: str | None) -> dict:
         return facts
     filtered = {}
     for concept, rows in facts.items():
-        if concept == "shares_outstanding":
+        if concept in SHARE_CONCEPTS:
             filtered[concept] = rows
             continue
         filtered[concept] = [
@@ -495,6 +564,34 @@ def _duration_values(rows: list[dict], concept: str) -> list[PeriodValue]:
             priority=_tag_priority(concept, row.get("tag")),
         ))
     return values
+
+
+def _weighted_share_values(rows: list[dict], config: dict) -> dict[date, list[PeriodValue]]:
+    """Weighted-average share counts keyed by period end.
+
+    A quarter's figure is kept over a year-to-date or annual one ending on the
+    same date, because it is the most recent average. Averages are never
+    differenced the way flows are: the difference of two averages is not an
+    average of anything.
+    """
+    quarter_min, quarter_max = config["quarter_days"]
+    by_end: dict[date, list[PeriodValue]] = {}
+    for item in _duration_values(rows, "weighted_average_shares"):
+        if (item.end - item.start).days > WEIGHTED_SHARES_MAX_DAYS:
+            continue
+        by_end.setdefault(item.end, []).append(item)
+    chosen: dict[date, list[PeriodValue]] = {}
+    for end, entries in by_end.items():
+        quarters = [
+            entry for entry in entries
+            if quarter_min <= (entry.end - entry.start).days <= quarter_max
+        ]
+        pool = quarters or entries
+        best = min(entry.priority for entry in pool)
+        kept = [entry for entry in pool if entry.priority == best]
+        kept.sort(key=lambda entry: entry.filed)
+        chosen[end] = kept
+    return chosen
 
 
 def _instant_value(row: dict, concept: str) -> PeriodValue | None:

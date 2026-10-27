@@ -133,12 +133,17 @@ class CachedMarketDataSource(MarketDataSource):
         path = self._cache_path("prices", f"{ticker}|{period}", "json")
         return self._read_price_history(path, self.price_history_ttl_seconds)
 
-    def get_cached_financial_statements(self, ticker: str) -> dict | None:
-        """Return cached statements without contacting the provider."""
+    def get_cached_financial_statements(self, ticker: str, any_age: bool = False) -> dict | None:
+        """Return cached statements without contacting the provider.
+
+        ``any_age`` ignores the freshness limit. Rescoring a saved run wants
+        the statements that run collected, however old; a live run wants
+        fresh ones.
+        """
         if not self.enabled:
             return None
         path = self._cache_path("statements", f"statements-1|{ticker}", "json")
-        return self._read_json(path, self.statements_ttl_seconds)
+        return self._read_json(path, float("inf") if any_age else self.statements_ttl_seconds)
 
     def get_share_history(
         self,

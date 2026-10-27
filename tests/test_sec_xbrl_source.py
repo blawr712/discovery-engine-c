@@ -135,6 +135,30 @@ class SourceTests(unittest.TestCase):
         self.assertEqual(self.source.stats.expired, 1)
         self.assertEqual(len(self.fetcher.urls), 3)
 
+    def test_prefetch_skips_cached_names_and_counts_failures(self):
+        self.source.get_company_facts("TEST")
+        before = len(self.fetcher.urls)
+        counts = self.source.prefetch(["test", "TEST", "NOPE"], workers=2)
+        self.assertEqual(counts, {"requested": 2, "cached": 1, "fetched": 0, "failed": 1})
+        self.assertEqual(len(self.fetcher.urls), before)  # nothing refetched
+
+    def test_prefetch_fetches_what_is_missing(self):
+        seen = []
+        counts = self.source.prefetch(["TEST"], progress=lambda *args: seen.append(args))
+        self.assertEqual(counts["fetched"], 1)
+        self.assertIsNotNone(self.source.get_cached_company_facts("TEST"))
+        self.assertEqual(seen, [("sec-facts-prefetch", 1, 1, "TEST")])
+
+    def test_weighted_average_shares_are_extracted(self):
+        payload = _payload()
+        payload["facts"]["us-gaap"]["WeightedAverageNumberOfSharesOutstandingBasic"] = {"units": {"shares": [
+            {"start": "2026-04-01", "end": "2026-06-30", "filed": "2026-08-01", "form": "10-Q",
+             "fy": 2026, "fp": "Q2", "val": 4321},
+        ]}}
+        extract = compact_company_facts(payload, "TEST")
+        self.assertEqual(extract["facts"]["weighted_average_shares"][0]["val"], 4321.0)
+        self.assertEqual(extract["facts"]["weighted_average_shares"][0]["start"], "2026-04-01")
+
     def test_unmapped_ticker_raises_lookup_error(self):
         self.assertIsNone(self.source.cik_for("NOPE"))
         with self.assertRaises(LookupError):

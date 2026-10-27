@@ -66,6 +66,16 @@ class CachedMarketDataSourceTests(unittest.TestCase):
     def tearDown(self):
         self.temporary_directory.cleanup()
 
+    def test_aged_statements_stay_readable_for_rescoring(self):
+        self.provider.get_financial_statements = lambda ticker: {"income": {"2026-06-30": {"Revenue": 1.0}}}
+        self.source.get_financial_statements("TEST")
+        self.now += 400 * 3600  # past the 168-hour statements limit
+        self.assertIsNone(self.source.get_cached_financial_statements("TEST"))
+        self.assertEqual(
+            self.source.get_cached_financial_statements("TEST", any_age=True),
+            {"income": {"2026-06-30": {"Revenue": 1.0}}},
+        )
+
     def test_caches_metadata_across_source_instances(self):
         first = self.source.get_stock_data("TEST")
         next_run = CachedMarketDataSource(

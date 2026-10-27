@@ -901,6 +901,52 @@ The Oct 19 cohort is already frozen and stays as it is.
 **Where.** `src/defensive_order.py`; `screen_comparison` in each research
 resolution; an "Inside the screen" section in the monthly cycle report.
 
+## 2026-10-27: Multi-class companies get a share count
+
+**Decision.** When a filer has no fresh period-end share count, value it with
+its latest quarter's weighted-average basic shares. Prefer the period-end
+count otherwise, unless it is under half the weighted-average count, which is
+what a single class of a multi-class company looks like. `pit_shares_basis`
+records which count was used.
+
+**Why.** Looking into the 470 tradeable names v3 did not score on Oct 19
+found that 212 were ordinary U.S. companies with SEC filings, missing only a
+share count. Companies with several share classes (Movado, Marcus, Hamilton
+Beach, AMC Networks, PubMatic) report period-end shares per class, which SEC
+company facts leave out. With no share count there is no market cap, so
+sales yield, FCF yield, net cash to market cap, and dilution were all empty,
+and v3's confidence fell below its 50% floor. 199 U.S. filers with revenue
+(13%) had no share count. The same companies report one weighted-average
+total every quarter.
+
+**Evidence the counts are right.** On Oct 19, 146 names valued on
+weighted-average shares reconciled with the provider's market cap at a
+median ratio of 0.994 (75% within 10%, against 84% for period-end counts,
+since an average lags). 39 disagreed by more than a factor of two, and the
+existing reconciliation replaced them with the provider's figure.
+
+**Effect on Oct 19.** Names not scored by v3 fell from 470 to 382, and 95
+names are now scored: 41 pass the screen, 37 sit in its bottom quintiles, and
+17 are rejected by its filters. Names passing went from 469 to 511. The top 25
+keeps 23 names (GLBS and KELYA in, GTE and UFI out). The frozen Oct 19 cohort
+is unchanged; cohorts from Nov 16 use the new counts.
+
+**A hazard found on the way.** `--rescore-run --refresh-fundamentals` read
+only cached data and cleared the fundamentals of any name whose cache had
+expired. The first rescore after the extract change cleared 970 names, 919 of
+them Canadian, whose fundamentals come from provider statements cached for 7
+days. Refreshing now fetches SEC extracts first, and a rescore reads the
+statements its run collected however old they are. The rerun cleared none.
+
+**Remaining gap.** 382 tradeable names are still not scored. About 250 are
+financials, whose structure v3 was never built for (five of its signals do
+not apply to them). Village Super Market-style filers that report even the
+weighted average per class only stay unscored.
+
+**Where.** `weighted_average_shares` in `src/data_sources/sec_xbrl_source.py`
+(extract `sec-facts-3`), `share_count_as_of` in `src/fundamentals_pit.py`,
+`SecXbrlSource.prefetch`, `any_age` on cached statements.
+
 ## Standing caveats that gate any promotion to "official"
 
 - **Survivorship.** The backtest's universe is chosen point in time from

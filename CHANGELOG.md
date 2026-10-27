@@ -144,6 +144,15 @@
   (`defensive-v1`): names that pass carry a frozen defensive score in each
   research cohort, and resolutions compare it with v3's order on the same
   names, with the judging rule fixed in DECISIONS.md before any cohort
+- Valued multi-class companies, which report period-end shares per class
+  only, on their weighted-average basic shares (SEC extract `sec-facts-3`,
+  recorded as `pit_shares_basis`); 95 more Oct 19 names are now scored by v3
+- Fetched SEC extracts in parallel before `--refresh-fundamentals`, and let
+  rescores read the provider statements their run collected however old, so
+  an expired cache no longer clears a name's fundamentals
+- Requested SEC company facts compressed
+- Judged Form 4 listing freshness by the source's own clock, not the file's
+  modified time
 - Taught the resolver about baseline kinds, reading each baseline's own
   cohort split so Moonshot and research cohorts stay separate; added
   `--baseline moonshot|research|all`
