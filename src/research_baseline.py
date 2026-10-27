@@ -94,6 +94,10 @@ def build_research_baseline(
             "screen_status": row.get("screen_status"),
             "v3_quintile": row.get("v3_quintile"),
             DEFENSIVE_FIELD: _number(row.get(DEFENSIVE_FIELD)),
+            # The bank lane's inputs, so its forward record can be rebuilt.
+            "investment_fund": row.get("investment_fund"),
+            "bank_earnings_yield_percentile": _number(row.get("bank_earnings_yield_percentile")),
+            "pit_earnings_yield": _number(row.get("pit_earnings_yield")),
             "discovery_rank": row.get("discovery_rank"),
             "benchmark": BENCHMARKS.get(str(row.get("country") or ""), "SPY"),
             "baseline_as_of": baseline_as_of,
@@ -225,6 +229,8 @@ def _classify(
             labels[ticker] = "duplicate_listing"
         elif str(row.get("ranking_basis")) == "below_liquidity_floor":
             labels[ticker] = "below_liquidity_floor"
+        elif str(row.get("ranking_basis")) == "investment_fund":
+            labels[ticker] = "investment_fund"
         elif row.get("score_v3_excluded"):
             labels[ticker] = "v3_excluded"
         elif str(row.get("ranking_basis")) == "score_v2":

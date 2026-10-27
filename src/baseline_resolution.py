@@ -170,6 +170,7 @@ def resolve_baseline(
             "size_tier": row.get("size_tier"),
             "classification": row.get("classification"),
             "screen_status": row.get("screen_status"),
+            "bank_earnings_yield_percentile": row.get("bank_earnings_yield_percentile"),
             "moonshot_rank": row.get("moonshot_rank"),
             "upside_score": row.get("upside_score"),
             "risk_of_ruin_score": row.get("risk_of_ruin_score"),
@@ -415,7 +416,63 @@ def _horizon_report(candidates: list[dict], label: str, config: dict) -> dict:
     screen = _screen_comparison(candidates, label, config)
     if screen:
         report["screen_comparison"] = screen
+    banks = _bank_lane_comparison(candidates, label, config)
+    if banks:
+        report["bank_lane_comparison"] = banks
     return report
+
+
+BANK_LANE_STATUSES = ("passes_bank_lane", "bank_dearer_half", "passes")
+
+
+def _bank_lane_comparison(candidates: list[dict], label: str, config: dict) -> dict:
+    """The bank lane against the banks it left out and against the v3 lane.
+
+    Groups are the screen statuses frozen with the cohort. One cohort is one
+    observation of one market; banks move as a block, so a single month says
+    little about the lane.
+    """
+    groups: dict[str, list[float]] = {name: [] for name in BANK_LANE_STATUSES}
+    percentiles: list[tuple[float, float]] = []
+    for candidate in candidates:
+        status = candidate.get("screen_status")
+        if status not in groups:
+            continue
+        horizon = candidate["horizons"].get(label) or {}
+        if horizon.get("status") != "resolved" or "excess_return_percent" not in horizon:
+            continue
+        excess = horizon["excess_return_percent"]
+        groups[status].append(excess)
+        percentile = candidate.get("bank_earnings_yield_percentile")
+        if status != "passes" and isinstance(percentile, (int, float)):
+            percentiles.append((float(percentile), excess))
+    if not groups["passes_bank_lane"] and not groups["bank_dearer_half"]:
+        return {}
+    summary = {}
+    for name, values in groups.items():
+        summary[name] = {
+            "resolved": len(values),
+            "median_excess_percent": round(statistics.median(values), 2) if values else None,
+            "win_rate_percent": (
+                round(sum(1 for v in values if v > 0) / len(values) * 100.0, 2) if values else None
+            ),
+        }
+
+    def spread(left: str, right: str):
+        a, b = summary[left]["median_excess_percent"], summary[right]["median_excess_percent"]
+        return round(a - b, 2) if a is not None and b is not None else None
+
+    minimum = int(config["minimum_comparison_size"])
+    return {
+        **summary,
+        "cheaper_minus_dearer_median_percent": spread("passes_bank_lane", "bank_dearer_half"),
+        "bank_lane_minus_v3_lane_median_percent": spread("passes_bank_lane", "passes"),
+        "earnings_yield_information_coefficient": (
+            _spearman([a for a, _ in percentiles], [b for _, b in percentiles])
+            if len(percentiles) >= minimum else None
+        ),
+        "banks_ranked": len(percentiles),
+    }
 
 
 SCREEN_SCORES = ("score_defensive", "score_v3")

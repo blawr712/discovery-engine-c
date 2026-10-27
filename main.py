@@ -990,6 +990,14 @@ def _resolution_headline(entry: dict) -> dict:
                 "most_minus_least_defensive_median_percent":
                     screen["most_minus_least_defensive_median_percent"],
             }
+        banks = measured.get("bank_lane_comparison")
+        if banks:
+            headline[horizon]["bank_lane"] = {
+                "resolved": banks["passes_bank_lane"]["resolved"],
+                "median_excess_percent": banks["passes_bank_lane"]["median_excess_percent"],
+                "cheaper_minus_dearer_median_percent": banks["cheaper_minus_dearer_median_percent"],
+                "bank_lane_minus_v3_lane_median_percent": banks["bank_lane_minus_v3_lane_median_percent"],
+            }
     return headline
 
 
@@ -1186,6 +1194,14 @@ def _resolve_one_baseline(
                 f"  Inside the screen ({screen['resolved']} names): defensive IC "
                 f"{coefficients['score_defensive']}, v3 IC {coefficients['score_v3']}"
                 + (f"; defensive terciles, least to most, {ladder}" if ladder else "")
+            )
+        banks = report.get("bank_lane_comparison")
+        if banks:
+            print(
+                f"  Bank lane: {banks['passes_bank_lane']['resolved']} cheaper banks median "
+                f"{banks['passes_bank_lane']['median_excess_percent']}%, dearer half "
+                f"{banks['bank_dearer_half']['median_excess_percent']}%, v3 lane "
+                f"{banks['passes']['median_excess_percent']}%"
             )
     if resolution["pending_horizons"]:
         print(f"\nStill pending: {', '.join(resolution['pending_horizons'])}")

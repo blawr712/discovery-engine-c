@@ -156,6 +156,15 @@
 - Added `--unscored-research` to compare the names v3 never scores with the
   screen by group (financials, no fundamentals, other) on medians and win
   rates, and to scan signals inside the never-scored group
+- Labelled closed-end funds and business development companies as
+  `investment_fund` from EDGAR's filing record (a fund report within 400
+  days, or a BDC election never withdrawn) and listed them after candidates
+- Added a bank lane to the screen: tradeable banks in the cheaper half by
+  earnings yield pass as `passes_bank_lane`, frozen into cohorts and reported
+  against the dearer half and the v3 lane, with the judging rule fixed in
+  DECISIONS.md
+- Opened the dashboard on names passing either lane, with chips and filters
+  for each lane and for funds
 - Taught the resolver about baseline kinds, reading each baseline's own
   cohort split so Moonshot and research cohorts stay separate; added
   `--baseline moonshot|research|all`

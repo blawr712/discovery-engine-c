@@ -282,6 +282,7 @@ class DiscoveryEngine:
                 **candidate.stock_data,
                 "fundamentals_status": status,
                 "insiders_status": insider_status,
+                "investment_fund": self._investment_fund(candidate, price_history),
             },
             price_history,
             benchmark_history,
@@ -307,6 +308,27 @@ class DiscoveryEngine:
         if rate is None:
             return None, f"{status}; {trading}->{reporting} rate unavailable, valuation ratios skipped"
         return float(rate), f"{status}; converted {trading}->{reporting}"
+
+    def _investment_fund(self, candidate: Candidate, price_history: pd.DataFrame | None) -> str | None:
+        """Fund type from EDGAR's filing record, for tradeable SEC filers only.
+
+        Uses the submissions listing the insider lookup already reads for
+        these names, so no request is added; names below the liquidity floor
+        are not research candidates and are not looked up.
+        """
+        lookup = getattr(self.insider_lookup, "investment_fund", None)
+        if lookup is None or price_history is None:
+            return None
+        country = str(candidate.stock_data.get("country") or "").upper()
+        if country not in self.fundamentals_countries:
+            return None
+        dollar_volume = average_dollar_volume(price_history)
+        if not (dollar_volume == dollar_volume and dollar_volume >= MINIMUM_AVERAGE_DOLLAR_VOLUME):
+            return None
+        try:
+            return lookup(candidate.ticker)
+        except Exception:  # noqa: BLE001 - unknown is never labelled a fund
+            return None
 
     def _load_insiders(
         self,

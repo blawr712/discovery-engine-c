@@ -66,6 +66,10 @@ pure function of a completed run's rows and is exported with every run. Each
 row also carries its v3 quintile and a screen status (`SCREEN_STATUSES`),
 assigned with the frozen cohorts' quintile formula; the dashboard presents the
 queue as a screen filtered on that status rather than as a ranked list.
+Investment funds (`investment_fund`, set from EDGAR's filing record by the
+Form 4 supplement's submissions listing) form their own tier after the
+candidates, and `_apply_bank_lane` passes tradeable banks v3 cannot score in
+the cheaper half by earnings yield as `passes_bank_lane`.
 
 Fundamentals (point-in-time): `src/data_sources/sec_xbrl_source.py` fetches
 SEC company facts for U.S. filers, keeps only configured concepts with their

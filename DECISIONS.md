@@ -1003,6 +1003,56 @@ protects against.
 
 **Where.** `src/unscored_research.py`, `--unscored-research RUN_ID`.
 
+## 2026-10-27: Investment funds are labelled; banks get a lane
+
+**Decision.** Both proposals above are adopted. Closed-end funds and business
+development companies are labelled `investment_fund` and listed after the
+candidates, like illiquid names and duplicates. Tradeable banks that v3
+cannot score pass the screen in a lane of their own, `passes_bank_lane`,
+when their earnings yield ranks above the 50th percentile among those banks;
+the rest are `bank_dearer_half`. Official scores, the v3 lane, and the
+defensive test are unchanged.
+
+**How funds are identified.** From EDGAR's own filing record, not names, which
+the price provider truncates or replaces with numbers. Registered funds file
+shareholder reports and monthly holdings (N-CSR, N-PORT, N-CEN); BDCs elect
+their status on N-54A and withdraw it on N-54C; operating companies file
+none. A first version counted any fund form ever filed and mislabelled six
+companies that used to be funds: NewtekOne and Medallion (now banks), Red
+Cat and Sui Group (former BDCs), NexPoint Diversified and Seven Hills (now
+REITs). The rule now needs a fund report within 400 days, or a BDC election
+never withdrawn. The record comes from the submissions listing the Form 4
+supplement already reads, so it adds no requests. Unknown never means fund.
+Known edge: Equus (EQS), whose 1992 election is older than EDGAR's recent
+list, counts as a company.
+
+**Effect on Oct 19.** 69 names are labelled funds (53 closed-end, 16 BDCs),
+all in asset management; real asset managers (Virtus, Silvercrest, GCM
+Grosvenor) stay companies. 56 banks pass in the bank lane (median dollar
+volume $2.0M a day; cheapest on earnings: Carter Bankshares, OptimumBank,
+Northpointe, OP Bancorp) and 55 are in the dearer half. 511 names still pass
+the v3 lane and the top 25 is unchanged.
+
+**How the bank lane will be judged, fixed now.** Banks move as a block, so a
+single cohort says little; the record is pooled over monthly cohorts from
+Nov 2026, at 6M, and judged after 12 cohorts have resolved 6M (around April
+2028), alongside the defensive test.
+
+- Keep the lane if the cheaper half's median excess beats the dearer half's
+  on average across the 12 cohorts and in at least 7 of them, and the lane's
+  median is not below the v3 lane's on average.
+- Otherwise retire it: banks return to `not_scored_by_v3`.
+- 1Y results are reported alongside; they cannot rescue a failed 6M test.
+
+Each resolution reports the lane, the dearer half, and the v3 lane (median,
+win rate), the two spreads, and the rank correlation of earnings-yield
+percentile with outcomes inside banks. The cycle report has a "Bank lane"
+section. The lane can be switched off with `research_ranking.bank_lane`.
+
+**Where.** `investment_fund_type` in `src/data_sources/sec_form4_source.py`,
+`SupplementedInsiderLookup.investment_fund`, `_apply_bank_lane` in
+`src/research_ranking.py`, `bank_lane_comparison` in baseline resolution.
+
 ## Standing caveats that gate any promotion to "official"
 
 - **Survivorship.** The backtest's universe is chosen point in time from

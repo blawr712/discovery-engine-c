@@ -37,6 +37,17 @@ import xml.etree.ElementTree as ElementTree
 SUBMISSIONS_URL = "https://data.sec.gov/submissions/CIK{cik}.json"
 DOCUMENT_URL = "https://www.sec.gov/Archives/edgar/data/{cik}/{accession}/{document}"
 OWNERSHIP_FORMS = frozenset({"4", "4/A", "5", "5/A"})
+# Forms only investment companies file. Registered funds file shareholder
+# reports (N-CSR) and monthly holdings (N-PORT); business development
+# companies register on N-2 and elect BDC status on N-54A. Operating
+# companies file none of them.
+REGISTERED_FUND_FORMS = frozenset({"N-CSR", "N-CSRS", "N-CSR/A", "N-CSRS/A", "NPORT-P", "NPORT-P/A", "N-CEN", "N-CEN/A"})
+BDC_ELECTION_FORMS = frozenset({"N-54A", "N-54A/A"})
+BDC_WITHDRAWAL_FORMS = frozenset({"N-54C", "N-54C/A"})
+FUND_FORMS = REGISTERED_FUND_FORMS | BDC_ELECTION_FORMS | BDC_WITHDRAWAL_FORMS
+# A registered fund reports holdings monthly; one silent for this long has
+# become something else (two converted into REITs in 2021-22).
+REGISTERED_FUND_RECENT_DAYS = 400
 OPEN_MARKET_CODES = {"P": "purchase", "S": "sale"}
 CACHE_VERSION = "form4-1"
 
@@ -79,7 +90,10 @@ class SecForm4Source:
         cik = _cik(cik)
         path = self._path("listings", cik)
         cached = _read(path)
-        if cached is not None and not _expired(cached, path, self.listing_ttl_hours, self.clock):
+        # Listings cached before fund forms were recorded are refetched once.
+        if cached is not None and isinstance(cached.get("fund_forms"), dict) and not _expired(
+            cached, path, self.listing_ttl_hours, self.clock,
+        ):
             self._count("listings_cached")
             return cached
         payload = json.loads(self._request(SUBMISSIONS_URL.format(cik=cik)).decode("utf-8"))
@@ -171,13 +185,45 @@ def compact_listing(payload: dict, retrieved: date) -> dict:
         # the raw XML sits beside it under the same name.
         raw = document.split("/", 1)[1] if document.startswith("xsl") and "/" in document else document
         filings.append({"form": str(form).strip(), "filed": filed, "accession": accession, "document": raw})
+    fund_forms: dict[str, str] = {}
+    for form, filed in zip(recent.get("form") or [], dates):
+        form = str(form).strip()
+        if form in FUND_FORMS and str(filed) > fund_forms.get(form, ""):
+            fund_forms[form] = str(filed)
     return {
         "cik": str(payload.get("cik", "")).zfill(10),
         "retrieved": retrieved.isoformat(),
+        # The latest filing of each investment-company form, by date.
+        "fund_forms": dict(sorted(fund_forms.items())),
         "earliest_listed": min(dates) if dates else None,
         "truncated": bool((payload.get("filings") or {}).get("files")),
         "filings": filings,
     }
+
+
+def investment_fund_type(listing: dict) -> str | None:
+    """'closed_end_fund', 'business_development_company', or None.
+
+    A registered fund must have filed a fund report or holdings form within
+    ``REGISTERED_FUND_RECENT_DAYS`` of the listing; a BDC must have elected
+    BDC status and not withdrawn the election since. Companies that used to
+    be funds (NewtekOne, Medallion, Red Cat; NexPoint Diversified and Seven
+    Hills became REITs) keep the old filings in their history and fail both.
+    """
+    forms = listing.get("fund_forms")
+    if not isinstance(forms, dict):
+        return None
+    retrieved = _date(listing.get("retrieved"))
+    latest_fund_report = max((forms[f] for f in REGISTERED_FUND_FORMS if f in forms), default=None)
+    if latest_fund_report and retrieved and (
+        retrieved - date.fromisoformat(latest_fund_report[:10])
+    ).days <= REGISTERED_FUND_RECENT_DAYS:
+        return "closed_end_fund"
+    elected = max((forms[f] for f in BDC_ELECTION_FORMS if f in forms), default=None)
+    withdrawn = max((forms[f] for f in BDC_WITHDRAWAL_FORMS if f in forms), default=None)
+    if elected and not (withdrawn and withdrawn >= elected):
+        return "business_development_company"
+    return None
 
 
 def parse_form4(document: bytes | str, accession: str, filed: str) -> list[dict]:

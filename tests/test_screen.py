@@ -61,7 +61,10 @@ class ScreenTests(unittest.TestCase):
         self.assertEqual(counts["passes"], 6)
         self.assertEqual(counts["low_v3_quintile"], 4)
         self.assertEqual(sum(counts.values()), len(self.queue))
-        self.assertEqual(self.summary["screen"], {"quantiles": 5, "minimum_quintile": 3})
+        self.assertEqual(self.summary["screen"], {
+            "quantiles": 5, "minimum_quintile": 3,
+            "bank_lane": True, "bank_lane_minimum_percentile": 50,
+        })
 
     def test_queue_quintiles_match_the_frozen_cohort_quintiles(self):
         """The screen shown is the screen the forward test records."""
@@ -109,6 +112,9 @@ class DashboardScreenTests(unittest.TestCase):
                              ["BBB", "CCC", "AAA"])
             self.assertEqual([r["ticker"] for r in store.research_queue(run_id, sort="nonsense")["rows"]],
                              ["AAA", "BBB", "CCC"])
+            # "passing" means either lane.
+            store_rows = store.research_queue(run_id, screen="passing")["rows"]
+            self.assertEqual([r["ticker"] for r in store_rows], ["AAA", "BBB"])
 
     def test_queue_from_before_the_screen_ignores_the_screen_filter(self):
         from tests.test_dashboard_queue import ROWS, _save_run

@@ -130,6 +130,15 @@ def rescore_results(
                     row.setdefault(name, None)
                 row["insiders_status"] = "no_data"
                 stats["insiders_unavailable"] += 1
+            # EDGAR's filing record says whether the issuer is an investment
+            # fund; looked up for tradeable names, as in a live run.
+            fund_lookup = getattr(insider_lookup, "investment_fund", None)
+            if fund_lookup is not None:
+                row["investment_fund"] = (
+                    _safe(fund_lookup, ticker) if liquidity_eligible(row) else None
+                )
+                if row["investment_fund"]:
+                    stats["investment_funds"] = stats.get("investment_funds", 0) + 1
 
     rescored = apply_all_models(updated)
     for before, after in zip(results, rescored):

@@ -74,6 +74,26 @@ class SupplementedInsiderLookup:
                 if progress is not None:
                     progress("form4-prefetch", index, len(ciks), cik)
 
+    def investment_fund(self, ticker: str) -> str | None:
+        """The fund type EDGAR's filing record implies, or None for a company.
+
+        Read from the same submissions listing the recent Form 4s come from,
+        so it costs no extra request. None also when the listing cannot be
+        read: an unknown is never labelled a fund.
+        """
+        if self.form4_source is None:
+            return None
+        cik = self.cik_for(ticker)
+        if cik is None:
+            return None
+        from src.data_sources.sec_form4_source import investment_fund_type
+
+        try:
+            listing = self.form4_source.ownership_filings(str(cik).zfill(10))
+        except Exception:  # noqa: BLE001 - unknown means not labelled
+            return None
+        return investment_fund_type(listing)
+
     def bulk_only(self, ticker: str) -> InsiderHistory | None:
         """The data-set history alone, without fetching recent filings."""
         return self._history(ticker, fresh=False)

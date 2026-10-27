@@ -31,17 +31,29 @@ DEFAULT_CONFIG = {
     # its filter rejections did worst, while its top three fifths did alike.
     "screen_quantiles": 5,
     "screen_minimum_quintile": 3,
+    # Banks are never scored by v3 (five of its signals do not apply to
+    # them). Tradeable banks in the cheaper part by earnings yield pass in a
+    # lane of their own (DECISIONS.md, 2026-10-27).
+    "bank_lane": True,
+    "bank_lane_minimum_percentile": 50,
 }
+
+BANK_SECTOR = "Financial Services"
+BANK_INDUSTRY_PREFIX = "Banks"
 
 # What the screen says about each queued name, best first.
 SCREEN_STATUSES = (
     "passes",
+    "passes_bank_lane",
     "low_v3_quintile",
+    "bank_dearer_half",
     "rejected_by_filters",
     "not_scored_by_v3",
+    "investment_fund",
     "below_liquidity_floor",
     "duplicate_listing",
 )
+PASSING_STATUSES = ("passes", "passes_bank_lane")
 
 KEY_RATIOS = (
     "pit_sales_yield",
@@ -84,6 +96,10 @@ def build_research_queue(
     rows = [row for row in rows if not row.get("duplicate_of")]
     illiquid = [row for row in rows if not liquidity_eligible(row)]
     rows = [row for row in rows if liquidity_eligible(row)]
+    # Closed-end funds and BDCs are investment funds, not companies to pick;
+    # EDGAR's filing record identifies them. Listed after the candidates.
+    funds = [row for row in rows if row.get("investment_fund")]
+    rows = [row for row in rows if not row.get("investment_fund")]
 
     tiers = (
         ("primary", config["primary_model"]),
@@ -108,6 +124,13 @@ def build_research_queue(
         -(_number(row.get(config["final_fallback"])) or 0.0),
         str(row.get("ticker", "")),
     ))
+    funds.sort(key=lambda row: (
+        _number(row.get(config["final_fallback"])) is None,
+        -(_number(row.get(config["final_fallback"])) or 0.0),
+        str(row.get("ticker", "")),
+    ))
+    for row in funds:
+        queued.append(("fund", "investment_fund", row))
     for row in illiquid:
         queued.append(("illiquid", "below_liquidity_floor", row))
     duplicates.sort(key=lambda row: str(row.get("ticker", "")))
@@ -122,9 +145,10 @@ def build_research_queue(
             "ranking_tier": tier,
             "ranking_score": _number(row.get(
                 config["final_fallback"]
-                if field in ("below_liquidity_floor", "duplicate_listing") else field
+                if field in ("below_liquidity_floor", "duplicate_listing", "investment_fund") else field
             )),
             "duplicate_of": row.get("duplicate_of"),
+            "investment_fund": row.get("investment_fund"),
             "ticker": row.get("ticker"),
             "company_name": row.get("company_name"),
             "country": row.get("country"),
@@ -171,6 +195,8 @@ def build_research_queue(
         "screen": {
             "quantiles": config["screen_quantiles"],
             "minimum_quintile": config["screen_minimum_quintile"],
+            "bank_lane": bool(config["bank_lane"]),
+            "bank_lane_minimum_percentile": config["bank_lane_minimum_percentile"],
         },
         "by_basis": _counts(queue, "ranking_basis"),
         "by_tier": _counts(queue, "ranking_tier"),
@@ -211,12 +237,54 @@ def _apply_screen(queue: list[dict], config: dict) -> None:
             row["screen_status"] = "duplicate_listing"
         elif basis == "below_liquidity_floor":
             row["screen_status"] = "below_liquidity_floor"
+        elif basis == "investment_fund":
+            row["screen_status"] = "investment_fund"
         elif basis == primary:
             row["screen_status"] = "passes" if row["v3_quintile"] >= minimum else "low_v3_quintile"
         elif row.get(f"{primary}_excluded"):
             row["screen_status"] = "rejected_by_filters"
         else:
             row["screen_status"] = "not_scored_by_v3"
+    if config["bank_lane"]:
+        _apply_bank_lane(queue, float(config["bank_lane_minimum_percentile"]))
+
+
+def is_bank(row: dict) -> bool:
+    return (
+        str(row.get("sector") or "") == BANK_SECTOR
+        and str(row.get("industry") or "").startswith(BANK_INDUSTRY_PREFIX)
+    )
+
+
+def _apply_bank_lane(queue: list[dict], minimum_percentile: float) -> None:
+    """Pass tradeable banks v3 cannot score that are cheap on earnings.
+
+    Percentiles rank earnings yield among those banks, average ties, as the
+    backtest that found the lane did. Banks without an earnings yield keep
+    their status.
+    """
+    banks = [
+        row for row in queue
+        if row.get("screen_status") == "not_scored_by_v3" and is_bank(row)
+        and _number(row.get("pit_earnings_yield")) is not None
+    ]
+    ordered = sorted(banks, key=lambda row: _number(row["pit_earnings_yield"]))
+    count = len(ordered)
+    position = 0
+    while position < count:
+        end = position
+        value = _number(ordered[position]["pit_earnings_yield"])
+        while end + 1 < count and _number(ordered[end + 1]["pit_earnings_yield"]) == value:
+            end += 1
+        percentile = ((position + end) / 2.0 + 1.0) / count * 100.0
+        for row in ordered[position:end + 1]:
+            row["bank_earnings_yield_percentile"] = round(percentile, 2)
+            row["screen_status"] = (
+                "passes_bank_lane" if percentile > minimum_percentile else "bank_dearer_half"
+            )
+        position = end + 1
+    for row in queue:
+        row.setdefault("bank_earnings_yield_percentile", None)
 
 
 def export_research_queue(

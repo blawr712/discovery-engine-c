@@ -375,6 +375,28 @@ def build_cycle_report(state: dict, resolutions: list[dict] | None = None) -> st
                     f"most minus least defensive third "
                     f"{_pct(measured.get('most_minus_least_defensive_median_percent'))}"
                 )
+        lanes = [
+            (entry, horizon, (entry.get("summary") or {}).get(horizon, {}).get("bank_lane"))
+            for entry in resolutions for horizon in entry.get("horizons", [])
+        ]
+        lanes = [item for item in lanes if item[2]]
+        if lanes:
+            lines += [
+                "",
+                "## Bank lane",
+                "",
+                "Banks in the cheaper half by earnings yield pass the screen in a lane of "
+                "their own (DECISIONS.md, 2026-10-27). Banks move as a block, so judge "
+                "only the pooled record.",
+                "",
+            ]
+            for entry, horizon, measured in lanes:
+                lines.append(
+                    f"- {entry['kind']} `{entry['run_id']}` {horizon}, {measured.get('resolved')} banks: "
+                    f"median {_pct(measured.get('median_excess_percent'))}, cheaper minus dearer half "
+                    f"{_pct(measured.get('cheaper_minus_dearer_median_percent'))}, lane minus v3 lane "
+                    f"{_pct(measured.get('bank_lane_minus_v3_lane_median_percent'))}"
+                )
     lines += [
         "",
         "This records what was run and measured. It is not a forecast or an "

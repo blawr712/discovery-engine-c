@@ -373,9 +373,13 @@ The dashboard opens on the **Research Screen** for the selected run. Score v3
 is read as a screen, because in the backtest its bottom two fifths did clearly
 worse while its top three fifths did alike: a name *passes* when v3 puts it
 in quintile 3–5, v3's filters did not reject it, it clears the liquidity
-floor, and it is the kept listing of its company. Every other name carries the
-reason it does not pass (low v3 quintile, rejected by filters, not scored by
-v3, illiquid, duplicate listing). The screen shows each name's v3 quintile and
+floor, and it is the kept listing of its company. Banks, which v3 cannot
+score, pass in a **bank lane** of their own when their earnings yield ranks in
+the cheaper half among tradeable banks. Closed-end funds and business
+development companies, identified from EDGAR's filing record, are labelled
+investment funds and are not candidates. Every other name carries the
+reason it does not pass (low v3 quintile, bank in the dearer half, rejected by
+filters, not scored by v3, investment fund, illiquid, duplicate listing). The screen shows each name's v3 quintile and
 score, 30-day dollar volume, twelve-month insider purchases with their
 data-through date, and key point-in-time ratios, with the backtest's quintile
 outcomes beside it, filters by screen status, country, sector, and text, and

@@ -210,6 +210,7 @@ class DashboardStore:
                 "research_rank": (queue_row or {}).get("research_rank"),
                 "ranking_basis": (queue_row or {}).get("ranking_basis"),
                 "screen_status": (queue_row or {}).get("screen_status"),
+                "bank_earnings_yield_percentile": (queue_row or {}).get("bank_earnings_yield_percentile"),
                 "v3_quintile": (queue_row or {}).get("v3_quintile"),
                 "candidate_count": len(ranks),
             },
@@ -279,7 +280,11 @@ class DashboardStore:
                 continue
             if hide_excluded and row.get("score_v3_excluded"):
                 continue
-            if screen_filter and str(row.get("screen_status")) != screen_filter:
+            if screen_filter == "passing":
+                # Either lane: the v3 screen or the bank lane.
+                if str(row.get("screen_status")) not in ("passes", "passes_bank_lane"):
+                    continue
+            elif screen_filter and str(row.get("screen_status")) != screen_filter:
                 continue
             rows.append(row)
         rows = _sorted_queue(rows, sort)
