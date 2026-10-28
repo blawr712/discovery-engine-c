@@ -252,6 +252,24 @@ frames) are then priced through the cached provider stack, and the five
 largest by market cap on the anchor date are kept. Filers that report no
 public float, often foreign filers, cannot be shortlisted.
 
+Then run the review in Claude Code, in batches (10 by default):
+
+```text
+/ai-review RUN_ID 10
+```
+
+The skill launches one `ai-reviewer` subagent per company
+(`.claude/agents/ai-reviewer.md`), so each judgement starts fresh. The
+subagent can only read, search and write files, so it has no web search, and
+it reads only that company's folder. It works through the fixed checklist
+`review-v1` (`.claude/skills/ai-review/checklist-review-v1.md`): data check,
+earnings quality, balance sheet, dilution, pending events, business, peers,
+then the bear case before the verdict. Every finding quotes the filing it
+comes from, by hash. A name that already has a `review.json` is skipped, so
+an interrupted batch carries on, and a review is never re-run. After each
+batch the skill validates what was written and asks before starting the
+next.
+
 Canadian names with no SEC registrant get a `not_reviewed` review written by
 code, since SEDAR+ may not be read automatically. A name that fails (for
 example a network error) is reported and retried by the next run of the

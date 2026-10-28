@@ -221,7 +221,10 @@ peers from the run by SIC code and market cap, and the industry's largest SEC
 filers, shortlisted by public float from EDGAR frames and measured on the
 anchor date with the same `fundamentals_pit` functions, prices and exchange
 rates live runs use. SIC codes come from a persistent index of every SEC
-filer's submissions. The review itself is a Claude Code skill, not engine code. It
+filer's submissions. The review itself is a Claude Code skill
+(`.claude/skills/ai-review/`), not engine code: one `ai-reviewer` subagent per
+name, restricted to file tools, follows the versioned checklist and writes
+`review.json` beside the inputs. It
 never changes scores, ranks, the queue or the dashboard order.
 
 Reporting Engine: Export reports and serve the local dashboard. Moonshot

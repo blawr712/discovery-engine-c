@@ -48,3 +48,4 @@ Thumbs.db
 # Claude Code local launch config; project skills are tracked
 .claude/*
 !.claude/skills/
+!.claude/agents/

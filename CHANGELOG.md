@@ -191,6 +191,10 @@
   peers that cannot be used are listed with the reason. SIC codes for every
   SEC filer with a ticker are indexed once from per-company submissions
   through the shared SEC pacer, then topped up
+- Added the `ai-review` project skill (`.claude/skills/ai-review/`) and an
+  `ai-reviewer` subagent limited to reading, searching and writing files:
+  one subagent per company works through the fixed checklist `review-v1`
+  and writes `review.json`, in batches that skip names already reviewed
 - Taught the resolver about baseline kinds, reading each baseline's own
   cohort split so Moonshot and research cohorts stay separate; added
   `--baseline moonshot|research|all`
