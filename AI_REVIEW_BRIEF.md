@@ -1,6 +1,6 @@
 # AI Review: Design Brief
 
-Status: proposed on 2026-10-28, not built. This is the starting point for the
+Status: proposed on 2026-10-28 (peer comparison added the same day), not built. This is the starting point for the
 session that builds it.
 
 ## Goal
@@ -69,6 +69,8 @@ Gaps found in the existing parts:
    - Include only filings dated on or before the run's completion date (the
      cohort's anchor date). This keeps the review blind to anything after
      the cohort froze.
+   - Write each name's peer table as `peers.json` (see "Peer comparison"
+     below).
    - No AI is involved and nothing is written to the run.
 2. **Review (the skill).**
    - One subagent per name, so each judgement starts fresh and is not
@@ -83,12 +85,70 @@ Gaps found in the existing parts:
    - Check every quote appears word for word in the filing it cites, matched
      by hash. A quote that is not found fails that name.
    - Write one combined artifact, `ai_reviews_<run_id>.json`, carrying the
-     model name, skill version and checklist version. Refuse to overwrite it,
-     the same way baselines are never overwritten.
+     model name, skill version, checklist version and each name's `peers.json`
+     hash. Refuse to overwrite it, the same way baselines are never
+     overwritten.
+   - Check every metric a review cites from the peer table exists in that
+     name's `peers.json`.
    - Record it in the run manifest.
 4. **Resolve (code, an extension).** `--resolve-baselines` joins the frozen
    reviews to the cohort by ticker and adds an `ai_review_comparison`. The
    baseline file itself is never modified.
+
+## Peer comparison
+
+The question it answers is why a name is cheap. If it trades well below its
+peers and its industry's leaders, either its numbers are clearly worse and the
+discount is earned (a likely value trap), or its numbers are close to theirs
+and the discount looks like a mispricing. **Code picks the peers and computes
+every figure. The AI only interprets the table.** It never fetches peer data
+or states a peer figure the table does not hold.
+
+**Industry.** Use the SEC's four-digit SIC code, which every SEC filer has,
+including companies outside our universe. It is also the same for the backtest
+and live runs. `src/data_sources/sec_filings_source.py` already reads `sic` and
+`sic_description` from EDGAR submissions. If fewer than 3 peers share the
+four-digit code, widen to the three-digit code and record that it was widened.
+The provider's `industry` label is shown for reference only.
+
+**Two peer groups:**
+- **Closest peers.** Up to 8 names in the same run with the same SIC code,
+  nearest to the company by market cap. Include them whatever their screen
+  status, so a company is compared with its industry rather than with other
+  winners.
+- **Industry leaders.** The 5 largest SEC filers in the same SIC code by market
+  cap on the anchor date, whether or not they fall inside our universe's size
+  band. Finding them needs SIC codes for all SEC filers. Two options, and the
+  build session should pick one:
+  - SEC's bulk submissions file;
+  - per-company submissions for the tickers in `company_tickers.json`, cached
+    and paced through the shared SEC pacer. This takes a long first fill, then
+    only small monthly updates.
+
+**Metrics.** Computed as of the anchor date with the same `fundamentals_pit`
+functions v3 uses, so peer numbers are built exactly like the company's own:
+- market cap;
+- revenue (trailing twelve months) and revenue growth;
+- gross, operating and net margin;
+- earnings yield and sales yield;
+- net cash to market cap;
+- share-count change.
+
+Leaders' prices come from the same cached provider stack. A peer that reports
+in another currency is converted with `fundamentals.fx_pairs`, or loses its
+valuation ratios when no rate exists, as live runs already do.
+
+**Table shape (`peers.json`).**
+- One row per peer, with `group: closest | leader`.
+- A summary with the company's value, the closest-peer median, the leader
+  median and the company's percentile among its closest peers, for each
+  metric.
+- The SIC code used, and whether it was widened.
+- Every peer that could not be used (no SEC facts, foreign filer, no price),
+  with the reason. Missing peers are listed, never guessed.
+
+When fewer than 3 usable peers remain, the table says `insufficient_peers` and
+the review records that rather than reaching for a comparison.
 
 ## Review schema (per name)
 
@@ -107,6 +167,11 @@ Gaps found in the existing parts:
      "text": "what was found",
      "citation": {"sha256": "...", "quote": "exact text from the filing"}}
   ],
+  "peer_comparison": {
+    "discount_explained": "yes | partly | no | not_cheaper | insufficient_peers",
+    "text": "how the company compares with its closest peers and leaders",
+    "metrics_cited": ["pit_operating_margin", "pit_earnings_yield"]
+  },
   "bear_case": "strongest case against owning it",
   "unanswered_questions": ["..."],
   "evidence_through": "YYYY-MM-DD"
@@ -133,13 +198,22 @@ and `bear_case`. Every finding must be backed by a quote.
    material litigation.
 6. **Business.** What it sells, customer concentration, and where margins sit
    in the cycle.
-7. **Bear case.** Write it before the verdict.
+7. **Peers.** Is the company cheaper than its closest peers and its industry's
+   leaders? If so, is the discount explained by weaker margins, growth, balance
+   sheet or dilution in the peer table, or by findings from the filings? Answer
+   `yes`, `partly`, `no`, `not_cheaper` or `insufficient_peers`, citing the
+   table's metrics by name.
+8. **Bear case.** Write it before the verdict.
 
 Verdict guide:
 - `avoid`: at least one `serious` finding that the scores cannot see, or a data
   check showing that the screen passed the name on wrong numbers.
 - `caution`: one or more concerns, none serious.
 - `clear`: nothing material found.
+
+The peer answer feeds the verdict, but it does not settle it on its own. An
+explained discount points toward `caution`. An unexplained one, with no
+concerns in the filings, supports `clear`.
 
 ## Guard rails
 
@@ -150,6 +224,8 @@ Verdict guide:
   the anchor date. This keeps reviews reproducible and blind to what happened
   next. The model's training cutoff is before the cohorts it reviews, so its
   own knowledge cannot leak the outcome.
+- Peers are picked and measured by code, as of the anchor date. The AI may cite
+  only figures in `peers.json`, never peer numbers from memory.
 - One review per name per cohort. The prompt and checklist are fixed for a
   version, and a changed checklist is a new version with a fresh record. No
   re-running to get a different answer.
@@ -173,8 +249,12 @@ forward data counts. The proposal mirrors `defensive-v1`:
   - `clear` wins in at least 7 of 12 cohorts;
   - the result holds within the v3 lane on its own.
 - **Retire it if the pooled spread is negative.**
-- **Reported but not decided on:** `avoid` against the rest, and the spread
-  measured inside defensive thirds.
+- **Reported but not decided on:**
+  - `avoid` against the rest;
+  - the spread measured inside defensive thirds;
+  - names whose discount was `no` (unexplained) against those marked `yes`.
+    This is the peer comparison's own hypothesis. It gets a decision rule of
+    its own only after enough cohorts show how often each answer occurs.
 
 The data check is useful straight away and needs no forward test. Each
 disagreement it finds is a possible bug to trace, the way the four Oct 27 data
@@ -188,3 +268,12 @@ gaps were found.
   older than their cohort. If reused, a review must carry its own evidence date.
 - Whether the first review runs on the Oct 19 cohort as a dry run (not part of
   the test) or waits for the Nov 16 cycle.
+
+## Later, in the engine itself
+
+Industry-relative versions of v3's signals can be backtested with the data
+we already hold, once SIC codes are attached to the backtest's names. v3 already
+ranks within sector when a sector has 20 or more names
+(`minimum_sector_group`). Many industries are smaller than that, and nothing
+has yet separated winners inside the screen, so the expected gain is small.
+This comes after the review, not before it.
