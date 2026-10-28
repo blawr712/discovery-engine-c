@@ -80,6 +80,8 @@ class SecFilingsSource:
     clock: Callable[[], float] = time.time
     today: Callable[[], tuple[int, int]] | None = None
     stats: FilingsStats = field(default_factory=FilingsStats)
+    # Shared with other SEC sources so their combined rate stays in bounds.
+    pacer: object | None = None
 
     def __post_init__(self) -> None:
         if not self.user_agent or "@" not in self.user_agent:
@@ -160,6 +162,11 @@ class SecFilingsSource:
         return compact
 
     def _request(self, url: str) -> bytes:
+        if self.pacer is not None:
+            self.pacer.wait()
+            with self._pace_lock:
+                self.stats.requests += 1
+            return self.fetcher(url, self.headers)
         with self._pace_lock:
             wait = self.request_interval_seconds - (self.clock() - self._last_request)
             if wait > 0:

@@ -280,6 +280,31 @@ class PrepareTests(unittest.TestCase):
         # Only FAIL was fetched again.
         self.assertTrue(all("0000706698" not in str(item) for item in self.archive.requests[before:]))
 
+    def test_peer_tables_are_written_once_for_names_with_filings(self):
+        built = []
+
+        def peer_table(packet):
+            built.append(packet["ticker"])
+            return {"ticker": packet["ticker"], "status": "ok", "sic_used": packet["sic"]}
+
+        summary = prepare_ai_review(
+            run_id="RUN", manifest={"completed_at": ANCHOR.isoformat()}, results=self.results,
+            queue=self.queue, base_packets={}, resolver=lambda row: self.registrants[row["ticker"]],
+            archive=self.archive, output_root=self.root, clock=lambda: ANCHOR, peer_table=peer_table,
+        )
+        self.assertEqual(built, ["UTMD"])
+        self.assertEqual(next(e for e in summary["names"] if e["ticker"] == "UTMD")["peers"], "ok")
+        peers = json.loads((self.root / "RUN" / "UTMD" / "peers.json").read_text(encoding="utf-8"))
+        self.assertEqual(peers["sic_used"], "3841")
+        self.assertFalse((self.root / "RUN" / "DR.TO" / "peers.json").exists())
+        self.archive.fail.clear()
+        prepare_ai_review(
+            run_id="RUN", manifest={"completed_at": ANCHOR.isoformat()}, results=self.results,
+            queue=self.queue, base_packets={}, resolver=lambda row: self.registrants[row["ticker"]],
+            archive=self.archive, output_root=self.root, clock=lambda: ANCHOR, peer_table=peer_table,
+        )
+        self.assertEqual(built, ["UTMD", "FAIL"])
+
     def test_packet_joins_run_row_and_queue_row(self):
         packet = review_packet(
             {"ticker": "X"}, {"pit_revenue_ttm": 0.0, "pit_net_income_ttm": -1.0},

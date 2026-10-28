@@ -772,6 +772,84 @@ def build_sec_filing_archive():
     return SecFilingArchive(user_agent, cache, pacer=sec_pacer())
 
 
+def build_ai_review_peer_table(run_id, anchor, results, queue, xbrl, archive):
+    """Everything a peer table needs, gathered once for the whole run.
+
+    SIC codes for every SEC filer with a ticker come from per-company
+    submissions, indexed once and then topped up; public floats from four
+    EDGAR frames shortlist the leaders, which are priced through the cached
+    provider stack and measured with the functions v3 uses.
+    """
+    from src.ai_review_peers import (
+        SicIndex, build_peer_table, float_frame_periods, latest_public_floats, measure_filer,
+    )
+    from src.data_sources.sec_filings_source import SecFilingsSource
+
+    filings_source = SecFilingsSource(
+        user_agent=os.environ.get("SEC_USER_AGENT", "").strip(),
+        cache_directory=CACHE_DIR / "sec_filings",
+        pacer=sec_pacer(),
+    )
+    ticker_map = xbrl.ticker_map()
+    index = SicIndex(CACHE_DIR / "ai_review" / "sic_index.json", filings_source.submissions)
+
+    def progress(done: int, total: int) -> None:
+        if done % 500 == 0 or done == total:
+            print(f"  SIC index: {done:,} of {total:,} filers read", flush=True)
+
+    ciks = [str(row["cik_str"]).zfill(10) for row in ticker_map.values() if row.get("cik_str")]
+    counts = index.update(ciks, progress=progress)
+    print(
+        f"SIC index: {counts['known']:,} filers known, {counts['indexed']:,} read now"
+        + (f", {counts['failed']:,} failed (retried next time)" if counts["failed"] else "")
+    )
+    public_floats = latest_public_floats(
+        [archive.public_float_frame(period) for period in float_frame_periods(anchor.date())]
+    )
+    print(f"Public floats: {len(public_floats):,} filers")
+    market_source = build_market_data_source()
+    fx_rates = load_fx_rates(market_source)
+    screen = {str(row.get("ticker")): row.get("screen_status") for row in queue}
+    run_rows = []
+    for row in results:
+        if row.get("status") != "OK":
+            continue
+        sec_ticker, _ = resolve_sec_ticker(row, xbrl.cik_for, xbrl.title_for)
+        cik = xbrl.cik_for(sec_ticker) if sec_ticker else None
+        entry = index.entries.get(cik) if cik else None
+        run_rows.append({
+            **row,
+            "cik": cik,
+            "sic": (entry or {}).get("sic"),
+            "screen_status": screen.get(str(row.get("ticker"))),
+        })
+
+    def measure_leader(candidate: dict):
+        return measure_filer(
+            candidate["ticker"], anchor.date(),
+            facts_lookup=xbrl.get_company_facts,
+            price_frame_lookup=market_source.get_price_history,
+            fx_rates=fx_rates,
+        )
+
+    def peer_table(packet: dict) -> dict:
+        return build_peer_table(
+            packet,
+            company_sic=packet.get("sic"),
+            company_sic_description=packet.get("sic_description"),
+            company_cik=packet.get("sec_cik"),
+            run_rows=run_rows,
+            sic_index=index.entries,
+            public_floats=public_floats,
+            measure_leader=measure_leader,
+            anchor=anchor,
+            run_id=run_id,
+            fx_rates=fx_rates,
+        )
+
+    return peer_table
+
+
 def ai_review_prepare(run_id: str, top: int | None = None) -> None:
     """Write the AI review's inputs for the top names passing the v3 screen."""
     from src.ai_review import DEFAULT_TOP, SecRegistrant, prepare_ai_review
@@ -793,6 +871,11 @@ def ai_review_prepare(run_id: str, top: int | None = None) -> None:
     if archive is None:
         print("SEC_USER_AGENT is not set in .env; names with SEC filings will be left as errors.")
     xbrl = build_sec_xbrl_source(required=False)
+    anchor = datetime.fromisoformat(str(manifest["completed_at"]))
+    peer_table = (
+        build_ai_review_peer_table(run_id, anchor, results, queue, xbrl, archive)
+        if xbrl is not None and archive is not None else None
+    )
 
     def resolver(row: dict) -> SecRegistrant:
         if xbrl is None:
@@ -813,6 +896,7 @@ def ai_review_prepare(run_id: str, top: int | None = None) -> None:
         output_root=AI_REVIEW_DIR,
         top=top,
         progress=lambda ticker: print(f"  preparing {ticker}", flush=True),
+        peer_table=peer_table,
     )
     print(f"AI review inputs for run {run_id}, anchored {summary['anchor_datetime']}")
     print(f"Names: {len(summary['names'])} of the top {top} passing the screen")
@@ -821,6 +905,13 @@ def ai_review_prepare(run_id: str, top: int | None = None) -> None:
     for entry in summary["names"]:
         if entry.get("status") == "error":
             print(f"  {entry['ticker']}: {entry.get('error')}")
+    peer_counts: dict[str, int] = {}
+    for entry in summary["names"]:
+        if entry.get("peers"):
+            key = str(entry["peers"]).split(":")[0]
+            peer_counts[key] = peer_counts.get(key, 0) + 1
+    if peer_counts:
+        print("Peer tables: " + ", ".join(f"{key} {count}" for key, count in sorted(peer_counts.items())))
     print(f"Folder: {AI_REVIEW_DIR / run_id}")
     print("Scores, ranks and the queue order: unchanged")
 

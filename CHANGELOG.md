@@ -183,6 +183,14 @@
   plain text, each with its SHA-256, all accepted on or before the run's
   completion time. 20-F and 40-F filers get 6-Ks in place of 8-Ks. Names
   without an SEC registrant are recorded as `not_reviewed` by code
+- Added a peer table (`peers.json`) to each prepared name: up to eight
+  closest peers from the same run by SIC code and market cap, and the five
+  largest SEC filers with the code on the anchor date, shortlisted by SEC
+  public float and measured with the `fundamentals_pit` functions v3 uses.
+  The code widens to three digits when fewer than three peers share it;
+  peers that cannot be used are listed with the reason. SIC codes for every
+  SEC filer with a ticker are indexed once from per-company submissions
+  through the shared SEC pacer, then topped up
 - Taught the resolver about baseline kinds, reading each baseline's own
   cohort split so Moonshot and research cohorts stay separate; added
   `--baseline moonshot|research|all`

@@ -189,6 +189,14 @@ class SecXbrlSource:
         row = self._ticker_map.get(str(ticker).strip().upper())
         return str(row["cik_str"]).zfill(10) if row else None
 
+    def ticker_map(self) -> dict[str, dict]:
+        """Every SEC ticker with its CIK and registrant title."""
+        if self._ticker_map is None:
+            with self._map_lock:
+                if self._ticker_map is None:
+                    self._ticker_map = self._load_ticker_map()
+        return dict(self._ticker_map)
+
     def title_for(self, ticker: str) -> str | None:
         """Return the SEC registrant title for a ticker, or None when unmapped."""
         if self._ticker_map is None:

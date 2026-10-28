@@ -216,7 +216,12 @@ per name, a packet joining the run row's `pit_*` figures to the queue row's
 screen fields, and the latest annual report, 10-Q and current reports as
 plain text with SHA-256 hashes, chosen by form and limited to filings EDGAR
 accepted by the run's completion time. EDGAR requests go through the shared
-SEC pacer. The review itself is a Claude Code skill, not engine code. It
+SEC pacer. `src/ai_review_peers.py` writes each name's peer table: closest
+peers from the run by SIC code and market cap, and the industry's largest SEC
+filers, shortlisted by public float from EDGAR frames and measured on the
+anchor date with the same `fundamentals_pit` functions, prices and exchange
+rates live runs use. SIC codes come from a persistent index of every SEC
+filer's submissions. The review itself is a Claude Code skill, not engine code. It
 never changes scores, ranks, the queue or the dashboard order.
 
 Reporting Engine: Export reports and serve the local dashboard. Moonshot

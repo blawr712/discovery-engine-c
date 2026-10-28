@@ -231,6 +231,27 @@ lane is not mixed in) and writes, under `data/ai_review/RUN_ID/TICKER/`:
   document's URL, form, dates, and the SHA-256 of both the raw document and
   the saved text; reviews cite the text's hash.
 
+- `peers.json`: why is the name cheap? Up to eight **closest peers** from the
+  same run with the same four-digit SIC code (nearest by market cap, any
+  screen status) and the five **industry leaders**, the largest SEC filers
+  with that code by market cap on the anchor date. The code widens to three
+  digits when fewer than three usable peers share four. Each row carries
+  market cap and revenue in dollars, revenue growth, gross, operating and net
+  margin, earnings and sales yield, net cash to market cap and share-count
+  change, computed with the same `fundamentals_pit` functions v3 uses; a
+  summary gives the company's value, both medians and its percentile among
+  its closest peers. Peers that cannot be used are listed with the reason,
+  and a table with fewer than three usable peers says `insufficient_peers`.
+
+Leaders are found from SIC codes for every SEC filer with a ticker, read once
+from each company's EDGAR submissions (about 8,000 filers; the first fill
+takes about two hours at the SEC's rate limit) and kept in
+`data/cache/ai_review/sic_index.json`. Later runs read only new filers. Each
+industry's ten largest filers by SEC public float (four quarterly EDGAR
+frames) are then priced through the cached provider stack, and the five
+largest by market cap on the anchor date are kept. Filers that report no
+public float, often foreign filers, cannot be shortlisted.
+
 Canadian names with no SEC registrant get a `not_reviewed` review written by
 code, since SEDAR+ may not be read automatically. A name that fails (for
 example a network error) is reported and retried by the next run of the

@@ -248,8 +248,12 @@ def prepare_ai_review(
     max_current_reports: int = MAX_CURRENT_REPORTS,
     clock: Callable[[], datetime] | None = None,
     progress: Callable[[str], None] | None = None,
+    peer_table: Callable[[dict], dict] | None = None,
 ) -> dict:
     """Write packets and filings for the top passing names of a run.
+
+    ``peer_table`` builds a name's ``peers.json`` from its packet; it is
+    written once, for names with SEC filings, and kept thereafter.
 
     A name whose folder already holds a complete ``filings.json`` is left as
     it is, so an interrupted preparation carries on and a folder that a
@@ -270,6 +274,7 @@ def prepare_ai_review(
         existing = _read_json(directory / "filings.json")
         if existing is not None and existing.get("complete"):
             entry.update({"status": existing.get("status"), "kept": True})
+            _write_peers(directory, peer_table, entry)
             names.append(entry)
             continue
         if progress:
@@ -328,6 +333,7 @@ def prepare_ai_review(
             "prepared_at": clock().isoformat(),
         })
         entry.update({"status": status, "documents": len(documents)})
+        _write_peers(directory, peer_table, entry)
         names.append(entry)
 
     summary = {
@@ -344,6 +350,26 @@ def prepare_ai_review(
     }
     _atomic_json(run_directory / "selection.json", summary)
     return summary
+
+
+def _write_peers(directory: Path, peer_table: Callable[[dict], dict] | None, entry: dict) -> None:
+    """Write ``peers.json`` once for a name with filings; never rewrite it."""
+    path = directory / "peers.json"
+    if path.is_file():
+        entry["peers"] = (_read_json(path) or {}).get("status")
+        return
+    if peer_table is None or entry.get("status") not in ("ready", "no_periodic_report"):
+        return
+    packet = _read_json(directory / "packet.json")
+    if packet is None:
+        return
+    try:
+        table = peer_table(packet)
+    except Exception as error:  # noqa: BLE001 - a missing table is reported, not fatal
+        entry["peers"] = f"error: {type(error).__name__}: {error}"
+        return
+    _atomic_json(path, table)
+    entry["peers"] = table.get("status")
 
 
 def not_reviewed_review(ticker: str, reason: str, anchor: datetime) -> dict:
@@ -526,6 +552,16 @@ class SecFilingArchive:
 
     def document(self, url: str) -> bytes:
         return self._fetch(url, self.headers)
+
+    def public_float_frame(self, period: str) -> dict:
+        """EDGAR's frame of every filer's ``dei:EntityPublicFloat`` for a period."""
+        url = f"https://data.sec.gov/api/xbrl/frames/dei/EntityPublicFloat/USD/{period}.json"
+        try:
+            raw, _ = self.cache.get(url, self.headers)
+        except Exception:  # noqa: BLE001 - a quarter not yet published has no frame
+            return {"data": []}
+        value = json.loads(raw.decode("utf-8"))
+        return value if isinstance(value, dict) else {"data": []}
 
 
 def parse_filing_index(html: str) -> list[dict]:
