@@ -25,11 +25,15 @@ data/exports/*
 !data/exports/moonshot_forward_baseline_*.csv
 !data/exports/moonshot_validation_*.csv
 !data/exports/research_forward_baseline_*.csv
+!data/exports/ai_reviews_*.json
 data/outputs/
 data/cache/
 data/runs/
 data/history/
 data/rehearsal/
+# AI review inputs: packets, filings as text, peer tables and draft reviews.
+# The frozen ai_reviews_<run_id>.json artifact is the record that is kept.
+data/ai_review/
 
 # Logs
 *.log
@@ -41,5 +45,6 @@ Thumbs.db
 # Environment variables
 .env
 
-# Claude Code local launch config
-.claude/
+# Claude Code local launch config; project skills are tracked
+.claude/*
+!.claude/skills/

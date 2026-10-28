@@ -209,6 +209,16 @@ defaults to on and exists so the split correction can be measured against a
 control on the same universe; an unadjusted run writes to its own artifact
 names.
 
+AI Review (`src/ai_review.py`, `--ai-review-prepare`; AI_REVIEW_BRIEF.md):
+Claude reviews the top names passing the v3 screen from their SEC filings.
+Code prepares everything the review may read under `data/ai_review/RUN_ID/`:
+per name, a packet joining the run row's `pit_*` figures to the queue row's
+screen fields, and the latest annual report, 10-Q and current reports as
+plain text with SHA-256 hashes, chosen by form and limited to filings EDGAR
+accepted by the run's completion time. EDGAR requests go through the shared
+SEC pacer. The review itself is a Claude Code skill, not engine code. It
+never changes scores, ranks, the queue or the dashboard order.
+
 Reporting Engine: Export reports and serve the local dashboard. Moonshot
 terminal queries read deterministic analysis, calibration, and immutable
 baseline artifacts through a separate bounded store; they never initialize the

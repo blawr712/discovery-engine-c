@@ -175,6 +175,14 @@
 - Kept SEC money facts in every reporting currency (`sec-facts-4`), converted
   live at 29 currencies' rates with cross rates, and skipped backtest
   valuation ratios when reporting and listing currencies differ
+- Added `--ai-review-prepare RUN_ID [--top N]`, the first step of the AI
+  review (AI_REVIEW_BRIEF.md): for the top names passing the v3 screen it
+  writes a packet with the data-check figures from the run row and the
+  screen fields from the queue row, and saves the latest annual report, the
+  latest 10-Q and the current reports since the latest periodic report as
+  plain text, each with its SHA-256, all accepted on or before the run's
+  completion time. 20-F and 40-F filers get 6-Ks in place of 8-Ks. Names
+  without an SEC registrant are recorded as `not_reviewed` by code
 - Taught the resolver about baseline kinds, reading each baseline's own
   cohort split so Moonshot and research cohorts stay separate; added
   `--baseline moonshot|research|all`

@@ -105,6 +105,14 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
         help="compare the names Score v3 never scores with the screen, on the run's backtest",
     )
     selection.add_argument(
+        "--ai-review-prepare",
+        metavar="RUN_ID",
+        help=(
+            "write packets, SEC filings as text, and peer tables for the top "
+            "names passing the v3 screen, for the AI review skill"
+        ),
+    )
+    selection.add_argument(
         "--test-v3-change",
         metavar="RUN_ID",
         help="paired backtest test of a proposed Score v3 change; needs --change",
@@ -151,7 +159,7 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
         "--top",
         type=_positive_integer,
         metavar="COUNT",
-        help="research only the top COUNT selected candidates",
+        help="research or prepare only the top COUNT selected candidates",
     )
     parser.add_argument(
         "--collect-market-risk",
@@ -271,8 +279,8 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
     args = parser.parse_args(arguments)
     if args.dashboard_port != 8765 and not args.dashboard:
         parser.error("--dashboard-port requires --dashboard")
-    if args.top is not None and args.research_run is None:
-        parser.error("--top requires --research-run")
+    if args.top is not None and args.research_run is None and args.ai_review_prepare is None:
+        parser.error("--top requires --research-run or --ai-review-prepare")
     if args.collect_market_risk and args.moonshot_run is None:
         parser.error("--collect-market-risk requires --moonshot-run")
     if args.moonshot_limit is not None and not args.collect_market_risk:

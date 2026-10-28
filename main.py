@@ -136,6 +136,7 @@ from src.cli import parse_args, select_universe
 from collections import Counter
 
 from src.config import (
+    AI_REVIEW_DIR,
     BACKTEST_CONFIG,
     BASE_DIR,
     BENCHMARKS,
@@ -325,6 +326,9 @@ def main(arguments=None):
         return
     if args.test_v3_change:
         test_v3_change(args.test_v3_change, args.change)
+        return
+    if args.ai_review_prepare:
+        ai_review_prepare(args.ai_review_prepare, top=args.top)
         return
     if args.screen_research:
         screen_research(args.screen_research)
@@ -755,6 +759,70 @@ def test_v3_change(run_id: str, change_text: str) -> None:
         + " (positive in both windows, |t| >= 2 in one, significantly negative in neither)"
     )
     print(f"Result saved to: {export_result(result, run_id, OUTPUT_DIR)}")
+
+
+def build_sec_filing_archive():
+    """Paced, cached EDGAR access for the AI review, or None without SEC access."""
+    from src.ai_review import SecFilingArchive
+
+    user_agent = os.environ.get("SEC_USER_AGENT", "").strip()
+    if not user_agent:
+        return None
+    cache = HttpCache(directory=CACHE_DIR / "ai_review", ttl_hours=24)
+    return SecFilingArchive(user_agent, cache, pacer=sec_pacer())
+
+
+def ai_review_prepare(run_id: str, top: int | None = None) -> None:
+    """Write the AI review's inputs for the top names passing the v3 screen."""
+    from src.ai_review import DEFAULT_TOP, SecRegistrant, prepare_ai_review
+
+    top = top or DEFAULT_TOP
+    try:
+        manifest, results = load_saved_run(RUN_DIR, run_id)
+    except (FileNotFoundError, OSError, ValueError, KeyError) as error:
+        raise SystemExit(f"Unable to load run {run_id}: {error}") from error
+    queue, _ = build_research_queue(results)
+    from src.ai_review import select_review_names
+
+    selected = select_review_names(queue, top)
+    if not selected:
+        raise SystemExit(f"Run {run_id} has no names passing the v3 screen; rescore it first.")
+    packets, _ = build_research_packets(results, len(selected), queue=selected)
+    base_packets = {str(packet["ticker"]): packet for packet in packets}
+    archive = build_sec_filing_archive()
+    if archive is None:
+        print("SEC_USER_AGENT is not set in .env; names with SEC filings will be left as errors.")
+    xbrl = build_sec_xbrl_source(required=False)
+
+    def resolver(row: dict) -> SecRegistrant:
+        if xbrl is None:
+            return SecRegistrant(None, None, "SEC access not configured")
+        sec_ticker, reason = resolve_sec_ticker(row, xbrl.cik_for, xbrl.title_for)
+        if sec_ticker is None:
+            return SecRegistrant(None, None, reason)
+        return SecRegistrant(sec_ticker, xbrl.cik_for(sec_ticker), reason)
+
+    summary = prepare_ai_review(
+        run_id=run_id,
+        manifest=manifest,
+        results=results,
+        queue=queue,
+        base_packets=base_packets,
+        resolver=resolver,
+        archive=archive,
+        output_root=AI_REVIEW_DIR,
+        top=top,
+        progress=lambda ticker: print(f"  preparing {ticker}", flush=True),
+    )
+    print(f"AI review inputs for run {run_id}, anchored {summary['anchor_datetime']}")
+    print(f"Names: {len(summary['names'])} of the top {top} passing the screen")
+    for status, count in summary["counts"].items():
+        print(f"  {status}: {count}")
+    for entry in summary["names"]:
+        if entry.get("status") == "error":
+            print(f"  {entry['ticker']}: {entry.get('error')}")
+    print(f"Folder: {AI_REVIEW_DIR / run_id}")
+    print("Scores, ranks and the queue order: unchanged")
 
 
 def screen_research(run_id: str) -> None:

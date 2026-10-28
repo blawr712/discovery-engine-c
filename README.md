@@ -201,6 +201,41 @@ returns with them included under mild, central, and severe return scenarios.
 It writes `survivorship_*.json` and `survivorship_*.md`. The results are a
 range, not a measurement.
 
+### AI review of the top screen names
+
+Claude reviews the top names that pass the v3 screen by reading their SEC
+filings, and gives each a fixed verdict (`clear`, `caution`, `avoid` or
+`not_reviewed`) with quoted reasons. The design, guard rails and schema are in
+`AI_REVIEW_BRIEF.md`. Reviews never change scores, ranks, the queue order or
+the dashboard order. The review runs as a Claude Code skill on your Claude
+plan, not through an API key; the shelved OpenAI synthesis stays switched off.
+
+Prepare the inputs (needs `SEC_USER_AGENT` in `.env`):
+
+```powershell
+python main.py --ai-review-prepare RUN_ID --top 50
+```
+
+It takes the first 50 queue names whose screen status is `passes` (the bank
+lane is not mixed in) and writes, under `data/ai_review/RUN_ID/TICKER/`:
+
+- `packet.json`: the research packet, the run row's `pit_*` figures that a
+  data check compares with the filings, and the queue row's screen status,
+  v3 quintile and defensive score. Net margin is derived from two
+  `fundamentals_pit` outputs and labelled as derived.
+- `filings/*.txt` and `filings.json`: the latest 10-K (or 10-KT, 20-F,
+  40-F) with any EX-13, the latest 10-Q, and up to ten 8-Ks with their EX-99
+  exhibits filed since the latest periodic report, as plain text. Filers of
+  20-F and 40-F get 6-Ks instead of 8-Ks. Only filings EDGAR accepted on or
+  before the run's completion time are used. `filings.json` records each
+  document's URL, form, dates, and the SHA-256 of both the raw document and
+  the saved text; reviews cite the text's hash.
+
+Canadian names with no SEC registrant get a `not_reviewed` review written by
+code, since SEDAR+ may not be read automatically. A name that fails (for
+example a network error) is reported and retried by the next run of the
+command; finished folders are never rewritten. Nothing is written to the run.
+
 Add point-in-time fundamentals for U.S. filers to the same backtest. The SEC
 requires a contact `User-Agent`; put it in an untracked `.env` file (see
 `.env.example`) or set the environment variable directly:

@@ -42,7 +42,10 @@ ISOLATED_ROOT = (
     Path(os.environ["DISCOVERY_ISOLATED_ROOT"]).resolve()
     if os.environ.get("DISCOVERY_ISOLATED_ROOT") else None
 )
+# Inputs and reviews for the AI review skill (AI_REVIEW_BRIEF.md).
+AI_REVIEW_DIR = BASE_DIR / DIRECTORIES.get("ai_review_directory", "data/ai_review")
 if ISOLATED_ROOT is not None:
+    AI_REVIEW_DIR = ISOLATED_ROOT / "ai_review"
     OUTPUT_DIR = ISOLATED_ROOT / "exports"
     RUN_DIR = ISOLATED_ROOT / "runs"
     HISTORY_DATABASE = ISOLATED_ROOT / "history" / "discovery_history.sqlite3"
