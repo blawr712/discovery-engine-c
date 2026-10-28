@@ -224,7 +224,11 @@ rates live runs use. SIC codes come from a persistent index of every SEC
 filer's submissions. The review itself is a Claude Code skill
 (`.claude/skills/ai-review/`), not engine code: one `ai-reviewer` subagent per
 name, restricted to file tools, follows the versioned checklist and writes
-`review.json` beside the inputs. It
+`review.json` beside the inputs. `src/ai_review_freeze.py`
+(`--ai-review-check`, `--ai-review-freeze`) validates each review against the
+schema, its quotes against the hashed filing texts and its peer metrics
+against `peers.json`, then writes one immutable `ai_reviews_RUN_ID.json`
+recorded in the run manifest. It
 never changes scores, ranks, the queue or the dashboard order.
 
 Reporting Engine: Export reports and serve the local dashboard. Moonshot

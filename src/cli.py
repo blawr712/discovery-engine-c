@@ -113,6 +113,16 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
         ),
     )
     selection.add_argument(
+        "--ai-review-check",
+        metavar="RUN_ID",
+        help="validate the AI reviews written so far for a run, without freezing",
+    )
+    selection.add_argument(
+        "--ai-review-freeze",
+        metavar="RUN_ID",
+        help="validate a run's AI reviews and freeze them into one artifact (never overwritten)",
+    )
+    selection.add_argument(
         "--test-v3-change",
         metavar="RUN_ID",
         help="paired backtest test of a proposed Score v3 change; needs --change",
@@ -276,7 +286,14 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="generate validated cited briefs from attached evidence",
     )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="freeze AI reviews as a dry run, outside the forward test",
+    )
     args = parser.parse_args(arguments)
+    if args.dry_run and args.ai_review_freeze is None:
+        parser.error("--dry-run requires --ai-review-freeze")
     if args.dashboard_port != 8765 and not args.dashboard:
         parser.error("--dashboard-port requires --dashboard")
     if args.top is not None and args.research_run is None and args.ai_review_prepare is None:

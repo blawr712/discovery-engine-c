@@ -195,6 +195,15 @@
   `ai-reviewer` subagent limited to reading, searching and writing files:
   one subagent per company works through the fixed checklist `review-v1`
   and writes `review.json`, in batches that skip names already reviewed
+- Added `--ai-review-check RUN_ID` and `--ai-review-freeze RUN_ID
+  [--dry-run]`: every review is checked against the schema, every quote
+  must appear word for word in the saved filing whose hash it cites, every
+  cited peer metric must exist in `peers.json`, and every saved filing must
+  still match its hash. Freezing writes `ai_reviews_RUN_ID.json` once, with
+  the model, skill and checklist versions and each name's `peers.json` hash,
+  keeps failed reviews as failed, and records the artifact in the run
+  manifest. A dry run writes `ai_review_dry_run_RUN_ID.json`, outside the
+  forward test
 - Taught the resolver about baseline kinds, reading each baseline's own
   cohort split so Moonshot and research cohorts stay separate; added
   `--baseline moonshot|research|all`

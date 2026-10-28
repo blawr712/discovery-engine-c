@@ -330,6 +330,12 @@ def main(arguments=None):
     if args.ai_review_prepare:
         ai_review_prepare(args.ai_review_prepare, top=args.top)
         return
+    if args.ai_review_check:
+        ai_review_check(args.ai_review_check)
+        return
+    if args.ai_review_freeze:
+        ai_review_freeze(args.ai_review_freeze, dry_run=args.dry_run)
+        return
     if args.screen_research:
         screen_research(args.screen_research)
         return
@@ -914,6 +920,70 @@ def ai_review_prepare(run_id: str, top: int | None = None) -> None:
         print("Peer tables: " + ", ".join(f"{key} {count}" for key, count in sorted(peer_counts.items())))
     print(f"Folder: {AI_REVIEW_DIR / run_id}")
     print("Scores, ranks and the queue order: unchanged")
+
+
+def _print_review_check(checked: dict) -> None:
+    print("Reviews: " + ", ".join(f"{key} {value}" for key, value in checked["counts"].items()))
+    if checked["verdicts"]:
+        print("Verdicts: " + ", ".join(f"{key} {value}" for key, value in checked["verdicts"].items()))
+    for item in checked["data_check_disagreements"]:
+        print(f"  data check disagrees: {item['ticker']} {item['field']} ours {item['ours']} filing {item['filing']}")
+    for result in checked["names"]:
+        for error in result.get("errors") or []:
+            print(f"  {result['ticker']}: {error}")
+
+
+def ai_review_check(run_id: str) -> None:
+    """Validate the reviews written so far; nothing is written."""
+    from src.ai_review_freeze import check_reviews
+
+    try:
+        checked = check_reviews(AI_REVIEW_DIR / run_id)
+    except (FileNotFoundError, OSError, ValueError, KeyError) as error:
+        raise SystemExit(f"Unable to check AI reviews: {error}") from error
+    print(f"AI reviews for run {run_id} (not frozen)")
+    _print_review_check(checked)
+
+
+def ai_review_freeze(run_id: str, dry_run: bool = False) -> None:
+    """Validate a run's reviews and freeze them; never overwrite."""
+    import csv as csv_module
+
+    from src.ai_review_freeze import freeze_reviews
+    from src.run_state import record_ai_reviews
+
+    baseline_tickers = None
+    matches = sorted(OUTPUT_DIR.glob(f"research_forward_baseline_{run_id}_*.csv"))
+    if matches:
+        with matches[-1].open("r", encoding="utf-8", newline="") as file:
+            baseline_tickers = {str(row.get("ticker")) for row in csv_module.DictReader(file)}
+    try:
+        artifact, path = freeze_reviews(
+            AI_REVIEW_DIR / run_id, OUTPUT_DIR, dry_run=dry_run, baseline_tickers=baseline_tickers,
+        )
+        manifest_path = record_ai_reviews(RUN_DIR, run_id, {
+            "ai_reviews_path": path,
+            "dry_run": dry_run,
+            "artifact_sha256": artifact["artifact_sha256"],
+            "counts": artifact["counts"],
+            "verdicts": artifact["verdicts"],
+            "models": artifact["models"],
+            "checklist_version": artifact["checklist_version"],
+            "skill_version": artifact["skill_version"],
+            "queue_unchanged": True,
+            "official_scores_and_ranks_unchanged": True,
+        })
+    except FileExistsError as error:
+        raise SystemExit(str(error)) from error
+    except (FileNotFoundError, OSError, ValueError, KeyError) as error:
+        raise SystemExit(f"Unable to freeze AI reviews: {error}") from error
+    print(f"AI reviews frozen for run {run_id}" + (" (dry run, not part of the test)" if dry_run else ""))
+    print(f"Models: {', '.join(artifact['models']) or 'none recorded'}; "
+          f"checklist {artifact['checklist_version']}; skill {artifact['skill_version']}")
+    _print_review_check(artifact)
+    print("Scores, ranks and the queue order: unchanged")
+    print(f"Artifact: {path}")
+    print(f"Manifest updated: {manifest_path}")
 
 
 def screen_research(run_id: str) -> None:

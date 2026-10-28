@@ -270,6 +270,28 @@ an interrupted batch carries on, and a review is never re-run. After each
 batch the skill validates what was written and asks before starting the
 next.
 
+Validate the reviews written so far, without freezing anything:
+
+```powershell
+python main.py --ai-review-check RUN_ID
+```
+
+When every prepared name has a review, freeze them:
+
+```powershell
+python main.py --ai-review-freeze RUN_ID
+```
+
+Every review must match the schema, every quote must appear word for word in
+the saved filing whose hash it cites, every cited peer metric must exist in
+`peers.json`, and every saved filing must still have its prepared hash. A
+review that fails is kept in the artifact as failed, never rewritten. The
+command writes `data/exports/ai_reviews_RUN_ID.json` (tracked in git, like
+the forward baselines) with the model, skill and checklist versions and each
+name's `peers.json` hash, refuses to overwrite it, and records it in the run
+manifest. `--dry-run` writes `ai_review_dry_run_RUN_ID.json` instead, which
+is not part of the forward test.
+
 Canadian names with no SEC registrant get a `not_reviewed` review written by
 code, since SEDAR+ may not be read automatically. A name that fails (for
 example a network error) is reported and retried by the next run of the

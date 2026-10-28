@@ -516,6 +516,22 @@ def record_research_baseline(
     return str(manifest_path)
 
 
+def record_ai_reviews(
+    root_directory: Path,
+    run_id: str,
+    artifacts: dict,
+    clock: Callable[[], datetime] | None = None,
+) -> str:
+    """Record frozen AI reviews; scores, ranks and the queue are unchanged."""
+    manifest = load_saved_manifest(root_directory, run_id)
+    clock = clock or (lambda: datetime.now(timezone.utc))
+    key = "ai_review_dry_run_artifacts" if artifacts.get("dry_run") else "ai_review_artifacts"
+    manifest[key] = {"completed_at": _utc_iso(clock()), **artifacts}
+    manifest_path = Path(root_directory) / run_id / "manifest.json"
+    _atomic_write_json(manifest_path, manifest)
+    return str(manifest_path)
+
+
 def record_rescore(
     root_directory: Path,
     run_id: str,
