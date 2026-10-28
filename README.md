@@ -292,6 +292,13 @@ name's `peers.json` hash, refuses to overwrite it, and records it in the run
 manifest. `--dry-run` writes `ai_review_dry_run_RUN_ID.json` instead, which
 is not part of the forward test.
 
+`--resolve-baselines RUN_ID` then joins the frozen reviews to that run's
+research cohort and adds an `ai_review_comparison` to the resolution: median
+excess return and win rate by verdict for each resolved horizon, and the
+spread the forward test judges, `clear` minus `caution` and `avoid` together.
+It reads a dry-run artifact only when no real one exists, and labels it. The
+baseline file is never modified.
+
 Canadian names with no SEC registrant get a `not_reviewed` review written by
 code, since SEDAR+ may not be read automatically. A name that fails (for
 example a network error) is reported and retried by the next run of the

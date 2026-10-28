@@ -1337,6 +1337,14 @@ def _resolve_one_baseline(
                     CACHE_DIR, benchmarks + tickers,
                 )
         resolution = resolve_baseline(baseline, series, config=settings)
+        if kind == "research":
+            # Frozen AI reviews join the cohort by ticker; the baseline and
+            # the review artifact are only read.
+            from src.ai_review_resolution import ai_review_comparison, load_ai_reviews
+
+            reviews = load_ai_reviews(OUTPUT_DIR, run_id)
+            if reviews is not None:
+                resolution["ai_review_comparison"] = ai_review_comparison(resolution, reviews)
         artifacts = export_baseline_resolution(resolution, OUTPUT_DIR)
         manifest_path = record_baseline_resolution(
             RUN_DIR,
@@ -1431,6 +1439,21 @@ def _resolve_one_baseline(
                 f"{banks['passes_bank_lane']['median_excess_percent']}%, dearer half "
                 f"{banks['bank_dearer_half']['median_excess_percent']}%, v3 lane "
                 f"{banks['passes']['median_excess_percent']}%"
+            )
+    reviews = resolution.get("ai_review_comparison")
+    if reviews:
+        print(
+            f"\nAI reviews{' (dry run, not part of the test)' if reviews['dry_run'] else ''}: "
+            f"{reviews['joined_to_cohort']} of {reviews['reviewed']} joined to the cohort"
+        )
+        for label, measured in reviews["horizons"].items():
+            parts = ", ".join(
+                f"{verdict} {group['resolved']} median {group['median_excess_percent']}%"
+                for verdict, group in measured["by_verdict"].items() if group["resolved"]
+            )
+            print(
+                f"  {label}: {parts or 'none resolved'}; clear minus caution/avoid "
+                f"{measured['clear_minus_flagged_median_percent']} pts"
             )
     if resolution["pending_horizons"]:
         print(f"\nStill pending: {', '.join(resolution['pending_horizons'])}")

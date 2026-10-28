@@ -204,6 +204,12 @@
   keeps failed reviews as failed, and records the artifact in the run
   manifest. A dry run writes `ai_review_dry_run_RUN_ID.json`, outside the
   forward test
+- Extended `--resolve-baselines` for research cohorts with an
+  `ai_review_comparison`: frozen reviews joined to the cohort by ticker,
+  outcomes by verdict per resolved horizon, the tested spread (`clear`
+  minus `caution` and `avoid` together), and, reported only, `avoid`
+  against the rest, the spread inside defensive thirds, and unexplained
+  against explained discounts. The baseline file is never modified
 - Taught the resolver about baseline kinds, reading each baseline's own
   cohort split so Moonshot and research cohorts stay separate; added
   `--baseline moonshot|research|all`

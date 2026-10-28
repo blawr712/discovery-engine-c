@@ -150,7 +150,9 @@ horizon against realized prices, comparing selected cohorts with control
 cohorts. Both prices for a return come from one provider series, and
 candidates whose prices stop before a horizon stay visible as unresolved
 rather than being dropped. The baseline file is never modified; each
-resolution is a separate artifact recorded in the run manifest. For each
+resolution is a separate artifact recorded in the run manifest. `src/ai_review_resolution.py` joins that
+artifact to the run's resolved research cohort as an `ai_review_comparison`,
+reading but never modifying the baseline. For each
 resolved horizon it also measures every frozen score in `compared_scores`:
 its rank correlation with realized excess returns and its quintile ladder on
 the names it scored, and a head-to-head on the names all of them scored, so a
