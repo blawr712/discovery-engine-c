@@ -1,7 +1,7 @@
 from datetime import date
 import unittest
 
-from src.fundamentals_pit import FundamentalHistory, SIGNAL_NAMES
+from src.fundamentals_pit import FundamentalHistory, SIGNAL_NAMES, is_proxy_form
 from src.split_adjustment import SplitEvent, SplitHistory
 
 
@@ -402,6 +402,51 @@ class SignalTests(unittest.TestCase):
         self.assertAlmostEqual(signals["pit_fcf_margin_2y"], 440 / (640 + 470), places=6)
         self.assertAlmostEqual(signals["pit_fcf_margin_low"], 0.0, places=6)
 
+    def test_trailing_revenue_is_rescaled_after_a_restatement(self):
+        # Q2 2025's filing moves a business to discontinued operations and
+        # restates Q2 2024 from 100 to 80; earlier quarters stay on the old basis.
+        quarters = [
+            ("2023-07-01", "2023-09-30", "2023-11-01", 100),
+            ("2023-10-01", "2023-12-31", "2024-02-15", 100),
+            ("2024-01-01", "2024-03-31", "2024-05-01", 100),
+            ("2024-04-01", "2024-06-30", "2024-08-01", 100),
+            ("2024-07-01", "2024-09-30", "2024-11-01", 100),
+            ("2024-10-01", "2024-12-31", "2025-02-15", 100),
+            ("2025-01-01", "2025-03-31", "2025-05-01", 100),
+            ("2024-04-01", "2024-06-30", "2025-08-01", 80),
+            ("2025-04-01", "2025-06-30", "2025-08-01", 80),
+        ]
+        extract = {"ticker": "R", "facts": {
+            "revenue": [_fact(*row) for row in quarters],
+            "shares_outstanding": [_instant("2025-06-30", "2025-08-01", 100)],
+        }}
+        history = FundamentalHistory(extract)
+        signals = history.signals_as_of(date(2025, 9, 1), price=1.0)
+        # Q3 2024, Q4 2024 and Q1 2025 scale by 0.8; Q2 2025 is already restated.
+        self.assertAlmostEqual(signals["pit_revenue_ttm"], 320.0, places=6)
+        # The year-ago window is on the same basis, so growth is flat, not -20%.
+        self.assertAlmostEqual(signals["pit_revenue_growth_ttm"], 0.0, places=6)
+        # Before the restating filing, nothing is rescaled.
+        self.assertEqual(history.signals_as_of(date(2025, 7, 1))["pit_revenue_ttm"], 400.0)
+
+    def test_proxy_figures_never_replace_the_annual_report(self):
+        # A later proxy restates FY2025 net income with the sign flipped.
+        extract = _extract()
+        extract["facts"]["net_income"] = extract["facts"]["net_income"] + [
+            {**_fact("2025-01-01", "2025-12-31", "2026-04-01", -40), "form": "DEF 14A"},
+        ]
+        extract["facts"]["net_income"].append(
+            {**_fact("2025-01-01", "2025-12-31", "2026-04-02", -40), "form": "PRER14A/A"},
+        )
+        signals = FundamentalHistory(extract).signals_as_of(date(2026, 6, 1), price=2.0)
+        self.assertEqual(signals["pit_net_income_ttm"], 40.0)
+
+    def test_proxy_form_names(self):
+        for form in ("DEF 14A", "PRE 14A", "PRER14A", "DEFM14A", "DEFA14A", "DEF 14C", "DEFC14A/A"):
+            self.assertTrue(is_proxy_form(form), form)
+        for form in ("10-K", "10-Q", "10-K/A", "20-F", "8-K", "", None):
+            self.assertFalse(is_proxy_form(form), form)
+
     def test_empty_extract_yields_all_none(self):
         history = FundamentalHistory({"ticker": "X", "facts": {}})
         self.assertFalse(history.has_data)
@@ -661,6 +706,20 @@ class WeightedShareFallbackTests(unittest.TestCase):
         signals = FundamentalHistory(_multi_class_extract(partial)).signals_as_of(date(2026, 3, 1), price=2.0)
         self.assertEqual(signals["pit_shares_basis"], "weighted_average")
         self.assertEqual(signals["pit_shares_outstanding"], 1000.0)
+
+    def test_a_class_missing_from_the_period_end_count_is_caught(self):
+        # Class A alone is 77% of the weighted total, as at GTEC.
+        partial = [_instant("2025-12-31", "2026-02-15", 770)]
+        signals = FundamentalHistory(_multi_class_extract(partial)).signals_as_of(date(2026, 3, 1), price=2.0)
+        self.assertEqual(signals["pit_shares_basis"], "weighted_average")
+        self.assertEqual(signals["pit_shares_outstanding"], 1000.0)
+
+    def test_a_small_gap_keeps_the_period_end_count(self):
+        # 10% under the average, as a buyback during the quarter leaves it.
+        bought_back = [_instant("2025-12-31", "2026-02-15", 900)]
+        signals = FundamentalHistory(_multi_class_extract(bought_back)).signals_as_of(date(2026, 3, 1), price=2.0)
+        self.assertEqual(signals["pit_shares_basis"], "period_end")
+        self.assertEqual(signals["pit_shares_outstanding"], 900.0)
 
     def test_stale_and_zero_period_end_counts_are_ignored(self):
         stale = [_instant("2016-08-05", "2016-08-09", 500)]

@@ -210,6 +210,11 @@
   minus `caution` and `avoid` together), and, reported only, `avoid`
   against the rest, the spread inside defensive thirds, and unexplained
   against explained discounts. The baseline file is never modified
+- Fixed three fundamentals extraction bugs the AI review found: proxy
+  pay-versus-performance figures no longer override the statements (INGN's
+  net income had the wrong sign), trailing revenue is rescaled onto one basis
+  after a restatement (CNDT), and the weighted-average share count replaces a
+  period-end count it exceeds by more than 20%, not 100% (GTEC's Class B)
 - Recorded that v3 gets no pending-deal filter: survivorship makes it
   untestable in the backtest, deal-specific SEC forms flag about 4% of the
   screen with mixed accuracy, and the AI review caught all three Oct 19 deals

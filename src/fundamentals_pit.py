@@ -136,6 +136,14 @@ SIGNAL_NAMES = (
 )
 
 
+# The weighted-average share count replaces a period-end count it exceeds by
+# more than this factor (was 2.0 until 2026-10-29).
+WEIGHTED_SHARE_RATIO = 1.2
+# Trailing sums rescaled onto the newest filing's basis after a restatement.
+RESCALED_CONCEPTS = ("revenue",)
+RESTATEMENT_THRESHOLD = 0.05
+
+
 @dataclass(frozen=True)
 class PeriodValue:
     """One reported or derived value for a period, with its filing date."""
@@ -154,6 +162,7 @@ class FundamentalHistory:
         self.config = {**DEFAULT_CONFIG, **(config or {})}
         self.ticker = str(extract.get("ticker", ""))
         facts = extract.get("facts", {}) if isinstance(extract, dict) else {}
+        facts = _without_proxy_figures(facts)
         self.data_quality = str(
             (extract.get("data_quality") if isinstance(extract, dict) else None)
             or "filed"
@@ -363,8 +372,12 @@ class FundamentalHistory:
 
         The period-end count is preferred. The weighted-average count is used
         when the period-end count is missing or older than the report-age
-        limit, or when it is under half the weighted-average count, which is
-        what one class of a multi-class company looks like. ``basis`` forces
+        limit, or when the weighted-average count is more than 20% larger.
+        That is what one class of a multi-class company looks like (GTEC,
+        Oct 2026: Class A alone, 20.5M against 26.5M in total), and what
+        pre-funded warrants look like, which count as shares in the average
+        and are shares in substance. A buyback of that size in one quarter is
+        rare, and splits are restated after the count is chosen. ``basis`` forces
         one source, so a year-ago count can match the current one's basis.
         """
         maximum_age = self.maximum_age_as_of(as_of)
@@ -384,7 +397,7 @@ class FundamentalHistory:
         if basis == "weighted_average":
             return average, "weighted_average" if average else None
         if period_end is not None and not (
-            average is not None and period_end.value * 2.0 < average.value
+            average is not None and period_end.value * WEIGHTED_SHARE_RATIO < average.value
         ):
             return period_end, "period_end"
         if average is not None:
@@ -404,7 +417,12 @@ class FundamentalHistory:
         if start_index >= 0:
             window = quarters[start_index:end_index]
             if _consecutive(window, self.config) and _same_tag(window):
-                quarterly = tuple(item.end for item in window), float(sum(item.value for item in window))
+                ratio, restated_on = self._restatement_ratio(concept, quarters)
+                total = sum(
+                    item.value * (ratio if item.filed < restated_on else 1.0)
+                    for item in window
+                ) if ratio is not None else sum(item.value for item in window)
+                quarterly = tuple(item.end for item in window), float(total)
         annual = None
         if offset % 4 == 0:
             annuals = self.annuals_as_of(concept, as_of)
@@ -416,6 +434,34 @@ class FundamentalHistory:
         if quarterly is not None and annual is not None and annual[0][-1] > quarterly[0][-1]:
             return annual
         return quarterly if quarterly is not None else annual
+
+    def _restatement_ratio(
+        self, concept: str, quarters: list[PeriodValue],
+    ) -> tuple[float | None, date | None]:
+        """How far the newest filing restated last year's same quarter.
+
+        When a filing moves a business to discontinued operations it restates
+        the comparable quarter a year back, but quarters filed earlier stay on
+        the old basis, so a trailing sum mixes the two (CNDT, Oct 2026: $2.79B
+        against about $2.33B on one basis). Quarters filed before the
+        restating filing are scaled by the comparable quarter's new/old ratio.
+        Only revenue is rescaled, only for a change above 5%, and only when
+        both values are positive.
+        """
+        if concept not in RESCALED_CONCEPTS or len(quarters) < 5:
+            return None, None
+        latest, comparable = quarters[-1], quarters[-5]
+        if comparable.filed != latest.filed or not _consecutive(quarters[-5:], self.config):
+            return None, None
+        before = _latest_known(
+            self._quarters[concept][comparable.end], latest.filed - timedelta(days=1),
+        )
+        if before is None or before.value <= 0 or comparable.value <= 0:
+            return None, None
+        ratio = comparable.value / before.value
+        if abs(ratio - 1.0) <= RESTATEMENT_THRESHOLD:
+            return None, None
+        return ratio, latest.filed
 
     def annuals_as_of(self, concept: str, as_of: date) -> list[PeriodValue]:
         """Annual values known on ``as_of``, latest filing per fiscal year."""
@@ -655,6 +701,32 @@ class FundamentalHistory:
         if latest_base.value <= 0 or previous_base.value <= 0:
             return None
         return (latest.value / latest_base.value) - (previous.value / previous_base.value)
+
+
+def is_proxy_form(form: object) -> bool:
+    """A proxy or information statement (DEF 14A, PRER14A, DEFM14A, PRE 14C...).
+
+    Proxies carry a pay-versus-performance table tagged with the same
+    concepts as the financial statements, sometimes with the sign or scale
+    changed. Being filed after the annual report, such a figure would read as
+    a restatement and replace the real one, as it did at INGN, where the
+    proxy's +$22.7M replaced a -$22.7M annual loss.
+    """
+    text = str(form or "").strip().upper()
+    if text.endswith("/A"):
+        text = text[:-2]
+    return text.endswith(("14A", "14C"))
+
+
+def _without_proxy_figures(facts: dict) -> dict:
+    """Every concept's facts minus those taken from proxy filings."""
+    if not isinstance(facts, dict):
+        return {}
+    return {
+        concept: [row for row in rows if not is_proxy_form(row.get("form"))]
+        if isinstance(rows, list) else rows
+        for concept, rows in facts.items()
+    }
 
 
 def _dominant_currency(facts: dict, declared: object) -> str | None:

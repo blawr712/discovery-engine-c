@@ -1353,6 +1353,66 @@ verdict: about two in three right at the top of the queue.
 **Where.** Nothing changed in code. The check was a one-off script over
 `SecFilingArchive.submissions`.
 
+## 2026-10-29: Three extraction bugs behind the AI review's data mismatches
+
+**Decision.** Three fixes in `FundamentalHistory`, with no SEC refetch and no
+v3 weight change.
+
+**1. Proxy filings no longer override the financial statements (INGN).**
+Proxies (DEF 14A, PRE 14A and the rest of the 14A and 14C family) carry a
+pay-versus-performance table tagged with the same concepts as the
+statements. INGN's proxy reported its FY2025 net loss as +$22.7M. Being
+filed after the 10-K, it read as a restatement, and the derived Q4 turned
+trailing net income from -$24.6M into +$20.9M. Facts from proxy forms are
+now dropped. In the cache:
+- 1,720 of 4,882 filers have proxy net income figures;
+- for 859 of them, a proxy figure differs from the periodic one;
+- revenue is affected at 3 filers.
+
+INGN now matches its filings exactly.
+
+**2. Trailing revenue is put on one basis after a restatement (CNDT).** A
+filing that moves a business to discontinued operations restates last year's
+same quarter, but quarters filed earlier keep the old basis. Conduent's June
+2026 10-Q cut Q2 2025 from $754M to $603M. Our $2.79B trailing figure mixed
+the two bases, against about $2.33B from the filings. When the newest filing
+restates the year-ago quarter by more than 5%, quarters filed before it are
+now scaled by the same ratio. CNDT now reads $2.34B, and its growth compares
+like with like.
+- In the year to Oct 20, 2026, 196 of 4,882 filers restated a quarter's
+  revenue by more than 5%.
+- Only revenue is rescaled; operating income and cash flow are not.
+
+**3. A share count missing a class is caught sooner (GTEC).** GTEC's cover
+reports Class A shares (20.5M) as a plain figure; Class B (6.0M) is only
+reported per class, which company facts drop. The weighted-average count
+(26.5M) covers both, but replaced the period-end count only when that was
+under half of it. The trigger is now "the average is more than 20% larger".
+Most other names this catches are biotechs with pre-funded warrants, which
+the average counts as shares and which are shares in substance. In the Oct 19
+screen it changes 8 names. GTEC now reads 26.5M.
+
+**Effect on the backtest.** This was a clean re-run, with the earlier outputs
+kept as `*_pre_proxy_restatement_fix`:
+- Revenue changed in 1.2% of observations, share counts in 0.7% and net
+  income in 0.4% (160 sign flips).
+- v3 scores 61,883 observations against 61,886; its ranks correlate 0.999
+  with before.
+- v3's 1Y IC is 0.078 in both runs.
+
+No weight decision is reopened. The fixes matter name by name: the research
+queue, the AI review packet and its peer tables. Earnings yield also feeds
+the bank lane's rule and `defensive-v1`. Their rules are unchanged; their
+inputs are corrected from the next run, as with the debt fix.
+
+**Not fixed here.** The foreign-filer gaps (INMD, AUDC, GLBS, HITI, SANG)
+come from 20-F and 40-F filers whose quarterly 6-Ks carry no XBRL, so their
+figures can be up to a year old. GLBS's share count, about 1,000 times too
+large, is untraced.
+
+**Where.** `is_proxy_form`, `_restatement_ratio` and `WEIGHTED_SHARE_RATIO`
+in `src/fundamentals_pit.py`.
+
 ## Standing caveats that gate any promotion to "official"
 
 - **Survivorship.** The backtest's universe is chosen point in time from

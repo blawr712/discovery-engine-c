@@ -204,7 +204,11 @@ fixed in advance; a change spec's `replaces` swaps a signal in place, sector
 exclusions included. `FundamentalHistory` also records trailing free cash flow
 a year earlier and two-year FCF variants (`pit_fcf_yield_2y`,
 `pit_fcf_yield_low` and the matching margins). These are backtest columns
-only, tested and rejected on 2026-10-29; v3 does not use them. `src/screen_research.py` (`--screen-research`) rebuilds the
+only, tested and rejected on 2026-10-29; v3 does not use them. It drops facts taken
+from proxy filings (`is_proxy_form`), rescales trailing revenue onto the
+newest filing's basis when that filing restates the year-ago quarter
+(`_restatement_ratio`), and prefers the weighted-average share count when it
+exceeds the period-end count by more than `WEIGHTED_SHARE_RATIO`. `src/screen_research.py` (`--screen-research`) rebuilds the
 v3 screen at each month-end with the research queue's quintile formula and
 scans signals for ordering power inside it, with a stricter two-window rule
 because it tests many signals at once. `src/defensive_order.py` holds the
