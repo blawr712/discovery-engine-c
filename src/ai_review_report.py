@@ -224,8 +224,9 @@ def _outcomes_html(model: dict) -> str:
     head = "<h2>Outcomes</h2>"
     rule = (
         "<p class='subtle'>The forward test (DECISIONS.md, 2026-10-28) compares the median 6M excess "
-        "return of <i>clear</i> names with that of <i>caution</i> and <i>avoid</i> together, pooled over "
-        "at least 12 monthly cohorts from Nov 16, 2026. One cohort decides nothing.</p>"
+        "return of <i>clear</i> and <i>caution</i> names together with that of <i>avoid</i> names, pooled "
+        "over at least 12 monthly cohorts from Nov 16, 2026. A positive spread means the names the review "
+        "would veto did worse. One cohort decides nothing.</p>"
     )
     if not comparison or not comparison.get("horizons"):
         return head + rule + "<p>No horizon has resolved yet.</p>"
@@ -239,11 +240,11 @@ def _outcomes_html(model: dict) -> str:
         )
         rows.append(
             f"<tr><td>{escape(label)}</td>{cells}"
-            f"<td class='num'>{_pts(measured.get('clear_minus_flagged_median_percent'))}</td></tr>"
+            f"<td class='num'>{_pts(measured.get('rest_minus_avoid_median_percent'))}</td></tr>"
         )
     return head + rule + (
         "<div class='table-wrap'><table><thead><tr><th>Horizon</th><th>Clear</th><th>Caution</th>"
-        "<th>Avoid</th><th>Clear minus flagged</th></tr></thead><tbody>"
+        "<th>Avoid</th><th>Others minus avoid</th></tr></thead><tbody>"
         + "".join(rows) + "</tbody></table></div>"
         "<p class='subtle'>Median excess return, with the number of resolved names in brackets.</p>"
     )

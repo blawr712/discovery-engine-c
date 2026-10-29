@@ -48,12 +48,13 @@ class ComparisonTests(unittest.TestCase):
         self.assertEqual(horizon["resolved"], 5)  # F pending, G not reviewed
         self.assertEqual(horizon["by_verdict"]["clear"]["median_excess_percent"], 7.0)
         self.assertEqual(horizon["by_verdict"]["avoid"]["resolved"], 1)
-        # clear median 7.0; caution and avoid together -20, -6, 2 -> median -6.
-        self.assertEqual(horizon["clear_minus_flagged_median_percent"], 13.0)
+        # clear and caution together 10, 4, -6, 2 -> median 3.0; avoid -20 -> spread 23.
+        self.assertEqual(horizon["rest_minus_avoid_median_percent"], 23.0)
         reported = horizon["reported_only"]
-        self.assertEqual(reported["avoid_minus_rest_median_percent"], -23.0)
+        # clear median 7.0; caution and avoid together -20, -6, 2 -> median -6.
+        self.assertEqual(reported["clear_minus_flagged_median_percent"], 13.0)
         self.assertEqual(reported["unexplained_minus_explained_discount_median_percent"], 3.0)
-        self.assertEqual([third["names"] for third in reported["clear_minus_flagged_by_defensive_third"]], [1, 2, 2])
+        self.assertEqual([third["names"] for third in reported["rest_minus_avoid_by_defensive_third"]], [1, 2, 2])
 
     def test_loads_the_real_artifact_before_a_dry_run(self):
         with tempfile.TemporaryDirectory() as directory:

@@ -1133,8 +1133,8 @@ filings accepted by the run's completion time and follows checklist
 Reviews never change scores, ranks, the queue order or the dashboard order.
 The Oct 19 reviews are a dry run and not part of the test.
 
-**The hypothesis, `review-v1`.** Names the review marks `clear` do better
-than names it marks `caution` or `avoid`.
+**The hypothesis, `review-v1`.** Names the review marks `avoid` do worse
+than the other names it reviews (`clear` and `caution` together).
 
 **How it will be judged.** An AI cannot be backtested, because it knows how
 past periods turned out, so only forward cohorts count.
@@ -1143,20 +1143,22 @@ past periods turned out, so only forward cohorts count.
   `avoid`) in each monthly cohort from Nov 16, 2026. `not_reviewed` names and
   reviews that failed validation are left out and counted.
 - **Primary measure:** per cohort, the median 6M excess return of `clear`
-  minus that of `caution` and `avoid` together. Cohorts are pooled with
-  Newey-West standard errors (5 lags). A cohort where either side is empty
-  adds no observation, and is counted.
+  and `caution` together, minus that of `avoid`. Cohorts are pooled with
+  Newey-West standard errors (5 lags). A cohort with no `avoid` names, or no
+  others, adds no observation, and is counted.
 - **No decision before 12 cohorts have resolved 6M** (the Oct 2027 cohort,
   around April 2028). Earlier results are for watching only.
 - **Adopt `avoid` as a veto in the screen only if all three hold:**
   - the pooled spread is above 0 with t ≥ 2;
-  - `clear` beats the flagged names in at least 7 of the 12 cohorts;
+  - the other names beat `avoid` in at least 7 of the 12 cohorts;
   - the result holds within the v3 lane on its own. If the bank lane is ever
     reviewed, it is measured apart.
 - **Retire it if the pooled spread is negative** after 12 cohorts.
 - 1Y results are reported alongside. They cannot rescue a failed 6M test.
 - **Reported, not decided on:**
-  - `avoid` against the rest;
+  - `clear` against `caution` and `avoid` together, the earlier primary
+    measure; on Oct 19 no name was `clear`, so it may have too few names to
+    measure;
   - the spread inside defensive thirds;
   - names whose discount was unexplained (`no`) against those marked `yes`.
     This gets a rule of its own only once enough cohorts show how often each
@@ -1169,6 +1171,14 @@ past periods turned out, so only forward cohorts count.
   since plan models are updated more often than 12 cohorts take to resolve.
 - **The data check needs no test.** Each disagreement is traced as a
   possible bug.
+
+**Changed on 2026-10-29, before any real cohort.** The primary measure was
+first `clear` against `caution` and `avoid` together. The Oct 19 dry run gave
+17 `avoid`, 28 `caution` and no `clear`: the checklist makes any single
+concern `caution`, and every company reviewed had one. That comparison would
+have had no data, and the action under test is the `avoid` veto anyway. The
+change was made before the first real review was frozen; checklist
+`review-v1` is unchanged and no review was redone.
 
 **Where.** `.claude/skills/ai-review/`, `src/ai_review*.py`, and
 `ai_review_comparison` in each research resolution.

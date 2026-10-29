@@ -2,10 +2,11 @@
 
 Adds ``ai_review_comparison`` to a research-baseline resolution: for each
 resolved horizon, outcomes by verdict, and the spread the forward test in
-DECISIONS.md judges (median excess of ``clear`` minus that of ``caution`` and
-``avoid`` together). Reported alongside, not decided on: ``avoid`` against the
-rest, the spread inside defensive thirds, and unexplained against explained
-discounts. The baseline file and the review artifact are only read.
+DECISIONS.md judges (median excess of ``clear`` and ``caution`` together minus
+that of ``avoid``; positive when ``avoid`` names did worse). Reported
+alongside, not decided on: ``clear`` against ``caution`` and ``avoid``
+together, the primary spread inside defensive thirds, and unexplained against
+explained discounts. The baseline file and the review artifact are only read.
 """
 
 from __future__ import annotations
@@ -15,6 +16,7 @@ from pathlib import Path
 import statistics
 
 FLAGGED = ("caution", "avoid")
+NOT_AVOIDED = ("clear", "caution")
 
 
 def load_ai_reviews(output_directory: Path, run_id: str) -> dict | None:
@@ -78,18 +80,19 @@ def _horizon(rows: list[dict]) -> dict:
     clear = [row["excess"] for row in rows if row["verdict"] == "clear"]
     flagged = [row["excess"] for row in rows if row["verdict"] in FLAGGED]
     avoid = [row["excess"] for row in rows if row["verdict"] == "avoid"]
-    rest = [row["excess"] for row in rows if row["verdict"] in ("clear", "caution")]
+    rest = [row["excess"] for row in rows if row["verdict"] in NOT_AVOIDED]
     report = {
         "resolved": len(rows),
         "by_verdict": by_verdict,
-        "clear_minus_flagged_median_percent": _spread(clear, flagged),
+        # The tested spread: positive when the names the review would veto did worse.
+        "rest_minus_avoid_median_percent": _spread(rest, avoid),
         "reported_only": {
-            "avoid_minus_rest_median_percent": _spread(avoid, rest),
+            "clear_minus_flagged_median_percent": _spread(clear, flagged),
             "unexplained_minus_explained_discount_median_percent": _spread(
                 [row["excess"] for row in rows if row["discount"] == "no"],
                 [row["excess"] for row in rows if row["discount"] == "yes"],
             ),
-            "clear_minus_flagged_by_defensive_third": _by_defensive_third(rows),
+            "rest_minus_avoid_by_defensive_third": _by_defensive_third(rows),
         },
     }
     return report
@@ -109,9 +112,9 @@ def _by_defensive_third(rows: list[dict]) -> list[dict]:
         thirds.append({
             "third": third + 1,
             "names": len(part),
-            "clear_minus_flagged_median_percent": _spread(
-                [row["excess"] for row in part if row["verdict"] == "clear"],
-                [row["excess"] for row in part if row["verdict"] in FLAGGED],
+            "rest_minus_avoid_median_percent": _spread(
+                [row["excess"] for row in part if row["verdict"] in NOT_AVOIDED],
+                [row["excess"] for row in part if row["verdict"] == "avoid"],
             ),
         })
     return thirds

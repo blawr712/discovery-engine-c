@@ -79,7 +79,7 @@ class ReportTests(unittest.TestCase):
             "by_verdict": {"clear": {"median_excess_percent": 4.0, "resolved": 10},
                            "caution": {"median_excess_percent": -2.0, "resolved": 5},
                            "avoid": {"median_excess_percent": -9.0, "resolved": 3}},
-            "clear_minus_flagged_median_percent": 7.5}}}
+            "rest_minus_avoid_median_percent": 7.5}}}
         html, _ = build_report(artifact(), {}, comparison)
         self.assertIn("+7.5 pts", html)
         self.assertIn("Peer table not available.", html)

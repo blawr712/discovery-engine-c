@@ -210,6 +210,10 @@
   minus `caution` and `avoid` together), and, reported only, `avoid`
   against the rest, the spread inside defensive thirds, and unexplained
   against explained discounts. The baseline file is never modified
+- Made `avoid` against the rest (`clear` and `caution` together) the AI
+  review's primary forward-test measure, with `clear` against flagged names
+  reported only, after the Oct 19 dry run gave no `clear` verdicts; changed
+  before any real cohort, with checklist `review-v1` unchanged
 - Added `--ai-review-report RUN_ID`, a readable HTML page and Markdown copy
   built by code from the frozen reviews: verdict counts, the data checks to
   trace, one card per company in queue order (reason, quoted findings

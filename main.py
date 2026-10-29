@@ -1479,8 +1479,8 @@ def _resolve_one_baseline(
                 for verdict, group in measured["by_verdict"].items() if group["resolved"]
             )
             print(
-                f"  {label}: {parts or 'none resolved'}; clear minus caution/avoid "
-                f"{measured['clear_minus_flagged_median_percent']} pts"
+                f"  {label}: {parts or 'none resolved'}; clear and caution minus avoid "
+                f"{measured['rest_minus_avoid_median_percent']} pts"
             )
     if resolution["pending_horizons"]:
         print(f"\nStill pending: {', '.join(resolution['pending_horizons'])}")

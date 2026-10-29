@@ -236,6 +236,10 @@ concerns in the filings, supports `clear`.
 
 ## Forward test (proposed; to be fixed in DECISIONS.md before the first frozen review)
 
+The rule as fixed is in DECISIONS.md (2026-10-28) and overrides this
+proposal. After the Oct 19 dry run gave no `clear` verdicts, its primary
+measure became `avoid` against `clear` and `caution` together.
+
 An AI cannot be backtested, because it knows how past periods turned out. Only
 forward data counts. The proposal mirrors `defensive-v1`:
 

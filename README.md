@@ -295,7 +295,8 @@ is not part of the forward test.
 `--resolve-baselines RUN_ID` then joins the frozen reviews to that run's
 research cohort and adds an `ai_review_comparison` to the resolution: median
 excess return and win rate by verdict for each resolved horizon, and the
-spread the forward test judges, `clear` minus `caution` and `avoid` together.
+spread the forward test judges: `clear` and `caution` together minus
+`avoid`, positive when the names the review would veto did worse.
 It reads a dry-run artifact only when no real one exists, and labels it. The
 baseline file is never modified.
 
