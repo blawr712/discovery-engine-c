@@ -210,6 +210,9 @@
   minus `caution` and `avoid` together), and, reported only, `avoid`
   against the rest, the spread inside defensive thirds, and unexplained
   against explained discounts. The baseline file is never modified
+- Recorded that v3 gets no pending-deal filter: survivorship makes it
+  untestable in the backtest, deal-specific SEC forms flag about 4% of the
+  screen with mixed accuracy, and the AI review caught all three Oct 19 deals
 - Added two-year free cash flow signals (`pit_free_cash_flow_prior_ttm`,
   `pit_fcf_yield_2y`, `pit_fcf_yield_low`, `pit_fcf_margin_2y`,
   `pit_fcf_margin_low`) and a `replaces` option for `--test-v3-change`; both

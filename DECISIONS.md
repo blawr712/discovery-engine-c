@@ -1316,6 +1316,43 @@ does not rank names better. Fortress-sized cases are left to the AI review.
 `model_test_20261019T223433Z-f13f71e5_cefc253e26.json` (A) and `_b7e4457434.json`
 (B).
 
+## 2026-10-29: Agreed deals are not a v3 filter; no backtest can judge one
+
+**Decision.** Score v3 gets no takeover or pending-deal filter. Names whose
+price is pinned by a deal stay in the screen, and the AI review stays the
+place that catches them. It did so for all three in the Oct 19 dry run:
+- BOLD, a reverse merger leaving holders 3.7%;
+- GTE, the sale of 84% of the business, approved by shareholders;
+- PERF, a $2.00 cash buyout taking the company private.
+
+All three were marked `avoid`.
+
+**Why there is no backtest.** The backtest's universe is companies still
+listed at the source run. A company whose takeover closed was delisted and is
+absent. So the only deal names in the backtest are deals that failed, are
+still pending, or left the company listed. Failed deals usually end in a
+price drop, so excluding deal names would look better in the backtest than
+it is. A delisting-inclusive price source is the precondition for any test.
+
+**How well filings flag a deal.** EDGAR submissions for the 600 names passing
+the Oct 19 screen were checked for filings over the year to Oct 20, 2026:
+- Deal-specific forms: 21 names (3.7% of the 563 with a CIK). These are
+  merger proxies (DEFM14A, PREM14A), going-private filings (SC 13E3) and
+  third-party tender offers (SC TO-T, SC 14D9).
+- Merger registration only (S-4, F-4, 425): 21 more, mostly community banks
+  buying other banks. That is the buyer's side, which does not pin the price.
+- `DEFA14A` is on nearly every name, as routine proxy material, and says
+  nothing.
+
+In the reviewed top 45, the deal-specific forms found GTE and PERF. They
+missed BOLD, a reverse merger that files as the buyer. They wrongly flagged
+UTMD, whose SC 13E3 came with its own buyback tender (SC TO-I). CRTO's S-4
+and 425 are a move of its legal home to the US. So forms are a hint, not a
+verdict: about two in three right at the top of the queue.
+
+**Where.** Nothing changed in code. The check was a one-off script over
+`SecFilingArchive.submissions`.
+
 ## Standing caveats that gate any promotion to "official"
 
 - **Survivorship.** The backtest's universe is chosen point in time from
