@@ -336,6 +336,9 @@ def main(arguments=None):
     if args.ai_review_freeze:
         ai_review_freeze(args.ai_review_freeze, dry_run=args.dry_run)
         return
+    if args.ai_review_report:
+        ai_review_report(args.ai_review_report)
+        return
     if args.screen_research:
         screen_research(args.screen_research)
         return
@@ -984,6 +987,30 @@ def ai_review_freeze(run_id: str, dry_run: bool = False) -> None:
     print("Scores, ranks and the queue order: unchanged")
     print(f"Artifact: {path}")
     print(f"Manifest updated: {manifest_path}")
+
+
+def ai_review_report(run_id: str) -> None:
+    """Write the readable report of a run's frozen AI reviews."""
+    from src.ai_review_report import build_report, load_peer_tables, report_names
+    from src.ai_review_resolution import load_ai_reviews
+
+    artifact = load_ai_reviews(OUTPUT_DIR, run_id)
+    if artifact is None:
+        raise SystemExit(f"No frozen AI reviews for {run_id}; run --ai-review-freeze first.")
+    comparison = None
+    resolution_path = OUTPUT_DIR / f"baseline_resolution_research_{run_id}.json"
+    if resolution_path.is_file():
+        comparison = json.loads(resolution_path.read_text(encoding="utf-8")).get("ai_review_comparison")
+    peers = load_peer_tables(artifact, AI_REVIEW_DIR / run_id)
+    html_text, markdown = build_report(artifact, peers, comparison)
+    html_name, markdown_name = report_names(run_id, bool(artifact.get("dry_run")))
+    (OUTPUT_DIR / html_name).write_text(html_text, encoding="utf-8")
+    (OUTPUT_DIR / markdown_name).write_text(markdown, encoding="utf-8")
+    print(f"AI review report for run {run_id}" + (" (dry run)" if artifact.get("dry_run") else ""))
+    print(f"Names: {len(artifact.get('names') or [])}; peer tables matched: {len(peers)}")
+    print(f"Report: {OUTPUT_DIR / html_name}")
+    print(f"Markdown: {OUTPUT_DIR / markdown_name}")
+    print("Also served by the dashboard at /ai-review/" + run_id)
 
 
 def screen_research(run_id: str) -> None:

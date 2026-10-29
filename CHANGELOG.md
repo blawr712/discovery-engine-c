@@ -210,6 +210,15 @@
   minus `caution` and `avoid` together), and, reported only, `avoid`
   against the rest, the spread inside defensive thirds, and unexplained
   against explained discounts. The baseline file is never modified
+- Added `--ai-review-report RUN_ID`, a readable HTML page and Markdown copy
+  built by code from the frozen reviews: verdict counts, the data checks to
+  trace, one card per company in queue order (reason, quoted findings
+  linked to EDGAR, data check, peer medians, bear case, open questions),
+  outcomes by verdict once horizons resolve, and audit details. Peer tables
+  are shown only when they match the hash frozen with the review
+- Showed each reviewed name's verdict in the dashboard's research screen,
+  linked to its card in the report (`/ai-review/RUN_ID`); the screen's
+  order and filters are unchanged
 - Taught the resolver about baseline kinds, reading each baseline's own
   cohort split so Moonshot and research cohorts stay separate; added
   `--baseline moonshot|research|all`

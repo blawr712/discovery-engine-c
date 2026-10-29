@@ -299,6 +299,23 @@ spread the forward test judges, `clear` minus `caution` and `avoid` together.
 It reads a dry-run artifact only when no real one exists, and labels it. The
 baseline file is never modified.
 
+Read the result as a report:
+
+```powershell
+python main.py --ai-review-report RUN_ID
+```
+
+It writes `ai_review_report_RUN_ID.html` and `.md` to `data/exports/` (a dry
+run's are named `ai_review_dry_run_report_RUN_ID`), built by code from the
+frozen artifact, so the same reviews always give the same report. It opens
+with verdict counts and the data checks to trace, then gives one card per
+company in queue order (never sorted by verdict): the verdict and its
+reason, findings with their quotes linked to the filing on EDGAR, the data
+check, the company against its closest-peer and leader medians, the bear
+case and open questions. Outcomes by verdict appear once a horizon resolves.
+The dashboard's research screen shows each reviewed name's verdict, linked to
+its card; rerun the report after a resolution to refresh the outcomes.
+
 Canadian names with no SEC registrant get a `not_reviewed` review written by
 code, since SEDAR+ may not be read automatically. A name that fails (for
 example a network error) is reported and retried by the next run of the

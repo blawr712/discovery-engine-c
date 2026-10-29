@@ -288,9 +288,21 @@ class DashboardStore:
                 continue
             rows.append(row)
         rows = _sorted_queue(rows, sort)
+        review = self._ai_reviews(run_id)
+        if review["available"]:
+            # A note beside each reviewed name; it never filters or orders.
+            verdicts = review.pop("by_ticker")
+            rows = [
+                {**row, "ai_review": verdicts[str(row.get("ticker"))]}
+                if str(row.get("ticker")) in verdicts else row
+                for row in rows
+            ]
+        else:
+            review.pop("by_ticker", None)
         return {
             "available": True,
             "run_id": run_id,
+            "ai_review": review,
             "screen_available": screen_available,
             "summary": summary,
             "sectors": sorted(sectors),
@@ -358,6 +370,51 @@ class DashboardStore:
         for row in document.get("queue", []):
             if str(row.get("ticker", "")).upper() == ticker:
                 return row
+        return None
+
+    def _ai_reviews(self, run_id: str | None) -> dict:
+        """The run's frozen AI reviews as a note per ticker, if any are frozen."""
+        from src.ai_review_report import report_names
+        from src.ai_review_resolution import load_ai_reviews
+
+        if not run_id or not RUN_ID_PATTERN.fullmatch(str(run_id)):
+            return {"available": False, "by_ticker": {}}
+        directory = self.moonshot_store.artifact_directory
+        try:
+            artifact = load_ai_reviews(directory, run_id)
+        except (OSError, ValueError):
+            artifact = None
+        if artifact is None:
+            return {"available": False, "by_ticker": {}}
+        dry_run = bool(artifact.get("dry_run"))
+        html_name, _ = report_names(run_id, dry_run)
+        by_ticker = {}
+        for entry in artifact.get("names") or []:
+            review = entry.get("review") or {}
+            by_ticker[str(entry.get("ticker"))] = {
+                "verdict": entry.get("verdict"),
+                "status": entry.get("status"),
+                "deciding_reason": review.get("deciding_reason"),
+            }
+        return {
+            "available": True,
+            "dry_run": dry_run,
+            "checklist_version": artifact.get("checklist_version"),
+            "reviewed": len(by_ticker),
+            "report_url": f"/ai-review/{run_id}" if (directory / html_name).is_file() else None,
+            "by_ticker": by_ticker,
+        }
+
+    def ai_review_report(self, run_id: str) -> bytes | None:
+        """The exported report page for a run, real reviews before a dry run."""
+        from src.ai_review_report import report_names
+
+        if not RUN_ID_PATTERN.fullmatch(str(run_id)):
+            return None
+        for dry_run in (False, True):
+            path = self.moonshot_store.artifact_directory / report_names(run_id, dry_run)[0]
+            if path.is_file():
+                return path.read_bytes()
         return None
 
     def _export_document(self, prefix: str, run_id: str | None, required: bool = False):
@@ -584,6 +641,12 @@ def create_dashboard_server(
                 query = parse_qs(parsed.query)
                 if parsed.path in ("/", "/index.html"):
                     self._send(200, html, "text/html; charset=utf-8")
+                elif parsed.path.startswith("/ai-review/"):
+                    page = store.ai_review_report(unquote(parsed.path.removeprefix("/ai-review/")))
+                    if page is None:
+                        self._json(404, {"error": "not_found"})
+                    else:
+                        self._send(200, page, "text/html; charset=utf-8")
                 elif parsed.path == "/api/overview":
                     self._json(200, store.overview())
                 elif parsed.path == "/api/candidates":

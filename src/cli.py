@@ -123,6 +123,11 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
         help="validate a run's AI reviews and freeze them into one artifact (never overwritten)",
     )
     selection.add_argument(
+        "--ai-review-report",
+        metavar="RUN_ID",
+        help="write a readable HTML and Markdown report of a run's frozen AI reviews",
+    )
+    selection.add_argument(
         "--test-v3-change",
         metavar="RUN_ID",
         help="paired backtest test of a proposed Score v3 change; needs --change",
