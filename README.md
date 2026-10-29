@@ -146,7 +146,11 @@ Test a proposed Score v3 change the way past changes were tested:
 python main.py --test-v3-change RUN_ID --change '{"momentum_long": null, "pit_fcf_yield": 20}'
 ```
 
-A signal mapped to `null` is removed and a number sets its weight. The current
+A signal mapped to `null` is removed and a number sets its weight. A full
+spec can name the signal it swaps out, so the new one also takes the old one's
+place in sector exclusions:
+`{"pit_fcf_yield_2y": {"weight": 10, "direction": "higher", "replaces": "pit_fcf_yield"}}`.
+The current
 and changed models are compared period by period on the saved backtest
 observations, in a 2016-21 fitting window and a 2022-26 holdout, with
 Newey-West standard errors. A change is accepted only if it improves both

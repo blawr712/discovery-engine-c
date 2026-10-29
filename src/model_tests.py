@@ -38,7 +38,10 @@ def apply_change(config: dict, change: dict) -> dict:
     """A copy of a raw model config with signals added, reweighted, or removed.
 
     ``change`` maps a signal name to ``None`` (remove it), a number (its
-    weight; new signals rank higher-is-better), or a full signal spec.
+    weight; new signals rank higher-is-better), or a full signal spec. A spec
+    may name ``"replaces": OLD``: OLD is removed and the new signal takes its
+    place in ``sector_exclusions``, so a swapped variant stays out of the
+    sectors the original was kept out of.
     """
     changed = copy.deepcopy(config)
     signals = changed.setdefault("signals", {})
@@ -48,7 +51,16 @@ def apply_change(config: dict, change: dict) -> dict:
                 raise ValueError(f"Cannot remove {name!r}: it is not a v3 signal.")
             signals.pop(name)
         elif isinstance(value, dict):
-            signals[name] = dict(value)
+            spec = dict(value)
+            replaced = spec.pop("replaces", None)
+            if replaced is not None:
+                if replaced not in signals:
+                    raise ValueError(f"Cannot replace {replaced!r}: it is not a v3 signal.")
+                signals.pop(replaced)
+                for excluded in changed.get("sector_exclusions", {}).values():
+                    if replaced in excluded:
+                        excluded[excluded.index(replaced)] = name
+            signals[name] = spec
         elif isinstance(value, (int, float)) and not isinstance(value, bool):
             spec = signals.get(name, {"direction": "higher"})
             signals[name] = {**spec, "weight": float(value)}

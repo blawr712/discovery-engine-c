@@ -210,6 +210,11 @@
   minus `caution` and `avoid` together), and, reported only, `avoid`
   against the rest, the spread inside defensive thirds, and unexplained
   against explained discounts. The baseline file is never modified
+- Added two-year free cash flow signals (`pit_free_cash_flow_prior_ttm`,
+  `pit_fcf_yield_2y`, `pit_fcf_yield_low`, `pit_fcf_margin_2y`,
+  `pit_fcf_margin_low`) and a `replaces` option for `--test-v3-change`; both
+  pre-registered variants were rejected (better before 2022, slightly worse
+  after), so v3 keeps one-year FCF
 - Made `avoid` against the rest (`clear` and `caution` together) the AI
   review's primary forward-test measure, with `clear` against flagged names
   reported only, after the Oct 19 dry run gave no `clear` verdicts; changed

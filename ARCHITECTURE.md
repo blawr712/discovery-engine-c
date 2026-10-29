@@ -200,7 +200,11 @@ dropped as well (`src/liquidity.py`), matching live research, where shadow
 models rank only tradeable names and the research queue puts the rest last.
 `src/model_tests.py` (`--test-v3-change`) runs the paired, Newey-West test of a
 proposed Score v3 change against saved observations with the decision rule
-fixed in advance. `src/screen_research.py` (`--screen-research`) rebuilds the
+fixed in advance; a change spec's `replaces` swaps a signal in place, sector
+exclusions included. `FundamentalHistory` also records trailing free cash flow
+a year earlier and two-year FCF variants (`pit_fcf_yield_2y`,
+`pit_fcf_yield_low` and the matching margins). These are backtest columns
+only, tested and rejected on 2026-10-29; v3 does not use them. `src/screen_research.py` (`--screen-research`) rebuilds the
 v3 screen at each month-end with the research queue's quintile formula and
 scans signals for ordering power inside it, with a stricter two-window rule
 because it tests many signals at once. `src/defensive_order.py` holds the

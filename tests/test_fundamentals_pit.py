@@ -360,6 +360,48 @@ class SignalTests(unittest.TestCase):
         self.assertIsNone(signals["pit_fcf_yield"])
         self.assertEqual(signals["pit_free_cash_flow_ttm"], 40.0)
 
+    def test_two_year_fcf_falls_back_to_one_year_without_a_prior_year(self):
+        signals = self.history.signals_as_of(date(2026, 3, 1), price=2.0)
+        self.assertIsNone(signals["pit_free_cash_flow_prior_ttm"])
+        for name in ("pit_fcf_yield_2y", "pit_fcf_yield_low"):
+            self.assertAlmostEqual(signals[name], signals["pit_fcf_yield"], places=6)
+        for name in ("pit_fcf_margin_2y", "pit_fcf_margin_low"):
+            self.assertAlmostEqual(signals[name], signals["pit_fcf_margin_ttm"], places=6)
+        self.assertNotIn("_fcf_2y", signals)
+
+    def test_two_year_fcf_damps_a_one_off_year(self):
+        extract = _extract()
+        quarters_2024 = [
+            ("2024-01-01", "2024-03-31", "2024-05-01"),
+            ("2024-04-01", "2024-06-30", "2024-08-01"),
+            ("2024-07-01", "2024-09-30", "2024-11-01"),
+            ("2024-10-01", "2024-12-31", "2025-02-15"),
+        ]
+        # 2024 operating cash flow 5 a quarter, capex 5: prior FCF is 0.
+        extract["facts"]["operating_cash_flow"] = [
+            _fact(*dates, 10) for dates in quarters_2024
+        ] + extract["facts"]["operating_cash_flow"]
+        extract["facts"]["capital_expenditure"] = [
+            _fact(*dates, 10) for dates in quarters_2024
+        ] + extract["facts"]["capital_expenditure"]
+        # A one-off: Q3 2025 operating cash flow jumps from 15 to 415.
+        extract["facts"]["operating_cash_flow"] = [
+            _fact(start, end, filed, 415 if end == "2025-09-30" else val)
+            if start.startswith("2025") else _fact(start, end, filed, val)
+            for start, end, filed, val in (
+                (row["start"], row["end"], row["filed"], row["val"])
+                for row in extract["facts"]["operating_cash_flow"]
+            )
+        ]
+        signals = FundamentalHistory(extract).signals_as_of(date(2026, 3, 1), price=2.0)
+        self.assertEqual(signals["pit_free_cash_flow_ttm"], 440.0)
+        self.assertEqual(signals["pit_free_cash_flow_prior_ttm"], 0.0)
+        self.assertAlmostEqual(signals["pit_fcf_yield"], 440 / 2200, places=6)
+        self.assertAlmostEqual(signals["pit_fcf_yield_2y"], 220 / 2200, places=6)
+        self.assertAlmostEqual(signals["pit_fcf_yield_low"], 0.0, places=6)
+        self.assertAlmostEqual(signals["pit_fcf_margin_2y"], 440 / (640 + 470), places=6)
+        self.assertAlmostEqual(signals["pit_fcf_margin_low"], 0.0, places=6)
+
     def test_empty_extract_yields_all_none(self):
         history = FundamentalHistory({"ticker": "X", "facts": {}})
         self.assertFalse(history.has_data)

@@ -33,6 +33,20 @@ def _observations(periods=40, names=80, seed=3):
     return pd.DataFrame(rows)
 
 
+class ReplaceTests(unittest.TestCase):
+    def test_replacement_takes_the_old_signal_place_in_sector_exclusions(self):
+        base = {"signals": {"pit_fcf_yield": {"weight": 10, "direction": "higher"},
+                            "pit_sales_yield": {"weight": 25, "direction": "higher"}},
+                "sector_exclusions": {"Financial Services": ["pit_sales_yield", "pit_fcf_yield"]}}
+        changed = apply_change(base, {"pit_fcf_yield_2y": {
+            "weight": 10, "direction": "higher", "replaces": "pit_fcf_yield"}})
+        self.assertNotIn("pit_fcf_yield", changed["signals"])
+        self.assertEqual(changed["signals"]["pit_fcf_yield_2y"], {"weight": 10, "direction": "higher"})
+        self.assertEqual(changed["sector_exclusions"]["Financial Services"],
+                         ["pit_sales_yield", "pit_fcf_yield_2y"])
+        self.assertIn("pit_fcf_yield", base["signals"])  # the base config is untouched
+
+
 class ChangeTests(unittest.TestCase):
     def test_add_reweight_and_remove(self):
         changed = apply_change(BASE, {"volume_trend": None, "pit_sales_yield": 10, "pit_fcf_yield": 5})
@@ -42,6 +56,8 @@ class ChangeTests(unittest.TestCase):
         self.assertIn("volume_trend", BASE["signals"])  # the original is untouched
 
     def test_invalid_changes_are_refused(self):
+        with self.assertRaises(ValueError):
+            apply_change(BASE, {"new": {"weight": 5, "direction": "higher", "replaces": "missing"}})
         with self.assertRaises(ValueError):
             apply_change(BASE, {"missing": None})
         with self.assertRaises(ValueError):

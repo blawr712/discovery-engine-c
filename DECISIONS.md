@@ -1256,6 +1256,66 @@ found have a lower median 1Y excess return than those with debt found
 **Where.** `CONCEPTS` in `src/data_sources/sec_xbrl_source.py`, and
 `total_debt` and `debt_component` in `src/fundamentals_pit.py`.
 
+## 2026-10-29: Free cash flow over two years, rules fixed before testing
+
+**The question.** In the Oct 19 AI review, one-off cash inflowed into the
+trailing free cash flow behind v3's FCF yield and FCF margin (weight 10
+each):
+- Rimini's $37.9M Oracle refund;
+- Fortress's $205M priority review voucher sale, which took its FCF yield to
+  202%.
+
+Does v3 rank better if it reads free cash flow over two years instead of one?
+
+**Two variants, each replacing both FCF signals at the same weights:**
+- **A, two-year average:**
+  - FCF yield is the mean of this year's and last year's trailing FCF,
+    over today's market cap;
+  - FCF margin is the two years' FCF over the two years' revenue.
+- **B, the lower year:**
+  - FCF yield uses the lower of the two years' trailing FCF;
+  - FCF margin is the lower of the two years' margins.
+
+"Last year" is the trailing four quarters ending a year before the current
+window, or the prior annual report for annual filers. When it is missing, or
+not 330 to 400 days earlier, the variant falls back to this year's figure,
+so coverage does not change. Nothing else in v3 changes. Operating margin,
+which LOVE's tariff refund inflated, is out of scope.
+
+**The test.** This is `--test-v3-change` on the backtest re-run with these
+signals, the same procedure as 2026-10-21 and 2026-10-29: a paired
+per-period IC difference against current v3, fit before 2022 and holdout
+from 2022, Newey-West, judged on 1Y. A variant passes if:
+- its difference is positive in both windows;
+- |t| >= 2 in at least one window;
+- t > -2 in both.
+
+If both pass, A is taken because it is the smaller change. A pass makes the
+variant a proposal for v3.3, for the user to decide on. It does not change
+v3 by itself. If neither passes, v3 keeps one-year FCF, and the AI review
+stays the place that catches one-off cash.
+
+**Result: both rejected; v3 keeps one-year FCF.** The backtest was re-run
+with the new signals. Every existing column is identical to the morning's
+run (outputs kept as `*_pre_fcf_variants`). A prior year exists for 92% of
+the observations v3 scores, and the variants' rank correlation with one-year
+FCF yield averages 0.88.
+
+| Variant | 1Y fit | 1Y holdout | 3M fit | 3M holdout | Verdict |
+|---|---|---|---|---|---|
+| A, two-year average | +0.010 (t 3.7) | -0.003 (t -0.9) | +0.007 (t 4.4) | +0.001 (t 0.5) | reject |
+| B, the lower year | +0.005 (t 2.3) | -0.004 (t -1.2) | +0.005 (t 3.2) | +0.000 (t 0.2) | reject |
+
+Both help before 2022 and do nothing or slightly hurt after. This is the
+fit-window win that failed out of sample on 2026-10-21. Across the screen,
+one-off cash years are rare enough, or recur often enough, that damping them
+does not rank names better. Fortress-sized cases are left to the AI review.
+
+**Where.** `_two_year_fcf` in `src/fundamentals_pit.py`; `replaces` in
+`apply_change`, `src/model_tests.py`; results
+`model_test_20261019T223433Z-f13f71e5_cefc253e26.json` (A) and `_b7e4457434.json`
+(B).
+
 ## Standing caveats that gate any promotion to "official"
 
 - **Survivorship.** The backtest's universe is chosen point in time from

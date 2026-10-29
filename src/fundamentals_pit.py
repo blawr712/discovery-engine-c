@@ -103,6 +103,13 @@ SIGNAL_NAMES = (
     "pit_ocf_margin_ttm",
     "pit_free_cash_flow_ttm",
     "pit_fcf_margin_ttm",
+    # Free cash flow over two years (DECISIONS.md 2026-10-29): the trailing
+    # four quarters a year before the current window, and two variants that
+    # damp a one-off year. Each falls back to the one-year figure when the
+    # prior year is missing.
+    "pit_free_cash_flow_prior_ttm",
+    "pit_fcf_margin_2y",
+    "pit_fcf_margin_low",
     "pit_cash_conversion",
     "pit_cash",
     "pit_total_debt",
@@ -119,6 +126,8 @@ SIGNAL_NAMES = (
     "pit_market_cap_basis",
     "pit_net_cash_to_market_cap",
     "pit_fcf_yield",
+    "pit_fcf_yield_2y",
+    "pit_fcf_yield_low",
     "pit_earnings_yield",
     "pit_sales_yield",
     "pit_report_age_days",
@@ -483,6 +492,7 @@ class FundamentalHistory:
                 and net_income[1] > 0
             ):
                 signals["pit_cash_conversion"] = ocf_ttm / net_income[1]
+            self._two_year_fcf(signals, as_of, ocf[0], free_cash_flow)
 
         cash = self.instant_as_of("cash", as_of)
         if cash is not None and (as_of - cash.end).days <= maximum_age:
@@ -531,6 +541,11 @@ class FundamentalHistory:
                     # The share count is on a different basis from the price,
                     # so the year-over-year share ratio spans that break too.
                     signals["pit_share_change_1y"] = None
+                two_year = signals.pop("_fcf_2y", None)
+                low = signals.pop("_fcf_low", None)
+                if two_year is not None:
+                    signals["pit_fcf_yield_2y"] = two_year / resolved
+                    signals["pit_fcf_yield_low"] = low / resolved
                 for name, source in (
                     ("pit_net_cash_to_market_cap", "pit_net_cash"),
                     ("pit_fcf_yield", "pit_free_cash_flow_ttm"),
@@ -541,10 +556,47 @@ class FundamentalHistory:
                     if value is not None:
                         signals[name] = value / resolved
 
+        signals.pop("_fcf_2y", None)
+        signals.pop("_fcf_low", None)
         return {
             name: (round(value, 6) if isinstance(value, float) else value)
             for name, value in signals.items()
         }
+
+    def _two_year_fcf(
+        self, signals: dict, as_of: date, ends: tuple[date, ...], free_cash_flow: float,
+    ) -> None:
+        """Free cash flow a year earlier and the two variants built on it.
+
+        Temporary ``_fcf_2y`` and ``_fcf_low`` carry the money amounts until
+        a market cap is known. Without a usable prior year every variant
+        equals the one-year figure, so coverage matches ``pit_fcf_*``.
+        """
+        revenue = self._aligned_ttm("revenue", as_of, ends)
+        margin = free_cash_flow / revenue if revenue is not None and revenue > 0 else None
+        prior_ocf = self.ttm("operating_cash_flow", as_of, offset=4)
+        prior_fcf = prior_revenue = None
+        if prior_ocf is not None and 330 <= (ends[-1] - prior_ocf[0][-1]).days <= 400:
+            prior_capex = self.ttm("capital_expenditure", as_of, offset=4)
+            capex = prior_capex[1] if prior_capex is not None and prior_capex[0] == prior_ocf[0] else 0.0
+            prior_fcf = prior_ocf[1] - capex
+            prior_sales = self.ttm("revenue", as_of, offset=4)
+            if prior_sales is not None and prior_sales[0] == prior_ocf[0]:
+                prior_revenue = prior_sales[1]
+        signals["pit_free_cash_flow_prior_ttm"] = prior_fcf
+        if prior_fcf is None:
+            signals["_fcf_2y"] = signals["_fcf_low"] = free_cash_flow
+            signals["pit_fcf_margin_2y"] = signals["pit_fcf_margin_low"] = margin
+            return
+        signals["_fcf_2y"] = (free_cash_flow + prior_fcf) / 2.0
+        signals["_fcf_low"] = min(free_cash_flow, prior_fcf)
+        if margin is None:
+            return
+        if prior_revenue is not None and prior_revenue > 0:
+            signals["pit_fcf_margin_2y"] = (free_cash_flow + prior_fcf) / (revenue + prior_revenue)
+            signals["pit_fcf_margin_low"] = min(margin, prior_fcf / prior_revenue)
+        else:
+            signals["pit_fcf_margin_2y"] = signals["pit_fcf_margin_low"] = margin
 
     def _reconciled_market_cap(
         self,
