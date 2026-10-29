@@ -247,7 +247,7 @@ Leaders are found from SIC codes for every SEC filer with a ticker, read once
 from each company's EDGAR submissions (about 8,000 filers; the first fill
 takes about two hours at the SEC's rate limit) and kept in
 `data/cache/ai_review/sic_index.json`. Later runs read only new filers. Each
-industry's ten largest filers by SEC public float (four quarterly EDGAR
+industry's ten largest filers by SEC public float (eight quarterly EDGAR
 frames) are then priced through the cached provider stack, and the five
 largest by market cap on the anchor date are kept. Filers that report no
 public float, often foreign filers, cannot be shortlisted.

@@ -415,12 +415,13 @@ def latest_public_floats(frames: list[dict]) -> dict[str, float]:
     return {cik: value for cik, (end, value) in latest.items()}
 
 
-def float_frame_periods(anchor: date, count: int = 4) -> list[str]:
+def float_frame_periods(anchor: date, count: int = 8) -> list[str]:
     """The ``CY####Q#I`` frames for the calendar quarters ending before ``anchor``.
 
     Public float is measured at the end of a filer's second fiscal quarter
-    and reported on the next annual report's cover, so four quarters reach
-    every fiscal year-end. Floats are used only to shortlist; the ranking
+    and reported on the next annual report's cover, up to about fifteen
+    months later: a calendar-year filer's June 2025 float appears in its
+    early-2026 10-K. Eight quarters reach every filer's latest report. Floats are used only to shortlist; the ranking
     that picks leaders is by market cap on the anchor date.
     """
     year, quarter = anchor.year, (anchor.month - 1) // 3 + 1

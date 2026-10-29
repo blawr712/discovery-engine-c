@@ -94,8 +94,12 @@ class LeaderTests(unittest.TestCase):
 
     def test_frames_are_the_four_quarters_before_the_anchor(self):
         self.assertEqual(
-            float_frame_periods(date(2026, 10, 20)),
+            float_frame_periods(date(2026, 10, 20), 4),
             ["CY2026Q3I", "CY2026Q2I", "CY2026Q1I", "CY2025Q4I"],
+        )
+        self.assertEqual(len(float_frame_periods(date(2026, 10, 20))), 8)
+        self.assertEqual(
+            float_frame_periods(date(2026, 10, 20))[-1], "CY2024Q4I",
         )
         self.assertEqual(float_frame_periods(date(2026, 1, 5), 2), ["CY2025Q4I", "CY2025Q3I"])
 

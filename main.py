@@ -782,7 +782,7 @@ def build_ai_review_peer_table(run_id, anchor, results, queue, xbrl, archive):
     """Everything a peer table needs, gathered once for the whole run.
 
     SIC codes for every SEC filer with a ticker come from per-company
-    submissions, indexed once and then topped up; public floats from four
+    submissions, indexed once and then topped up; public floats from eight
     EDGAR frames shortlist the leaders, which are priced through the cached
     provider stack and measured with the functions v3 uses.
     """
