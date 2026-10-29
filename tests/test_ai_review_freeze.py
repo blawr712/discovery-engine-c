@@ -101,6 +101,15 @@ class ValidationTests(unittest.TestCase):
         self.assertTrue(any("is not the packet's pit_revenue_ttm" in error for error in validate(review)))
         review["data_check"][0]["field"] = "made_up"
         self.assertTrue(any("'made_up'" in error for error in validate(review)))
+        # Any packet figure may be compared, including ratios.
+        review = good_review()
+        review["data_check"].append({"field": "pit_net_cash_to_market_cap", "ours": 0.06, "filing": None,
+                                     "agrees": False})
+        packet = {**PACKET, "pit_net_cash_to_market_cap": 0.06}
+        self.assertEqual(validate_review(
+            review, ticker="UTMD", packet=packet, peers=PEERS,
+            documents={SHA_K: TEXT_K, SHA_Q: TEXT_Q}, anchor=date(2026, 10, 20),
+        ), [])
 
     def test_avoid_needs_a_serious_finding_or_a_disagreement(self):
         review = good_review()

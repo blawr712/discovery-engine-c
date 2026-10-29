@@ -55,7 +55,10 @@ Work through all eight, in order.
    entry per field: `ours` is the packet value, `filing` the filing's figure in
    the same units (null if the filings do not state it), `agrees` true when
    they are within about 10% (or the currency matches). Log disagreements even
-   when the verdict is `clear`.
+   when the verdict is `clear`. Any other figure in `packet.json` that you
+   find to disagree with the filings (for example `pit_total_debt`,
+   `pit_net_cash`, `pit_net_income_ttm`) gets a `data_check` entry of its own
+   under its packet name, not only a finding.
 2. **Earnings quality.** Are the earnings yield or the margins propped up by
    one-off gains, asset sales, tax benefits (such as a valuation-allowance
    release) or capitalised costs?

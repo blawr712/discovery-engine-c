@@ -19,7 +19,7 @@ import re
 import tempfile
 from typing import Callable
 
-from src.ai_review import PREPARE_VERSION, normalize_text, safe_name
+from src.ai_review import PREPARE_VERSION, RUN_ROW_FIELDS, normalize_text, safe_name
 from src.ai_review_peers import METRICS as PEER_METRICS, PEERS_VERSION
 
 CHECKLIST_VERSION = "review-v1"
@@ -39,13 +39,12 @@ REQUIRED_KEYS = (
 )
 OPTIONAL_KEYS = ("checklist_version", "skill_version", "model", "written_by")
 MINIMUM_QUOTE = 10
-# Fields a data check may compare: the packet's figures.
-DATA_CHECK_FIELDS = (
-    "pit_revenue_ttm", "pit_shares_outstanding", "pit_market_cap", "pit_reporting_currency",
-    "pit_net_income_ttm", "pit_cash", "pit_total_debt", "pit_net_cash", "pit_earnings_yield",
-    "pit_gross_margin_ttm", "pit_operating_margin_ttm", "pit_fcf_margin_ttm", "net_margin_ttm",
-    "pit_share_change_1y", "pit_revenue_growth_ttm", "latest_close", "currency",
-)
+# Fields a data check may compare: every figure the packet carries from the
+# run row, plus the derived net margin. Labels that are not figures are left out.
+NOT_FIGURES = {"pit_shares_basis", "pit_market_cap_basis", "pit_data_quality", "fundamentals_status"}
+DATA_CHECK_FIELDS = tuple(
+    name for name in RUN_ROW_FIELDS if name not in NOT_FIGURES
+) + ("net_margin_ttm",)
 # What a review may never contain (AI_REVIEW_BRIEF.md, schema).
 FORBIDDEN = re.compile(
     r"price target|target price|fair value of \$|expected return|upside of|downside of|"
