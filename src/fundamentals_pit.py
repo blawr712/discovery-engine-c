@@ -67,10 +67,23 @@ DURATION_CONCEPTS = (
     "operating_cash_flow",
     "capital_expenditure",
 )
-INSTANT_CONCEPTS = (
-    "cash",
+# Debt concepts, combined into one figure by FundamentalHistory.total_debt.
+DEBT_CONCEPTS = (
+    "debt_total_reported",
+    "debt_broad",
     "long_term_debt",
     "short_term_debt",
+    "debt_noncurrent_parts",
+    "debt_current_parts",
+    "debt_credit_lines",
+    "debt_notes",
+)
+# Debt must come from the same balance sheet as cash. A few days' slack
+# covers filers whose balance-sheet tags carry slightly different dates.
+DEBT_DATE_TOLERANCE_DAYS = 7
+INSTANT_CONCEPTS = (
+    "cash",
+    *DEBT_CONCEPTS,
     "stockholders_equity",
     "shares_outstanding",
 )
@@ -93,6 +106,9 @@ SIGNAL_NAMES = (
     "pit_cash_conversion",
     "pit_cash",
     "pit_total_debt",
+    # How pit_total_debt was found: "reported_total", "components", or
+    # "none_found" (no debt tag on that balance sheet, so debt counts as 0).
+    "pit_debt_coverage",
     "pit_net_cash",
     "pit_shares_outstanding",
     "pit_shares_basis",
@@ -157,7 +173,10 @@ class FundamentalHistory:
                     instants.setdefault(value.end, []).append(value)
             for entries in instants.values():
                 entries.sort(key=lambda item: item.filed)
-            self._instants[concept] = _prefer_best_tag(instants)
+            # Concepts whose tags add up keep every tag; the rest keep one.
+            self._instants[concept] = (
+                instants if _combine(concept) != "alias" else _prefer_best_tag(instants)
+            )
             self._instant_ends[concept] = sorted(self._instants[concept])
         self._share_averages = _weighted_share_values(
             facts.get("weighted_average_shares", []), self.config,
@@ -249,6 +268,67 @@ class FundamentalHistory:
             if chosen is not None:
                 return chosen
         return None
+
+    def debt_component(
+        self,
+        concept: str,
+        balance_end: date,
+        as_of: date,
+    ) -> float | None:
+        """One debt concept on a balance-sheet date, its tags combined.
+
+        Each tag contributes its latest value known on ``as_of`` dated within
+        a few days before ``balance_end``. Older balance sheets never count.
+        """
+        earliest = balance_end - timedelta(days=DEBT_DATE_TOLERANCE_DAYS)
+        by_tag: dict[int, PeriodValue] = {}
+        for end, entries in self._instants.get(concept, {}).items():
+            if not earliest <= end <= balance_end:
+                continue
+            for entry in entries:
+                if entry.filed > as_of:
+                    continue
+                kept = by_tag.get(entry.priority)
+                if kept is None or (entry.end, entry.filed) > (kept.end, kept.filed):
+                    by_tag[entry.priority] = entry
+        if not by_tag:
+            return None
+        mode = _combine(concept)
+        if mode == "sum":
+            return sum(item.value for item in by_tag.values())
+        if mode == "max":
+            return max(item.value for item in by_tag.values())
+        return by_tag[min(by_tag)].value
+
+    def total_debt(self, balance_end: date, as_of: date) -> tuple[float, str]:
+        """Total debt on a balance-sheet date, and how it was found.
+
+        The filer's own total wins. Otherwise three readings that each cover
+        a different slice are compared and the largest is used: the broad
+        total tags, noncurrent plus current debt (each side the larger of its
+        one-figure tag and its instruments added up), and credit lines plus
+        notes reported without a split. A balance sheet with no debt tag at
+        all gives 0 with coverage "none_found": the filer is debt free or
+        uses a tag this extract does not read.
+        """
+        def part(concept: str) -> float | None:
+            return self.debt_component(concept, balance_end, as_of)
+
+        reported = part("debt_total_reported")
+        if reported is not None:
+            return reported, "reported_total"
+        noncurrent = _largest(part("long_term_debt"), part("debt_noncurrent_parts"))
+        current = _largest(part("short_term_debt"), part("debt_current_parts"))
+        lines, notes = part("debt_credit_lines"), part("debt_notes")
+        readings = [
+            part("debt_broad"),
+            _total(noncurrent, current),
+            _total(lines, notes),
+        ]
+        known = [reading for reading in readings if reading is not None]
+        if not known:
+            return 0.0, "none_found"
+        return max(known), "components"
 
     def weighted_shares_as_of(
         self,
@@ -407,12 +487,9 @@ class FundamentalHistory:
         cash = self.instant_as_of("cash", as_of)
         if cash is not None and (as_of - cash.end).days <= maximum_age:
             signals["pit_cash"] = cash.value
-            debt = 0.0
-            for concept in ("long_term_debt", "short_term_debt"):
-                item = self.instant_as_of(concept, as_of, latest_end=cash.end)
-                if item is not None and (cash.end - item.end).days <= maximum_age:
-                    debt += item.value
+            debt, coverage = self.total_debt(cash.end, as_of)
             signals["pit_total_debt"] = debt
+            signals["pit_debt_coverage"] = coverage
             signals["pit_net_cash"] = cash.value - debt
 
         shares, shares_basis = self.share_count_as_of(as_of)
@@ -644,6 +721,22 @@ def _instant_value(row: dict, concept: str) -> PeriodValue | None:
 
 def _tag_priority(concept: str, tag: object) -> int:
     return TAG_PRIORITY.get(concept, {}).get(str(tag), 0)
+
+
+def _combine(concept: str) -> str:
+    """How a concept's tags combine for one date: alias, sum or max."""
+    return str(CONCEPTS.get(concept, {}).get("combine", "alias"))
+
+
+def _largest(*values: float | None) -> float | None:
+    known = [value for value in values if value is not None]
+    return max(known) if known else None
+
+
+def _total(*values: float | None) -> float | None:
+    """Sum of the known values, or None when none is known."""
+    known = [value for value in values if value is not None]
+    return sum(known) if known else None
 
 
 def _prefer_best_tag(

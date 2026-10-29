@@ -159,6 +159,26 @@ class SourceTests(unittest.TestCase):
         self.assertEqual(extract["facts"]["weighted_average_shares"][0]["val"], 4321.0)
         self.assertEqual(extract["facts"]["weighted_average_shares"][0]["start"], "2026-04-01")
 
+    def test_debt_tags_reach_total_debt(self):
+        # UEIC and TTEC: debt reported only under credit-line tags, which the
+        # extract used to drop, so both showed zero debt.
+        from datetime import date
+        from src.fundamentals_pit import FundamentalHistory
+
+        payload = _payload()
+        balance = {"end": "2025-06-30", "filed": "2025-08-01", "form": "10-Q"}
+        payload["facts"]["us-gaap"].update({
+            "LinesOfCreditCurrent": {"units": {"USD": [{**balance, "val": 20}]}},
+            "LongTermLineOfCredit": {"units": {"USD": [{**balance, "val": 855}]}},
+            "OperatingLeaseLiability": {"units": {"USD": [{**balance, "val": 9}]}},
+        })
+        extract = compact_company_facts(payload, "TEST")
+        self.assertEqual(extract["tags_found"]["debt_current_parts"], ["us-gaap:LinesOfCreditCurrent"])
+        signals = FundamentalHistory(extract).signals_as_of(date(2025, 9, 1))
+        self.assertEqual(signals["pit_total_debt"], 875.0)  # leases are not debt
+        self.assertEqual(signals["pit_debt_coverage"], "components")
+        self.assertEqual(signals["pit_net_cash"], 900.0 - 875.0)
+
     def test_unmapped_ticker_raises_lookup_error(self):
         self.assertIsNone(self.source.cik_for("NOPE"))
         with self.assertRaises(LookupError):

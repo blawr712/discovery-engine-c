@@ -155,6 +155,150 @@ class TagPrecedenceTests(unittest.TestCase):
         self.assertNotIn("2025-09-30", values)
 
 
+def _debt_history(debt_facts, cash_end="2026-06-30", filed="2026-08-05"):
+    """A filer with cash and the given debt facts: {concept: [(tag, end, val)]}."""
+    facts = {"cash": [{**_instant(cash_end, filed, 100.0), "tag": "us-gaap:Cash"}]}
+    for concept, rows in debt_facts.items():
+        facts[concept] = [
+            {**_instant(end, row_filed, val), "tag": tag}
+            for tag, end, val, *rest in rows
+            for row_filed in [rest[0] if rest else filed]
+        ]
+    return FundamentalHistory({"ticker": "T", "facts": facts})
+
+
+def _debt(history, as_of=date(2026, 9, 1)):
+    signals = history.signals_as_of(as_of)
+    return signals["pit_total_debt"], signals["pit_debt_coverage"]
+
+
+class DebtTests(unittest.TestCase):
+    """Cases from the AI review dry run, where debt was missing at 14 of 45 names."""
+
+    END = "2026-06-30"
+
+    def test_filers_own_total_wins_over_a_current_portion(self):
+        # CNDT and PKOH: only the $21M current portion was read before.
+        history = _debt_history({
+            "debt_total_reported": [("us-gaap:DebtAndCapitalLeaseObligations", self.END, 722.0)],
+            "debt_current_parts": [("us-gaap:LongTermDebtCurrent", self.END, 21.0)],
+            "debt_notes": [("us-gaap:OtherLongTermDebt", self.END, 12.0)],
+        })
+        self.assertEqual(_debt(history), (722.0, "reported_total"))
+
+    def test_credit_facility_tag_counts(self):
+        # TTEC: everything sits in LongTermLineOfCredit.
+        history = _debt_history({
+            "debt_noncurrent_parts": [("us-gaap:LongTermLineOfCredit", self.END, 855.0)],
+        })
+        self.assertEqual(_debt(history), (855.0, "components"))
+
+    def test_convertibles_on_both_sides_add_up(self):
+        # RPD: $598M current and $296M noncurrent convertible notes.
+        history = _debt_history({
+            "debt_current_parts": [("us-gaap:ConvertibleDebtCurrent", self.END, 598.2)],
+            "debt_noncurrent_parts": [("us-gaap:ConvertibleDebtNoncurrent", self.END, 296.0)],
+        })
+        self.assertAlmostEqual(_debt(history)[0], 894.2)
+
+    def test_credit_line_and_notes_without_a_split_add_up(self):
+        # RMR: a $25M revolver and $138.8M of mortgage notes.
+        history = _debt_history({
+            "debt_credit_lines": [("us-gaap:LineOfCredit", self.END, 25.0)],
+            "debt_notes": [("us-gaap:NotesPayable", self.END, 138.8)],
+            "debt_noncurrent_parts": [("us-gaap:SecuredLongTermDebt", self.END, 0.0)],
+            "debt_current_parts": [("us-gaap:SecuredDebtCurrent", self.END, 0.0)],
+        })
+        self.assertAlmostEqual(_debt(history)[0], 163.8)
+
+    def test_overlapping_note_tags_are_not_double_counted(self):
+        history = _debt_history({
+            "debt_notes": [
+                ("us-gaap:NotesPayable", self.END, 100.0),
+                ("us-gaap:SeniorNotes", self.END, 80.0),
+            ],
+        })
+        self.assertEqual(_debt(history)[0], 100.0)
+
+    def test_ifrs_parts_beat_a_narrow_borrowings_total(self):
+        # HITI: Borrowings (13.4) leaves out debentures and short-term loans.
+        history = _debt_history({
+            "debt_broad": [("ifrs-full:Borrowings", self.END, 13.4)],
+            "debt_noncurrent_parts": [
+                ("ifrs-full:LongtermBorrowings", self.END, 11.9),
+                ("ifrs-full:NoncurrentDebtInstrumentsIssued", self.END, 17.9),
+            ],
+            "debt_current_parts": [
+                ("ifrs-full:CurrentPortionOfLongtermBorrowings", self.END, 1.5),
+                ("ifrs-full:ShorttermBorrowings", self.END, 16.2),
+            ],
+        })
+        self.assertAlmostEqual(_debt(history)[0], 47.5)
+
+    def test_current_portion_and_short_term_borrowings_add_up(self):
+        # Before, the short-term side kept only the first of these tags.
+        history = _debt_history({
+            "long_term_debt": [("us-gaap:LongTermDebtNoncurrent", self.END, 300.0)],
+            "debt_current_parts": [
+                ("us-gaap:LongTermDebtCurrent", self.END, 20.0),
+                ("us-gaap:ShortTermBorrowings", self.END, 30.0),
+            ],
+        })
+        self.assertEqual(_debt(history)[0], 350.0)
+
+    def test_one_figure_side_beats_smaller_instrument_sum(self):
+        # NTWK: the current aggregate (8.2) already includes both parts.
+        history = _debt_history({
+            "long_term_debt": [("us-gaap:LongTermDebtNoncurrent", self.END, 0.2)],
+            "short_term_debt": [
+                ("us-gaap:LongTermDebtAndCapitalLeaseObligationsCurrent", self.END, 8.2),
+            ],
+            "debt_current_parts": [
+                ("us-gaap:LongTermDebtCurrent", self.END, 0.1),
+                ("us-gaap:LoansPayableCurrent", self.END, 8.1),
+            ],
+            "debt_noncurrent_parts": [("us-gaap:LongTermLoansPayable", self.END, 0.2)],
+            "debt_notes": [("us-gaap:LoansPayable", self.END, 8.3)],
+        })
+        self.assertAlmostEqual(_debt(history)[0], 8.4)
+
+    def test_debt_from_an_older_balance_sheet_is_ignored(self):
+        # RMR: a nine-month-old LongTermDebt figure was used before.
+        history = _debt_history({
+            "debt_broad": [("us-gaap:LongTermDebt", "2025-09-30", 44.6, "2025-11-05")],
+        })
+        self.assertEqual(_debt(history), (0.0, "none_found"))
+
+    def test_no_debt_tag_counts_as_zero_and_says_so(self):
+        self.assertEqual(_debt(_debt_history({})), (0.0, "none_found"))
+
+    def test_debt_filed_after_the_date_is_unknown(self):
+        history = _debt_history({
+            "debt_noncurrent_parts": [
+                ("us-gaap:LongTermLineOfCredit", self.END, 855.0, "2026-10-01"),
+            ],
+        })
+        self.assertEqual(_debt(history, as_of=date(2026, 9, 1)), (0.0, "none_found"))
+        self.assertEqual(_debt(history, as_of=date(2026, 10, 2))[0], 855.0)
+
+    def test_restated_part_uses_its_latest_known_filing(self):
+        history = _debt_history({
+            "debt_current_parts": [
+                ("us-gaap:LongTermDebtCurrent", self.END, 20.0, "2026-08-05"),
+                ("us-gaap:LongTermDebtCurrent", self.END, 25.0, "2026-09-15"),
+                ("us-gaap:ShortTermBorrowings", self.END, 30.0, "2026-08-05"),
+            ],
+        })
+        self.assertEqual(_debt(history, as_of=date(2026, 9, 1))[0], 50.0)
+        self.assertEqual(_debt(history, as_of=date(2026, 9, 20))[0], 55.0)
+
+    def test_reported_zero_is_coverage_not_absence(self):
+        history = _debt_history({
+            "short_term_debt": [("us-gaap:DebtCurrent", self.END, 0.0)],
+        })
+        self.assertEqual(_debt(history), (0.0, "components"))
+
+
 class SignalTests(unittest.TestCase):
     def setUp(self):
         self.history = FundamentalHistory(_extract())
@@ -200,6 +344,7 @@ class SignalTests(unittest.TestCase):
         self.assertIsNone(signals["pit_net_income_ttm"])  # only one quarter known
         self.assertEqual(signals["pit_cash"], 500.0)
         self.assertEqual(signals["pit_total_debt"], 0.0)  # no debt reported yet
+        self.assertEqual(signals["pit_debt_coverage"], "none_found")
         self.assertEqual(signals["pit_shares_outstanding"], 1000.0)
         self.assertIsNone(signals["pit_share_change_1y"])
 

@@ -70,6 +70,7 @@ RUN_ROW_FIELDS = (
     "pit_net_income_ttm",
     "pit_cash",
     "pit_total_debt",
+    "pit_debt_coverage",
     "pit_net_cash",
     "pit_net_cash_to_market_cap",
     "pit_report_age_days",

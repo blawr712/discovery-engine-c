@@ -29,7 +29,9 @@ COMPANY_FACTS_URL = "https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json"
 # sec-facts-3 added weighted-average basic shares, the only share count many
 # multi-class filers report as one total (2026-10-27). sec-facts-4 keeps money
 # facts in every reporting currency, not only U.S. and Canadian dollars.
-EXTRACT_VERSION = "sec-facts-4"
+# sec-facts-5 reads debt from every common tag, not two short alias lists,
+# after the AI review found debt missing at 14 of 45 names (2026-10-29).
+EXTRACT_VERSION = "sec-facts-5"
 
 # Ordered aliases per concept: the first taxonomy tag with usable data wins
 # for each period, but every alias is retained so coverage can be measured.
@@ -89,22 +91,114 @@ CONCEPTS: dict[str, dict] = {
             "ifrs-full:CashAndCashEquivalents",
         ],
     },
+    # Debt is reported under many tags that cover different slices, so it is
+    # kept as several concepts and combined in fundamentals_pit.total_debt.
+    # "combine" says how one concept's tags add up for a balance-sheet date:
+    # "alias" (default) keeps the best-priority tag, "sum" adds every tag
+    # reported, and "max" keeps the largest.
+    # The filer's own total of all debt (and finance leases).
+    "debt_total_reported": {
+        "units": MONEY_UNITS,
+        "kind": "instant",
+        "tags": [
+            "us-gaap:DebtAndCapitalLeaseObligations",
+            "us-gaap:DebtLongtermAndShorttermCombinedAmount",
+        ],
+    },
+    # Broad totals that can still leave out short-term borrowings (US GAAP
+    # LongTermDebt) or debt securities (IFRS Borrowings at some filers).
+    "debt_broad": {
+        "units": MONEY_UNITS,
+        "kind": "instant",
+        "combine": "max",
+        "tags": ["us-gaap:LongTermDebt", "ifrs-full:Borrowings"],
+    },
+    # Noncurrent debt as one figure.
     "long_term_debt": {
         "units": MONEY_UNITS,
         "kind": "instant",
         "tags": [
-            "us-gaap:LongTermDebtNoncurrent", "us-gaap:LongTermDebt",
-            "ifrs-full:NoncurrentBorrowings", "ifrs-full:Borrowings",
+            "us-gaap:LongTermDebtNoncurrent",
+            "us-gaap:LongTermDebtAndCapitalLeaseObligations",
+            "ifrs-full:NoncurrentPortionOfNoncurrentBorrowings",
+            "ifrs-full:NoncurrentBorrowings",
         ],
     },
+    # Current debt as one figure.
     "short_term_debt": {
         "units": MONEY_UNITS,
         "kind": "instant",
         "tags": [
-            "us-gaap:LongTermDebtCurrent",
             "us-gaap:DebtCurrent",
-            "us-gaap:ShortTermBorrowings",
+            "us-gaap:LongTermDebtAndCapitalLeaseObligationsCurrent",
+            "ifrs-full:CurrentBorrowingsAndCurrentPortionOfNoncurrentBorrowings",
             "ifrs-full:CurrentBorrowings",
+        ],
+    },
+    # Noncurrent debt reported instrument by instrument.
+    "debt_noncurrent_parts": {
+        "units": MONEY_UNITS,
+        "kind": "instant",
+        "combine": "sum",
+        "tags": [
+            "us-gaap:LongTermLineOfCredit",
+            "us-gaap:ConvertibleDebtNoncurrent",
+            "us-gaap:ConvertibleLongTermNotesPayable",
+            "us-gaap:LongTermNotesPayable",
+            "us-gaap:LongTermLoansPayable",
+            "us-gaap:OtherLongTermDebtNoncurrent",
+            "us-gaap:SeniorLongTermNotes",
+            "us-gaap:SecuredLongTermDebt",
+            "us-gaap:UnsecuredLongTermDebt",
+            "ifrs-full:LongtermBorrowings",
+            "ifrs-full:NoncurrentDebtInstrumentsIssued",
+            "ifrs-full:NoncurrentPortionOfNoncurrentNotesAndDebenturesIssued",
+        ],
+    },
+    # Current debt reported instrument by instrument: the current portion of
+    # long-term debt and short-term borrowings are separate amounts.
+    "debt_current_parts": {
+        "units": MONEY_UNITS,
+        "kind": "instant",
+        "combine": "sum",
+        "tags": [
+            "us-gaap:LongTermDebtCurrent",
+            "us-gaap:ShortTermBorrowings",
+            "us-gaap:LinesOfCreditCurrent",
+            "us-gaap:ConvertibleDebtCurrent",
+            "us-gaap:ConvertibleNotesPayableCurrent",
+            "us-gaap:NotesPayableCurrent",
+            "us-gaap:LoansPayableCurrent",
+            "us-gaap:OtherLongTermDebtCurrent",
+            "us-gaap:SecuredDebtCurrent",
+            "us-gaap:CommercialPaper",
+            "ifrs-full:ShorttermBorrowings",
+            "ifrs-full:CurrentPortionOfLongtermBorrowings",
+            "ifrs-full:CurrentPortionOfNoncurrentNotesAndDebenturesIssued",
+        ],
+    },
+    # Credit-line balances reported without a current or noncurrent split.
+    "debt_credit_lines": {
+        "units": MONEY_UNITS,
+        "kind": "instant",
+        "tags": ["us-gaap:LineOfCredit"],
+    },
+    # Notes and loans reported without a split. These tags overlap (senior
+    # notes are notes payable), so the largest is kept, never the sum.
+    "debt_notes": {
+        "units": MONEY_UNITS,
+        "kind": "instant",
+        "combine": "max",
+        "tags": [
+            "us-gaap:NotesPayable",
+            "us-gaap:LoansPayable",
+            "us-gaap:ConvertibleNotesPayable",
+            "us-gaap:ConvertibleDebt",
+            "us-gaap:SeniorNotes",
+            "us-gaap:SecuredDebt",
+            "us-gaap:UnsecuredDebt",
+            "us-gaap:OtherLongTermDebt",
+            "us-gaap:OtherBorrowings",
         ],
     },
     "stockholders_equity": {
