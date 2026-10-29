@@ -1173,6 +1173,79 @@ past periods turned out, so only forward cohorts count.
 **Where.** `.claude/skills/ai-review/`, `src/ai_review*.py`, and
 `ai_review_comparison` in each research resolution.
 
+## 2026-10-29: Debt read from every common tag; net cash keeps its weight
+
+**Decision.** Total debt is rebuilt from every common SEC debt tag. Score
+v3 keeps net cash / market cap at weight 15. A balance sheet with no debt tag
+still counts as zero debt, and is now labelled.
+
+**Why debt was rebuilt.** The Oct 19 AI review dry run found
+`pit_total_debt` wrong at 14 of 45 names: TTEC, RPD, UPBD and UFI showed no
+debt, and CNDT and PKOH only the current portion. Debt came from one
+long-term and one short-term tag, chosen from eight, so the extract missed
+several kinds of debt:
+- credit lines, convertibles and notes;
+- IFRS borrowings;
+- filers' own debt totals.
+
+It also had three logic flaws:
+- the current portion of debt and short-term borrowings were treated as
+  alternatives, so one was dropped;
+- debt up to 400 days older than the cash figure was accepted;
+- a missing tag counted as zero.
+
+Now debt is eight concepts:
+- the filer's own total wins when there is one;
+- otherwise the largest of three readings is used: broad totals,
+  noncurrent plus current, and credit lines plus notes;
+- debt must come from the same balance sheet as cash.
+
+A new signal, `pit_debt_coverage`, says whether debt was a reported total,
+built from components, or not found. The AI review packet shows it. On the
+dry-run names the fix recovers debt for 14 of 15. PHAR reports its
+convertibles under no standard tag and shows `none_found`. Extract
+`sec-facts-5` was refetched for all 4,882 cached filers, with no failures.
+
+**Effect on the backtest.** This was a clean comparison: the same universe,
+prices and insider data, with the Oct 27 outputs kept as `*_pre_debt_fix`.
+- Debt changed in 37% of observations, three quarters of them upward.
+  Observations with any debt rose from 53% to 65%.
+- v3 scores the same 61,886 observations, since no filter uses debt, and
+  its ranks correlate 0.97 before and after.
+- v3's 1Y IC went from 0.076 to 0.078 overall, and from 0.097 to 0.100
+  from 2022 on.
+
+**Why net cash keeps its weight.** These are paired tests on the corrected
+data, with fit before 2022 and holdout after, judged on 1Y:
+
+| Change | Fit | Holdout | Verdict |
+|---|---|---|---|
+| Remove net cash | +0.019 (t 1.4) | -0.005 (t -0.9) | reject |
+| Double it to 30 | -0.020 (t -1.6) | -0.017 (t -1.9) | reject |
+| Treat `none_found` as unknown, not zero | +0.008 (t 0.8) | -0.010 (t -1.8) | reject |
+
+The pre-fix observations give the same answers for the first two, so the
+debt fix did not move the weight decision. Net cash on its own ranks
+negatively: its raw 1Y IC is -0.10 before 2022 and -0.06 after. It ranks
+more negatively, not less, where debt was found, so the zero-debt guesses
+are not hiding a better signal.
+
+The 2026-10-21 finding that removing net cash costs a holdout t of -4.1 no
+longer holds on the point-in-time, liquidity-floored backtest. That was
+already true before this fix. Net cash now adds about nothing out of
+sample, and more of it hurts.
+
+It is not being forward-tested on its own. A holdout difference near zero
+would take years of 50-name cohorts to separate from noise, and another
+challenger would crowd the forward record.
+
+**Seen on the way.** Inside v3's scored set, observations with no debt tag
+found have a lower median 1Y excess return than those with debt found
+(-20.1% against -14.1%). This is noted, not acted on.
+
+**Where.** `CONCEPTS` in `src/data_sources/sec_xbrl_source.py`, and
+`total_debt` and `debt_component` in `src/fundamentals_pit.py`.
+
 ## Standing caveats that gate any promotion to "official"
 
 - **Survivorship.** The backtest's universe is chosen point in time from
