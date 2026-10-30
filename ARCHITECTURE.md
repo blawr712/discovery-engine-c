@@ -74,6 +74,13 @@ the cheaper half by earnings yield as `passes_bank_lane`.
 Fundamentals (point-in-time): `src/data_sources/sec_xbrl_source.py` fetches
 SEC company facts for U.S. filers, keeps only configured concepts with their
 filing dates, and caches the compact extract under `data/cache/sec_facts`.
+From 2026 company facts skips the statements of many XBRL filings (a fifth of
+20-Fs, most XBRL 6-Ks, some 10-Qs), so `src/data_sources/sec_filing_facts.py`
+finds filings in EDGAR's quarterly XBRL index that left no financial fact in an
+extract, reads each one's own XBRL instance (facts without dimensions only)
+and merges the rows in before the extract is cached. Parsed filings are cached
+for good under `data/cache/sec_filing_facts`; `fundamentals.filing_supplement_since`
+sets how far back it looks.
 `src/fundamentals_pit.py` turns an extract into quarterly flows (reported
 directly or derived by differencing cumulative and annual figures) and
 answers "what was knowable on this date" queries, so restated values only
@@ -208,7 +215,11 @@ only, tested and rejected on 2026-10-29; v3 does not use them. It drops facts ta
 from proxy filings (`is_proxy_form`), rescales trailing revenue onto the
 newest filing's basis when that filing restates the year-ago quarter
 (`_restatement_ratio`), and prefers the weighted-average share count when it
-exceeds the period-end count by more than `WEIGHTED_SHARE_RATIO`. `src/screen_research.py` (`--screen-research`) rebuilds the
+exceeds the period-end count by more than `WEIGHTED_SHARE_RATIO`, unless it is
+more than `WEIGHTED_SHARE_SCALE_ERROR` times larger (a tagging scale error). A
+filer that reports half-years gets a trailing year from its last annual figure
+plus the latest half less the same half a year earlier (`_half_year_ttm`);
+quarters win when they are as recent. `src/screen_research.py` (`--screen-research`) rebuilds the
 v3 screen at each month-end with the research queue's quintile formula and
 scans signals for ordering power inside it, with a stricter two-window rule
 because it tests many signals at once. `src/defensive_order.py` holds the

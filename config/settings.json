@@ -93,6 +93,8 @@
         "cache_directory": "data/cache/sec_facts",
         "cache_ttl_hours": 168,
         "request_interval_seconds": 0.11,
+        "filing_supplement_enabled": true,
+        "filing_supplement_since": "2025-01-01",
         "countries": [
             "US",
             "CA"

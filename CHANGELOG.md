@@ -215,6 +215,14 @@
   net income had the wrong sign), trailing revenue is rescaled onto one basis
   after a restatement (CNDT), and the weighted-average share count replaces a
   period-end count it exceeds by more than 20%, not 100% (GTEC's Class B)
+- Added a reader for filings SEC company facts skipped
+  (`src/data_sources/sec_filing_facts.py`): from 2026 the API has dropped the
+  statements of a fifth of 20-Fs, most XBRL 6-Ks and some 10-Qs, so those
+  filings' own XBRL instances are read and merged into the extract
+  (`sec-facts-6`). SANG's FY2026 40-F and GLBS's half-year 6-K are now read
+- Added half-year trailing figures for filers that report twice a year, and
+  ignored a weighted-average share count more than ten times the period-end
+  count as a scale error (GLBS's 20-F tags it 1,000 times too large)
 - Recorded that v3 gets no pending-deal filter: survivorship makes it
   untestable in the backtest, deal-specific SEC forms flag about 4% of the
   screen with mixed accuracy, and the AI review caught all three Oct 19 deals

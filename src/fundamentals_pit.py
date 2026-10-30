@@ -47,6 +47,8 @@ TAG_PRIORITY = {
 DEFAULT_CONFIG = {
     "quarter_days": [75, 105],
     "annual_days": [340, 380],
+    # Half-year reports, used by filers that report twice a year (6-K).
+    "half_year_days": [170, 195],
     "period_tolerance_days": 12,
     "maximum_report_age_days": 400,
     # A filer that reports only annually (most 20-F and 40-F filers) files up
@@ -139,6 +141,10 @@ SIGNAL_NAMES = (
 # The weighted-average share count replaces a period-end count it exceeds by
 # more than this factor (was 2.0 until 2026-10-29).
 WEIGHTED_SHARE_RATIO = 1.2
+# A weighted average ten times the period-end count is a scale error in the
+# filing, not a share class: GLBS's 2025 20-F tags 20.7 billion for 20.7
+# million (Oct 2026).
+WEIGHTED_SHARE_SCALE_ERROR = 10.0
 # Trailing sums rescaled onto the newest filing's basis after a restatement.
 RESCALED_CONCEPTS = ("revenue",)
 RESTATEMENT_THRESHOLD = 0.05
@@ -172,6 +178,7 @@ class FundamentalHistory:
         )
         facts = _single_currency(facts, self.currency)
         self._annuals: dict[str, list[list[PeriodValue]]] = {}
+        self._halves: dict[str, list[list[PeriodValue]]] = {}
         self._quarters: dict[str, dict[date, list[PeriodValue]]] = {}
         self._instants: dict[str, dict[date, list[PeriodValue]]] = {}
         self._quarter_ends: dict[str, list[date]] = {}
@@ -180,6 +187,9 @@ class FundamentalHistory:
         for concept in DURATION_CONCEPTS:
             values = _duration_values(facts.get(concept, []), concept)
             self._annuals[concept] = _annual_values(values, self.config)
+            self._halves[concept] = _annual_values(
+                values, {"annual_days": self.config["half_year_days"]},
+            )
             quarters = _quarterly_values(values, self.config)
             self._quarters[concept] = _prefer_best_tag(quarters)
             self._quarter_ends[concept] = sorted(self._quarters[concept])
@@ -396,6 +406,11 @@ class FundamentalHistory:
             return period_end, "period_end" if period_end else None
         if basis == "weighted_average":
             return average, "weighted_average" if average else None
+        if (
+            period_end is not None and average is not None
+            and average.value > period_end.value * WEIGHTED_SHARE_SCALE_ERROR
+        ):
+            average = None
         if period_end is not None and not (
             average is not None and period_end.value * WEIGHTED_SHARE_RATIO < average.value
         ):
@@ -429,11 +444,61 @@ class FundamentalHistory:
             index = len(annuals) - 1 - offset // 4
             if index >= 0:
                 annual = (annuals[index].end,), float(annuals[index].value)
+        half = self._half_year_ttm(concept, as_of, offset // 4) if offset % 4 == 0 else None
         # A filer that stopped reporting quarters (or reported them years ago)
         # must not have a stale quarterly window beat a current annual figure.
-        if quarterly is not None and annual is not None and annual[0][-1] > quarterly[0][-1]:
-            return annual
-        return quarterly if quarterly is not None else annual
+        # On equal end dates the quarters win, then the annual figure.
+        candidates = [result for result in (quarterly, annual, half) if result is not None]
+        if not candidates:
+            return None
+        return max(candidates, key=lambda result: result[0][-1])
+
+    def halves_as_of(self, concept: str, as_of: date) -> list[PeriodValue]:
+        """Half-year values known on ``as_of``, latest filing per period."""
+        known = []
+        for entries in self._halves.get(concept, []):
+            chosen = _latest_known(entries, as_of)
+            if chosen is not None and chosen.end <= as_of:
+                known.append(chosen)
+        return known
+
+    def _half_year_ttm(
+        self, concept: str, as_of: date, years_back: int = 0,
+    ) -> tuple[tuple[date, ...], float] | None:
+        """Trailing year for a filer that reports half-years.
+
+        The fiscal year's first half plus the year before it, less the same
+        half a year earlier (GLBS, Oct 2026: 44.2 + 26.9 - 18.2 = $52.9M, as
+        its own report states). The half must start the day after a fiscal
+        year ends, and all three figures must share one tag.
+        """
+        tolerance = int(self.config["period_tolerance_days"])
+        annuals = self.annuals_as_of(concept, as_of)
+        halves = self.halves_as_of(concept, as_of)
+        built = []
+        for half in halves:
+            year = next((
+                annual for annual in reversed(annuals)
+                if abs((half.start - annual.end).days - 1) <= tolerance
+            ), None)
+            if year is None:
+                continue
+            prior = next((
+                other for other in halves
+                if abs((half.end - other.end).days - 365) <= tolerance
+                and abs((half.start - other.start).days - 365) <= tolerance
+            ), None)
+            if prior is None or len({year.priority, half.priority, prior.priority}) > 1:
+                continue
+            built.append(((half.end,), float(year.value + half.value - prior.value)))
+        if not built:
+            return None
+        latest_end = built[-1][0][-1]
+        target = latest_end - timedelta(days=365 * years_back)
+        for result in reversed(built):
+            if abs((result[0][-1] - target).days) <= tolerance:
+                return result
+        return None
 
     def _restatement_ratio(
         self, concept: str, quarters: list[PeriodValue],

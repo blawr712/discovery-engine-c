@@ -2,7 +2,7 @@ import os
 import json
 import re
 import sqlite3
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -42,6 +42,7 @@ from src.keep_awake import keep_awake
 from src.data_sources.sec_filings_source import SecFilingsSource, quarters
 from src.data_sources.sec_form4_source import SecForm4Source
 from src.data_sources.sec_pacing import SecPacer
+from src.data_sources.sec_filing_facts import SecFilingFactsSource
 from src.insider_supplement import SupplementedInsiderLookup
 from src.liquidity import liquidity_eligible
 from src.survivorship import classify_exit, dead_observations, delisted_candidates
@@ -2025,12 +2026,23 @@ def build_sec_xbrl_source(required: bool = True) -> SecXbrlSource | None:
             "'Discovery Engine research@example.com'."
         )
     settings = FUNDAMENTALS_CONFIG
+    supplement = None
+    if settings.get("filing_supplement_enabled", True):
+        supplement = SecFilingFactsSource(
+            user_agent=user_agent,
+            cache_directory=BASE_DIR / settings.get(
+                "filing_supplement_cache_directory", "data/cache/sec_filing_facts",
+            ),
+            since=date.fromisoformat(str(settings.get("filing_supplement_since", "2025-01-01"))),
+            pacer=sec_pacer(),
+        )
     return SecXbrlSource(
         user_agent=user_agent,
         cache_directory=BASE_DIR / settings.get("cache_directory", "data/cache/sec_facts"),
         ttl_hours=float(settings.get("cache_ttl_hours", 168)),
         request_interval_seconds=float(settings.get("request_interval_seconds", 0.11)),
         pacer=sec_pacer(),
+        filing_supplement=supplement,
     )
 
 

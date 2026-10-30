@@ -1405,13 +1405,76 @@ queue, the AI review packet and its peer tables. Earnings yield also feeds
 the bank lane's rule and `defensive-v1`. Their rules are unchanged; their
 inputs are corrected from the next run, as with the debt fix.
 
-**Not fixed here.** The foreign-filer gaps (INMD, AUDC, GLBS, HITI, SANG)
-come from 20-F and 40-F filers whose quarterly 6-Ks carry no XBRL, so their
-figures can be up to a year old. GLBS's share count, about 1,000 times too
-large, is untraced.
+**Not fixed here.** The foreign-filer gaps (INMD, AUDC, GLBS, HITI, SANG) and
+GLBS's share count are covered by the next entry.
 
 **Where.** `is_proxy_form`, `_restatement_ratio` and `WEIGHTED_SHARE_RATIO`
 in `src/fundamentals_pit.py`.
+
+## 2026-10-29: Filings the SEC feed skipped are read from their own XBRL
+
+**Decision.** Read the XBRL instance of any filing that SEC company facts
+left out, add half-year trailing figures, and ignore a share-count scale
+error. No v3 weight change.
+
+**What the foreign-filer mismatches turned out to be.**
+- **SANG and GLBS: filings dropped by the SEC feed.** SANG's FY2026 40-F
+  (Sept 28) and GLBS's half-year 6-K (Aug 7) both carry XBRL, but company
+  facts kept only SANG's cover share count and nothing from GLBS. This is
+  new in 2026. Against EDGAR's XBRL index, filings with no financial fact in
+  our extracts:
+  - 20-F: 2 to 14 a year in 2022-25, then 141 of 641 in 2026;
+  - 6-K: 2 to 67 a year, then 405 of 495;
+  - 10-Q: 10 to 25 a year, then 101 of 8,138 (Visa's July 10-Q among them).
+
+  `src/data_sources/sec_filing_facts.py` finds these filings (originals since
+  2025-01-01, `fundamentals.filing_supplement_since`), reads each one's
+  instance (facts without dimensions only) and merges the rows into the
+  extract before it is cached (`sec-facts-6`). On the rebuild:
+  - 739 filings were read and 1 failed;
+  - 520 of 4,883 filers gained 18,281 facts, from 150 20-Fs, 373 6-Ks,
+    70 10-Qs, 14 40-Fs and 10 10-Ks.
+- **GLBS: half-years.** GLBS reports twice a year, so its trailing figures
+  stayed on the annual report. The trailing year is now last year's annual
+  figure plus the latest half less the same half a year earlier. It applies
+  only when all three figures share a tag and the half starts the day after
+  the year ends. Quarters win when they are as recent.
+- **GLBS: shares 1,000 times too large.** Its 2025 20-F tags the weighted
+  average as 20.7 billion. The 1.2x trigger then preferred it. A weighted
+  average more than ten times the period-end count is now treated as a
+  scale error and ignored.
+- **HITI, AUDC and INMD: nothing to read.** Their quarterly 6-Ks carry no
+  XBRL. HITI's trailing revenue stays on its October 2025 year, and the
+  AUDC and INMD share counts miss buybacks since year end. This is a known
+  limit. The AI review's data check is what catches it.
+
+**After.**
+
+| Name | Field | Before | After | Filing |
+|---|---|---|---|---|
+| SANG | revenue | $236.7M (FY2025) | $200.1M (FY2026) | $200.1M |
+| SANG | net income | -$5.0M | -$81.1M | -$81.1M |
+| GLBS | revenue | $44.2M | $52.9M | $52.9M |
+| GLBS | net income | -$1.7M | +$6.7M | +$6.7M |
+| GLBS | shares | 20.7B | 21.6M | 21.6M |
+
+GLBS's zero debt in the Oct 19 packet was already fixed by the debt change;
+it now reads $57.8M.
+
+**Effect on the backtest.** This was a clean re-run, with the earlier
+outputs kept as `*_pre_filing_supplement`:
+- Revenue changed in 3.4% of observations and net income in 3.1%. The
+  changes are spread across 2017-2026, so most come from the half-year
+  rule.
+- 679 observations gained revenue they lacked, and v3 scores 110 more.
+- v3's ranks correlate 0.996 with before, and its 1Y IC stays about 0.08
+  (t 9.19 before, 9.07 after).
+
+No weight decision is reopened.
+
+**Not fixed.** Visa reports shares only per class, so it has no share
+count, as before. A filing whose instance cannot be fetched is tried again
+at the next rebuild.
 
 ## Standing caveats that gate any promotion to "official"
 

@@ -721,6 +721,15 @@ class WeightedShareFallbackTests(unittest.TestCase):
         self.assertEqual(signals["pit_shares_basis"], "period_end")
         self.assertEqual(signals["pit_shares_outstanding"], 900.0)
 
+    def test_a_scale_error_in_the_average_is_ignored(self):
+        # GLBS: the 20-F tags the average a thousand times too large.
+        extract = _multi_class_extract([_instant("2025-12-31", "2026-02-15", 1000)])
+        for row in extract["facts"]["weighted_average_shares"]:
+            row["val"] *= 1000
+        signals = FundamentalHistory(extract).signals_as_of(date(2026, 3, 1), price=2.0)
+        self.assertEqual(signals["pit_shares_basis"], "period_end")
+        self.assertEqual(signals["pit_shares_outstanding"], 1000.0)
+
     def test_stale_and_zero_period_end_counts_are_ignored(self):
         stale = [_instant("2016-08-05", "2016-08-09", 500)]
         zero = [_instant("2025-12-31", "2026-02-15", 0)]
@@ -784,6 +793,54 @@ class AnnualFilerTests(unittest.TestCase):
         history = FundamentalHistory(_extract())
         self.assertTrue(history.reports_quarterly(date(2026, 3, 1)))
         self.assertFalse(FundamentalHistory(_annual_filer()).reports_quarterly(date(2026, 10, 20)))
+
+
+def _half_year_filer():
+    """A December-year-end filer reporting half-years on 6-K, as GLBS does."""
+    return {"ticker": "HALF", "facts": {
+        "revenue": [
+            _fact("2024-01-01", "2024-06-30", "2024-09-10", 15),
+            _fact("2024-01-01", "2024-12-31", "2025-03-14", 35),
+            _fact("2025-01-01", "2025-06-30", "2025-09-19", 18),
+            _fact("2025-01-01", "2025-12-31", "2026-03-16", 44),
+            _fact("2026-01-01", "2026-06-30", "2026-08-07", 27),
+        ],
+        "cash": [_instant("2026-06-30", "2026-08-07", 30)],
+        "shares_outstanding": [_instant("2026-06-30", "2026-08-07", 20)],
+    }}
+
+
+class HalfYearTests(unittest.TestCase):
+    def test_the_trailing_year_adds_the_latest_half(self):
+        history = FundamentalHistory(_half_year_filer())
+        ends, total = history.ttm("revenue", date(2026, 10, 1))
+        self.assertEqual(ends, (date(2026, 6, 30),))
+        self.assertEqual(total, 44 + 27 - 18)
+
+    def test_a_year_back_uses_the_halves_known_then(self):
+        history = FundamentalHistory(_half_year_filer())
+        self.assertEqual(history.ttm("revenue", date(2026, 10, 1), offset=4)[1], 35 + 18 - 15)
+        # Before the 2026 half is filed the annual report is the latest.
+        self.assertEqual(history.ttm("revenue", date(2026, 8, 1)), ((date(2025, 12, 31),), 44.0))
+
+    def test_quarters_win_when_they_are_as_recent(self):
+        extract = _half_year_filer()
+        extract["facts"]["revenue"] += [
+            _fact(start, end, "2026-08-07", 10)
+            for start, end in [("2025-07-01", "2025-09-30"), ("2025-10-01", "2025-12-31"),
+                               ("2026-01-01", "2026-03-31"), ("2026-04-01", "2026-06-30")]
+        ]
+        self.assertEqual(FundamentalHistory(extract).ttm("revenue", date(2026, 10, 1))[1], 40.0)
+
+    def test_a_half_needs_last_year_s_half(self):
+        extract = _half_year_filer()
+        extract["facts"]["revenue"] = [
+            row for row in extract["facts"]["revenue"] if row["end"] != "2025-06-30"
+        ]
+        self.assertEqual(
+            FundamentalHistory(extract).ttm("revenue", date(2026, 10, 1)),
+            ((date(2025, 12, 31),), 44.0),
+        )
 
 
 if __name__ == "__main__":

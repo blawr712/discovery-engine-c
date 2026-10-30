@@ -339,7 +339,10 @@ and cached for a week as a compact extract of only the needed concepts), then
 derives revenue growth and acceleration, gross and operating margin levels and
 trends, cash-flow margins and conversion, net cash, one-year share dilution,
 and market-cap ratios at every month-end from filings made on or before that
-date. Restatements become visible only from their restating filing. The
+date. Filings the SEC's company-facts feed skipped (common from 2026,
+especially 20-Fs and 6-Ks) are read from their own XBRL instead, and filers
+that report half-years get trailing figures from their latest half.
+Restatements become visible only from their restating filing. The
 resulting `pit_*` signals join the rank-correlation tables so fundamentals can
 be judged on the same periods as the technical signals. Canadian and IFRS
 filers carry no fundamental signals yet.

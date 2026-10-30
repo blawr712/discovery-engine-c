@@ -31,7 +31,8 @@ COMPANY_FACTS_URL = "https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json"
 # facts in every reporting currency, not only U.S. and Canadian dollars.
 # sec-facts-5 reads debt from every common tag, not two short alias lists,
 # after the AI review found debt missing at 14 of 45 names (2026-10-29).
-EXTRACT_VERSION = "sec-facts-5"
+# sec-facts-6 adds facts read from filings company facts skipped (2026-10-29).
+EXTRACT_VERSION = "sec-facts-6"
 
 # Ordered aliases per concept: the first taxonomy tag with usable data wins
 # for each period, but every alias is retained so coverage can be measured.
@@ -254,6 +255,8 @@ class SecXbrlSource:
     clock: Callable[[], float] = time.time
     # Shared with other SEC sources so their combined rate stays in bounds.
     pacer: object | None = None
+    # Reads filings company facts left out (sec_filing_facts); None skips it.
+    filing_supplement: object | None = None
 
     def __post_init__(self) -> None:
         if not self.user_agent or "@" not in self.user_agent:
@@ -317,6 +320,8 @@ class SecXbrlSource:
         raw = self._request(COMPANY_FACTS_URL.format(cik=cik))
         payload = json.loads(raw.decode("utf-8"))
         extract = compact_company_facts(payload, ticker, self.concepts)
+        if self.filing_supplement is not None:
+            extract = self.filing_supplement.supplement(extract, self.concepts)
         extract["_retrieved_at"] = self.clock()
         _atomic_json(path, extract)
         return extract
